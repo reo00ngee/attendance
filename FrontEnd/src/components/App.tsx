@@ -19,7 +19,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const rows = [
   {
@@ -47,9 +47,22 @@ const rows = [
 // exportとconstの前に書くことでコンポーネントとして利用できる
 export const App = () => {
   // useStateを書く
-  const [startWork, setStartWork] = useState("");
+  const [attendance, setAttendance] = useState<string>("");
   // onClickのボタンの処理を書く
-  const onClickStartWork = () => {};
+  const onClickStartWork = async () => {
+    try {
+      // 実際のバックエンドAPIのURLを指定
+      const response = await fetch('http://localhost/api/start-work', {
+        method: 'POST',
+        mode: 'cors',
+      });
+      const data = await response.json();
+      setAttendance(data);
+      console.log(attendance);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   // fetchでdataをとってくる
   // jsonに変換する
   // setDataで変換データをセットする

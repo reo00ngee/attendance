@@ -17,9 +17,8 @@ class WorkTimeController extends Controller
 
     public function startWork()
     {
-        $start_work_time = $this->workTimeService->startWork();
-
-        return response()->json(['message' => $start_work_time]);
+        $this->workTimeService->startWork();
+        return $this->workTimeService->getLatestWorkTimesForUser();
     }
 
     public function finishWork()
