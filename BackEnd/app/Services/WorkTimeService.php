@@ -34,6 +34,7 @@ class WorkTimeService
             return response()->json(['start_work_time' => $latestStartWorkTime, 'finish_work_time' => $latestFinishWorkTime]);
         } else {
             Log::info("it doesn't exist");
+            return response()->json(['error' => 'error'], 500);
         }
     }
 }
