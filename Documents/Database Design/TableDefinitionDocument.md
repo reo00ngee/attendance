@@ -18,6 +18,7 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
   - [information](#information)
   - [user\_information](#user_information)
   - [user\_created\_information](#user_created_information)
+  - [payslip\_contents](#payslip_contents)
 - [Enums](#enums)
   - [ClosingDate](#closingdate)
   - [PayrollRoundingInterval](#payrollroundinginterval)
@@ -109,6 +110,12 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 | payroll_rounding_interval       | INT          |     | PayrollRoundingInterval(Value)      | ✔       |                                               | Setting for payroll rounding interval       |
 | prompt_submission_reminder_days | INT          |     | PromptSubmissionReminderDays(Value) | ✔       |                                               | Setting for prompt submission reminder days |
 | standard_working_hours          | INT          |     |                                     | ✔       |                                               | Setting for standard working hours          |
+| overtime_pay_multiplier         | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for overtime pay                |
+| night_shift_hours_from          | TIME         |     |                                     |          |                                               | Night shift starting hour                  |
+| night_shift_hours_to            | TIME         |     |                                     |          |                                               | Night shift ending hour                    |
+| night_shift_pay_multiplier      | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for night shift pay             |
+| holiday                         | JSON         |     |                                     |          | []                                            | Array of holidays                           |
+| holiday_pay_multiplier          | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for holiday pay                 |
 | attendance_ready                | BOOLEAN      |     |                                     |          | false                                         | Flag indicating if attendance data is ready |
 | expense_ready                   | BOOLEAN      |     |                                     |          | false                                         | Flag indicating if expense data is ready    |
 | created_at                      | TIMESTAMP    |     |                                     |          | CURRENT_TIMESTAMP                             | Time when the record was created            |
@@ -260,6 +267,21 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 | updated_by       | INT          |          | users(id) |     |                                               | User ID of the last updater                           |
 | deleted_at       | TIMESTAMP    |          |           |     |                                               | Time when the record was soft deleted                 |
 | deleted_by       | INT          |          | users(id) |     |                                               | User ID of the deleter                                |
+
+## payslip_contents
+
+| Column          | Data Type       | PK  | FK          | Not NULL | Default     | Remarks                                |
+| --------------- | --------------- | --- | ----------- | -------- | ----------- | -------------------------------------- |
+| id              | INT             | ✔   |             | ✔        |             | Unique identifier                      |
+| user_id         | INT             |     | users(id)   | ✔        |             | ID of the associated user               |
+| month           | DATE            |     |             | ✔        |             | Month for which the results are recorded|
+| content    | JSON            |     |             | ✔        |             | JSON format storing payslip contents   |
+| created_at      | TIMESTAMP       |     |             |          | CURRENT_TIMESTAMP | Time of creation                   |
+| created_by      | INT             |     | users(id)   |          |             | User ID of the creator                 |
+| updated_at      | TIMESTAMP       |     |             |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time of last update        |
+| updated_by      | INT             |     | users(id)   |          |             | User ID of the last updater            |
+| deleted_at      | TIMESTAMP       |     |             |          |             | Time of soft deletion                  |
+| deleted_by      | INT             |     | users(id)   |          |             | User ID of the deleter                 |
 
 # Enums
 
