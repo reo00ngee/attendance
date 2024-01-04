@@ -47,7 +47,25 @@ const rows = [
 // exportとconstの前に書くことでコンポーネントとして利用できる
 export const App = () => {
   // useStateを書く
-  const [attendance, setAttendance] = useState<string>("");
+  const [attendance, setAttendance] = useState({start_work_time: '', finish_work_time: '' });
+
+  useEffect( () => {
+    const fetchFunction = async() => {
+    try {
+      // 実際のバックエンドAPIのURLを指定
+      const response = await fetch('http://localhost/api/start-work', {
+        method: 'POST',
+        mode: 'cors',
+      });
+      const data = await response.json();
+      setAttendance(data);
+      console.log(attendance.start_work_time);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+  fetchFunction();
+  },[]);
   // onClickのボタンの処理を書く
   const onClickStartWork = async () => {
     try {
@@ -58,7 +76,7 @@ export const App = () => {
       });
       const data = await response.json();
       setAttendance(data);
-      console.log(attendance);
+      console.log(attendance.start_work_time);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -92,7 +110,6 @@ export const App = () => {
               Start Work
             </Button>
           </Box>{" "}
-          {/*onClickを付ける*/}
         </Grid>
 
         <Grid item xs={3}>
@@ -138,6 +155,7 @@ export const App = () => {
         <Grid item xs={1}></Grid>
 
         <Grid item xs={9}>
+          <div>{attendance.start_work_time}</div>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>

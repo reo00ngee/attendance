@@ -3,11 +3,12 @@
 TODO:workbench見て、すでにあるdatatypeに合わせる
 - [Table Definition Document](#table-definition-document)
   - [users](#users)
-    - [users index](#users-index)
+    - [Indexes](#indexes)
   - [user\_role](#user_role)
+    - [Indexes](#indexes-1)
   - [hourly\_wage\_groups](#hourly_wage_groups)
   - [administrators](#administrators)
-    - [administrators index](#administrators-index)
+    - [Indexes](#indexes-2)
   - [companies](#companies)
   - [attendance](#attendance)
   - [breaks](#breaks)
@@ -17,6 +18,7 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
   - [monthly\_expenses\_and\_deductions](#monthly_expenses_and_deductions)
   - [information](#information)
   - [user\_information](#user_information)
+    - [Indexes](#indexes-3)
   - [user\_created\_information](#user_created_information)
   - [payslip\_contents](#payslip_contents)
 - [Enums](#enums)
@@ -31,257 +33,266 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 
 ## users
 
-| Column               | Data Type    | PK  | FK                     | Not NULL | Default                                       | Remarks                                        |
-| -------------------- | ------------ | --- | ---------------------- | -------- | --------------------------------------------- | ---------------------------------------------- |
-| id                   | INT          | ✔  |                        | ✔       |                                               | unique user identifier                         |
-| first_name           | VARCHAR(30)  |     |                        |          |                                               | User's first name                              |
-| last_name            | VARCHAR(30)  |     |                        |          |                                               | User's last name                               |
-| email                | VARCHAR(255) |     |                        | ✔       |                                               | User's email address                           |
-| password             | VARCHAR(255) |     |                        | ✔       |                                               | User's password                                |
-| phone_number         | VARCHAR(20)  |     |                        |          |                                               | User's phone number                            |
-| gender               | VARCHAR(10)  |     |                        |          |                                               | User's gender                                  |
-| birth_date           | DATE         |     |                        |          |                                               | User's birth date                              |
-| address              | VARCHAR(255) |     |                        |          |                                               | User's address                                 |
-| hire_date            | DATE         |     |                        |          |                                               | User's hire date                               |
-| retire_date          | DATE         |     |                        |          |                                               | User's retire date                             |
-| company_id           | INT          |     | companies(id)          | ✔       |                                               | Foreign key referencing Company's ID           |
-| hourly_wage_group_id | INT          |     | hourly_wage_groups(id) | ✔       |                                               | Foreign key referencing Hourly wage group's ID |
-| created_at           | TIMESTAMP    |     |                        |          | CURRENT_TIMESTAMP                             | Time when the record was created               |
-| created_by           | INT          |     |                        |          |                                               | User ID of the creator                         |
-| updated_at           | TIMESTAMP    |     |                        |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated          |
-| updated_by           | INT          |     |                        |          |                                               | User ID of the last updater                    |
-| deleted_at           | TIMESTAMP    |     |                        |          |                                               | Time when the record was soft deleted          |
-| deleted_by           | INT          |     |                        |          |                                               | User ID of the deleter                         |
+| Column               | Data Type    | PK  | FK                     | Not NULL | Unique | Default                     | Remarks                                        |
+| -------------------- | ------------ | --- | ---------------------- | -------- | ------ | --------------------------- | ---------------------------------------------- |
+| id                   | INT          | ✔  |                        | ✔       |        |                             | Unique user identifier                         |
+| first_name           | VARCHAR(30)  |     |                        | ✔       |        |                             | User's first name                              |
+| last_name            | VARCHAR(30)  |     |                        | ✔       |        |                             | User's last name                               |
+| email                | VARCHAR(255) |     |                        | ✔       | ✔     |                             | User's email address                           |
+| password             | VARCHAR(255) |     |                        | ✔       |        |                             | User's password                                |
+| phone_number         | VARCHAR(20)  |     |                        |          |        |                             | User's phone number                            |
+| gender               | VARCHAR(10)  |     |                        |          |        |                             | User's gender                                  |
+| birth_date           | DATE         |     |                        |          |        |                             | User's birth date                              |
+| address              | VARCHAR(255) |     |                        |          |        |                             | User's address                                 |
+| hire_date            | DATE         |     |                        |          |        |                             | User's hire date                               |
+| retire_date          | DATE         |     |                        |          |        |                             | User's retire date                             |
+| company_id           | INT          |     | companies(id)          | ✔       |        |                             | Foreign key referencing Company's ID           |
+| hourly_wage_group_id | INT          |     | hourly_wage_groups(id) | ✔       |        |                             | Foreign key referencing Hourly wage group's ID |
+| created_at           | TIMESTAMP    |     |                        |          |        | CURRENT_TIMESTAMP           | Time when the record was created               |
+| created_by           | INT          |     |                        |          |        |                             | User ID of the creator                         |
+| updated_at           | TIMESTAMP    |     |                        |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated          |
+| updated_by           | INT          |     |                        |          |        |                             | User ID of the last updater                    |
+| deleted_at           | TIMESTAMP    |     |                        |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted          |
+| deleted_by           | INT          |     |                        |          |        |                             | User ID of the deleter                         |
 
-### users index
-* email
+### Indexes
+* `email`: Unique index on the email column.
 
 ## user_role
 
-| Column  | Data Type | PK  | FK          | Not NULL | Default | Remarks                     |
-| ------- | --------- | --- | ----------- | -------- | ------- | --------------------------- |
-| id      | INT       | ✔  |             | ✔       |         | Unique user role identifier |
-| user_id | INT       |     | users(id)   | ✔       |         | Foreign key to Users        |
-| role    | INT       |     | Role(Value) | ✔       |         | Role (Enum)                 |
+| Column  | Data Type | PK  | FK          | Not NULL | Unique                                | Default | Remarks                     |
+| ------- | --------- | --- | ----------- | -------- | ------------------------------------- | ------- | --------------------------- |
+| id      | INT       | ✔  |             | ✔       |                                       |         | Unique user role identifier |
+| user_id | INT       |     | users(id)   | ✔       | (Unique user_id and role combination) |         | Foreign key to Users        |
+| role    | INT       |     | Role(Value) | ✔       | (Unique user_id and role combination) |         | Role (Enum)                 |
+
+### Indexes
+* `user_id` and `role`: Unique index on the combination of user_id and role.
 
 ## hourly_wage_groups
 
-| Column      | Data Type      | PK  | FK        | Not NULL | Default                                       | Remarks                               |
-| ----------- | -------------- | --- | --------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id          | INT            | ✔  |           | ✔       |                                               | Unique identifier                     |
-| name        | VARCHAR(255)   |     |           | ✔       |                                               | Name of the hourly wage group         |
-| hourly_rate | DECIMAL(10, 2) |     |           | ✔       |                                               | Hourly rate for the wage group        |
-| created_at  | TIMESTAMP      |     |           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by  | INT            |     | users(id) |          |                                               | User ID of the creator                |
-| updated_at  | TIMESTAMP      |     |           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by  | INT            |     | users(id) |          |                                               | User ID of the last updater           |
-| deleted_at  | TIMESTAMP      |     |           |          |                                               | Time when the record was soft deleted |
-| deleted_by  | INT            |     | users(id) |          |                                               | User ID of the deleter                |
+| Column      | Data Type      | PK  | FK            | Not NULL | Unique | Default                     | Remarks                               |
+| ----------- | -------------- | --- | ------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id          | INT            | ✔  |               | ✔       |        |                             | Unique hourly wage group identifier   |
+| company_id  | INT            |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
+| name        | VARCHAR(30)    |     |               | ✔       |        |                             | Name of the hourly wage group         |
+| hourly_rate | DECIMAL(10, 2) |     |               | ✔       |        |                             | Hourly rate for the wage group        |
+| created_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by  | INT            |     | users(id)     |          |        |                             | User ID of the creator                |
+| updated_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by  | INT            |     | users(id)     |          |        |                             | User ID of the last updater           |
+| deleted_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by  | INT            |     | users(id)     |          |        |                             | User ID of the deleter                |
 
 ## administrators
 
-| Column     | Data Type    | PK  | FK        | Not NULL | Default                                       | Remarks                               |
-| ---------- | ------------ | --- | --------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id         | INT          | ✔  | users(id) | ✔       |                                               | Unique Administrator identifier      |
-| email      | VARCHAR(255) |     |           | ✔       |                                               | Administrators email address          |
-| password   | VARCHAR(255) |     |           | ✔       |                                               | Administrators password               |
-| name       | VARCHAR(30) |     |           | ✔       |                                               | Administrators name                   |
-| created_at | TIMESTAMP    |     |           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by | INT          |     | users(id) |          |                                               | User ID of the creator                |
-| updated_at | TIMESTAMP    |     |           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by | INT          |     | users(id) |          |                                               | User ID of the last updater           |
-| deleted_at | TIMESTAMP    |     |           |          |                                               | Time when the record was soft deleted |
-| deleted_by | INT          |     | users(id) |          |                                               | User ID of the deleter                |
+| Column     | Data Type    | PK  | FK        | Not NULL | Unique | Default                     | Remarks                               |
+| ---------- | ------------ | --- | --------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id         | INT          | ✔  | users(id) | ✔       |        |                             | Unique Administrator identifier       |
+| email      | VARCHAR(255) |     |           | ✔       | ✔     |                             | Administrators email address          |
+| password   | VARCHAR(255) |     |           | ✔       |        |                             | Administrators password               |
+| name       | VARCHAR(30)  |     |           | ✔       |        |                             | Administrators name                   |
+| created_at | TIMESTAMP    |     |           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by | INT          |     | users(id) |          |        |                             | User ID of the creator                |
+| updated_at | TIMESTAMP    |     |           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by | INT          |     | users(id) |          |        |                             | User ID of the last updater           |
+| deleted_at | TIMESTAMP    |     |           |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by | INT          |     | users(id) |          |        |                             | User ID of the deleter                |
 
-### administrators index
-* email
+### Indexes
+* `email`: Unique index on the email column.
 
 ## companies
 
-| Column                          | Data Type    | PK  | FK                                  | Not NULL | Default                                       | Remarks                                     |
-| ------------------------------- | ------------ | --- | ----------------------------------- | -------- | --------------------------------------------- | ------------------------------------------- |
-| id                              | INT          | ✔  |                                     | ✔       |                                               | Unique company identifier                   |
-| name                            | VARCHAR(30)  |     |                                     | ✔       |                                               | Company's name                              |
-| address                         | VARCHAR(255) |     |                                     | ✔       |                                               | Company's address                           |
-| phone_number                    | VARCHAR(20)  |     |                                     | ✔       |                                               | Company's phone number                      |
-| email                           | VARCHAR(255) |     |                                     | ✔       |                                               | Company's email                             |
-| currency                        | VARCHAR(20)  |     |                                     | ✔       |                                               | Setting for currency                        |
-| closing_date                    | INT          |     | ClosingDate(Value)                  | ✔       |                                               | Setting for closing date                    |
-| payroll_rounding_interval       | INT          |     | PayrollRoundingInterval(Value)      | ✔       |                                               | Setting for payroll rounding interval       |
-| prompt_submission_reminder_days | INT          |     | PromptSubmissionReminderDays(Value) | ✔       |                                               | Setting for prompt submission reminder days |
-| standard_working_hours          | INT          |     |                                     | ✔       |                                               | Setting for standard working hours          |
-| overtime_pay_multiplier         | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for overtime pay                |
-| night_shift_hours_from          | TIME         |     |                                     |          |                                               | Night shift starting hour                  |
-| night_shift_hours_to            | TIME         |     |                                     |          |                                               | Night shift ending hour                    |
-| night_shift_pay_multiplier      | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for night shift pay             |
-| holiday                         | JSON         |     |                                     |          | []                                            | Array of holidays                           |
-| holiday_pay_multiplier          | DECIMAL(5,2) |     |                                     |          |                                               | Multiplier for holiday pay                 |
-| attendance_ready                | BOOLEAN      |     |                                     |          | false                                         | Flag indicating if attendance data is ready |
-| expense_ready                   | BOOLEAN      |     |                                     |          | false                                         | Flag indicating if expense data is ready    |
-| created_at                      | TIMESTAMP    |     |                                     |          | CURRENT_TIMESTAMP                             | Time when the record was created            |
-| created_by                      | INT          |     | users(id)                           |          |                                               | User ID of the creator                      |
-| updated_at                      | TIMESTAMP    |     |                                     |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated       |
-| updated_by                      | INT          |     | users(id)                           |          |                                               | User ID of the last updater                 |
-| deleted_at                      | TIMESTAMP    |     |                                     |          |                                               | Time when the record was soft deleted       |
-| deleted_by                      | INT          |     | users(id)                           |          |                                               | User ID of the deleter                      |
-
+| Column                          | Data Type    | PK  | FK                                  | Not NULL | Unique | Default                     | Remarks                                     |
+| ------------------------------- | ------------ | --- | ----------------------------------- | -------- | ------ | --------------------------- | ------------------------------------------- |
+| id                              | INT          | ✔  |                                     | ✔       |        |                             | Unique company identifier                   |
+| name                            | VARCHAR(30)  |     |                                     | ✔       |        |                             | Company's name                              |
+| address                         | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's address                           |
+| phone_number                    | VARCHAR(20)  |     |                                     | ✔       |        |                             | Company's phone number                      |
+| email                           | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's email                             |
+| currency                        | VARCHAR(20)  |     |                                     | ✔       |        |                             | Setting for currency                        |
+| closing_date                    | INT          |     | ClosingDate(Value)                  | ✔       |        |                             | Setting for closing date                    |
+| payroll_rounding_interval       | INT          |     | PayrollRoundingInterval(Value)      | ✔       |        |                             | Setting for payroll rounding interval       |
+| prompt_submission_reminder_days | INT          |     | PromptSubmissionReminderDays(Value) | ✔       |        |                             | Setting for prompt submission reminder days |
+| standard_working_hours          | INT          |     |                                     | ✔       |        |                             | Setting for standard working hours          |
+| overtime_pay_multiplier         | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for overtime pay                 |
+| night_shift_hours_from          | TIME         |     |                                     |          |        |                             | Night shift starting hour                   |
+| night_shift_hours_to            | TIME         |     |                                     |          |        |                             | Night shift ending hour                     |
+| night_shift_pay_multiplier      | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for night shift pay              |
+| holiday                         | JSON         |     |                                     |          |        | []                          | Array of holidays                           |
+| holiday_pay_multiplier          | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for holiday pay                  |
+| attendance_ready                | BOOLEAN      |     |                                     |          |        | false                       | Flag indicating if attendance data is ready |
+| expense_ready                   | BOOLEAN      |     |                                     |          |        | false                       | Flag indicating if expense data is ready    |
+| created_at                      | TIMESTAMP    |     |                                     |          |        | CURRENT_TIMESTAMP           | Time when the record was created            |
+| created_by                      | INT          |     | users(id)                           |          |        |                             | User ID of the creator                      |
+| updated_at                      | TIMESTAMP    |     |                                     |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated       |
+| updated_by                      | INT          |     | users(id)                           |          |        |                             | User ID of the last updater                 |
+| deleted_at                      | TIMESTAMP    |     |                                     |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted       |
+| deleted_by                      | INT          |     | users(id)                           |          |        |                             | User ID of the deleter                      |
 
 ## attendance
 
-| Column            | Data Type    | PK  | FK                      | Not NULL | Default                                       | Remarks                               |
-| ----------------- | ------------ | --- | ----------------------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id                | INT          | ✔  |                         | ✔       |                                               | Unique attendance identifier          |
-| user_id           | INT          |     | users(id)               | ✔       |                                               | Foreign key referencing Users.id      |
-| start_time        | DATETIME     |     |                         | ✔       |                                               | Time when the user checks in          |
-| end_time          | DATETIME     |     |                         | ✔       |                                               | Time when the user checks out         |
-| date              | DATE         |     |                         | ✔       |                                               | Date of the attendance record         |
-| comment           | VARCHAR(255) |     |                         |          |                                               | Comment                               |
-| submission_status | INT          |     | SubmissionStatus(Value) | ✔       |                                               | Submission status                     |
-| created_at        | TIMESTAMP    |     |                         |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by        | INT          |     | users(id)               |          |                                               | User ID of the creator                |
-| updated_at        | TIMESTAMP    |     |                         |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by        | INT          |     | users(id)               |          |                                               | User ID of the last updater           |
-| deleted_at        | TIMESTAMP    |     |                         |          |                                               | Time when the record was soft deleted |
-| deleted_by        | INT          |     | users(id)               |          |                                               | User ID of the deleter                |
-
+| Column            | Data Type | PK  | FK                      | Not NULL | Unique | Default                     | Remarks                               |
+| ----------------- | --------- | --- | ----------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id                | INT       | ✔  |                         | ✔       |        |                             | Unique attendance identifier          |
+| user_id           | INT       |     | users(id)               | ✔       |        |                             | Foreign key referencing Users.id      |
+| start_time        | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks in          |
+| end_time          | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks out         |
+| date              | DATE      |     |                         | ✔       |        |                             | Date of the attendance record         |
+| day_of_week       | INT       |     |                         | ✔       |        |                             | Day of week                           |
+| comment           | TEXT      |     |                         |          |        |                             | Comment                               |
+| submission_status | INT       |     | SubmissionStatus(Value) | ✔       |        |                             | Submission status                     |
+| created_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by        | INT       |     | users(id)               |          |        |                             | User ID of the creator                |
+| updated_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by        | INT       |     | users(id)               |          |        |                             | User ID of the last updater           |
+| deleted_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by        | INT       |     | users(id)               |          |        |                             | User ID of the deleter                |
 
 ## breaks
 
-| Column        | Data Type | PK  | FK             | Not NULL | Default                                       | Remarks                               |
-| ------------- | --------- | --- | -------------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id            | INT       | ✔  |                | ✔       |                                               | Unique break identifier               |
-| user_id       | INT       |     | users(id)      | ✔       |                                               | Foreign key referencing Users.id      |
-| attendance_id | INT       |     | attendance(id) | ✔       |                                               | Foreign key referencing Attendance.id |
-| start_time    | DATETIME  |     |                | ✔       |                                               | Time when the break starts            |
-| end_time      | DATETIME  |     |                | ✔       |                                               | Time when the break ends              |
-| created_at    | TIMESTAMP |     |                |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by    | INT       |     | users(id)      |          |                                               | User ID of the creator                |
-| updated_at    | TIMESTAMP |     |                |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by    | INT       |     | users(id)      |          |                                               | User ID of the last updater           |
-| deleted_at    | TIMESTAMP |     |                |          |                                               | Time when the record was soft deleted |
-| deleted_by    | INT       |     | users(id)      |          |                                               | User ID of the deleter                |
+| Column        | Data Type | PK  | FK             | Not NULL | Unique | Default                     | Remarks                               |
+| ------------- | --------- | --- | -------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id            | INT       | ✔  |                | ✔       |        |                             | Unique break identifier               |
+| user_id       | INT       |     | users(id)      | ✔       |        |                             | Foreign key referencing Users.id      |
+| attendance_id | INT       |     | attendance(id) | ✔       |        |                             | Foreign key referencing Attendance.id |
+| start_time    | DATETIME  |     |                | ✔       |        |                             | Time when the break starts            |
+| end_time      | DATETIME  |     |                | ✔       |        |                             | Time when the break ends              |
+| created_at    | TIMESTAMP |     |                |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by    | INT       |     | users(id)      |          |        |                             | User ID of the creator                |
+| updated_at    | TIMESTAMP |     |                |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by    | INT       |     | users(id)      |          |        |                             | User ID of the last updater           |
+| deleted_at    | TIMESTAMP |     |                |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by    | INT       |     | users(id)      |          |        |                             | User ID of the deleter                |
 
 ## expenses_and_deductions
 
-| Column               | Data Type      | PK  | FK                        | Not NULL | Default                                       | Remarks                               |
-| -------------------- | -------------- | --- | ------------------------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id                   | INT            | ✔  |                           | ✔       |                                               | Unique identifier                     |
-| user_id              | INT            |     | users(id)                 | ✔       |                                               | Foreign key referencing Users.id      |
-| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |                                               | Expense or deduction                  |
-| name                 | VARCHAR(255)   |     |                           | ✔       |                                               | Name of income or expense             |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |                                               | Amount of income or expense           |
-| date                 | DATE           |     |                           | ✔       |                                               | Date of the transaction               |
-| comment              | VARCHAR(255)   |     |                           |          |                                               | Comment                               |
-| submission_status    | INT            |     | SubmissionStatus(Value)   | ✔       |                                               | Submission status                     |
-| created_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by           | INT            |     | users(id)                 |          |                                               | User ID of the creator                |
-| updated_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by           | INT            |     | users(id)                 |          |                                               | User ID of the last updater           |
-| deleted_at           | TIMESTAMP      |     |                           |          |                                               | Time when the record was soft deleted |
-| deleted_by           | INT            |     | users(id)                 |          |                                               | User ID of the deleter                |
+| Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
+| -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id                   | INT            | ✔  |                           | ✔       |        |                             | Unique identifier                     |
+| user_id              | INT            |     | users(id)                 | ✔       |        |                             | Foreign key referencing Users.id      |
+| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
+| date                 | DATE           |     |                           | ✔       |        |                             | Date of the transaction               |
+| comment              | TEXT           |     |                           |          |        |                             | Comment                               |
+| submission_status    | INT            |     | SubmissionStatus(Value)   | ✔       |        |                             | Submission status                     |
+| created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by           | INT            |     | users(id)                 |          |        |                             | User ID of the creator                |
+| updated_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by           | INT            |     | users(id)                 |          |        |                             | User ID of the last updater           |
+| deleted_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by           | INT            |     | users(id)                 |          |        |                             | User ID of the deleter                |
 
 ## commonly_used_expenses_and_deductions
 
-| Column               | Data Type      | PK  | FK                        | Not NULL | Default                                       | Remarks                               |
-| -------------------- | -------------- | --- | ------------------------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id                   | INT            | ✔  |                           | ✔       |                                               | Unique identifier                     |
-| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |                                               | Expense or deduction                  |
-| name                 | VARCHAR(255)   |     |                           | ✔       |                                               | Name of income or expense             |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |                                               | Amount of income or expense           |
-| created_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by           | INT            |     | users(id)                 |          |                                               | User ID of the creator                |
-| updated_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by           | INT            |     | users(id)                 |          |                                               | User ID of the last updater           |
-| deleted_at           | TIMESTAMP      |     |                           |          |                                               | Time when the record was soft deleted |
-| deleted_by           | INT            |     | users(id)                 |          |                                               | User ID of the deleter                |
+| Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
+| -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id                   | INT            | ✔  |                           | ✔       |        |                             | Unique identifier                     |
+| company_id           | INT            |     | companies(id)             | ✔       |        |                             | Foreign key referencing Company's ID  |
+| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
+| comment              | TEXT           |     |                           |          |        |                             | Comment                               |
+| created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by           | INT            |     | users(id)                 |          |        |                             | User ID of the creator                |
+| updated_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by           | INT            |     | users(id)                 |          |        |                             | User ID of the last updater           |
+| deleted_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by           | INT            |     | users(id)                 |          |        |                             | User ID of the deleter                |
 
 ## commonly_used_expenses
 
-| Column     | Data Type      | PK  | FK        | Not NULL | Default                                       | Remarks                               |
-| ---------- | -------------- | --- | --------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id         | INT            | ✔  |           | ✔       |                                               | Unique identifier                     |
-| user_id    | INT            |     | users(id) | ✔       |                                               | Foreign key referencing Users.id      |
-| name       | VARCHAR(255)   |     |           | ✔       |                                               | Name of income or expense             |
-| amount     | DECIMAL(10, 2) |     |           | ✔       |                                               | Amount of income or expense           |
-| created_at | TIMESTAMP      |     |           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by | INT            |     | users(id) |          |                                               | User ID of the creator                |
-| updated_at | TIMESTAMP      |     |           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by | INT            |     | users(id) |          |                                               | User ID of the last updater           |
-| deleted_at | TIMESTAMP      |     |           |          |                                               | Time when the record was soft deleted |
-| deleted_by | INT            |     | users(id) |          |                                               | User ID of the deleter                |
+| Column     | Data Type      | PK  | FK        | Not NULL | Unique | Default                     | Remarks                               |
+| ---------- | -------------- | --- | --------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id         | INT            | ✔  |           | ✔       |        |                             | Unique identifier                     |
+| user_id    | INT            |     | users(id) | ✔       |        |                             | Foreign key referencing Users.id      |
+| name       | VARCHAR(30)    |     |           | ✔       |        |                             | Name of expense or deduction          |
+| amount     | DECIMAL(10, 2) |     |           | ✔       |        |                             | Amount of expense or deduction        |
+| comment    | TEXT           |     |           |          |        |                             | Comment                               |
+| created_at | TIMESTAMP      |     |           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by | INT            |     | users(id) |          |        |                             | User ID of the creator                |
+| updated_at | TIMESTAMP      |     |           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by | INT            |     | users(id) |          |        |                             | User ID of the last updater           |
+| deleted_at | TIMESTAMP      |     |           |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by | INT            |     | users(id) |          |        |                             | User ID of the deleter                |
 
 ## monthly_expenses_and_deductions
 
-| Column               | Data Type      | PK  | FK                        | Not NULL | Default                                       | Remarks                               |
-| -------------------- | -------------- | --- | ------------------------- | -------- | --------------------------------------------- | ------------------------------------- |
-| id                   | INT            | ✔  |                           | ✔       |                                               | Unique identifier                     |
-| user_id              | INT            |     | users(id)                 | ✔       |                                               | Foreign key referencing Users.id      |
-| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |                                               | Expense or deduction                  |
-| name                 | VARCHAR(255)   |     |                           | ✔       |                                               | Name of income or expense             |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |                                               | Amount of income or expense           |
-| created_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP                             | Time when the record was created      |
-| created_by           | INT            |     | users(id)                 |          |                                               | User ID of the creator                |
-| updated_at           | TIMESTAMP      |     |                           |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated |
-| updated_by           | INT            |     | users(id)                 |          |                                               | User ID of the last updater           |
-| deleted_at           | TIMESTAMP      |     |                           |          |                                               | Time when the record was soft deleted |
-| deleted_by           | INT            |     | users(id)                 |          |                                               | User ID of the deleter                |
+| Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
+| -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id                   | INT            | ✔  |                           | ✔       |        |                             | Unique identifier                     |
+| user_id              | INT            |     | users(id)                 | ✔       |        |                             | Foreign key referencing Users.id      |
+| expense_or_deduction | INT            |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
+| comment              | TEXT           |     |                           |          |        |                             | Comment                               |
+| created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by           | INT            |     | users(id)                 |          |        |                             | User ID of the creator                |
+| updated_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by           | INT            |     | users(id)                 |          |        |                             | User ID of the last updater           |
+| deleted_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by           | INT            |     | users(id)                 |          |        |                             | User ID of the deleter                |
 
 ## information
 
-| Column           | Data Type | Not NULL | Default   | PK  | FK                                            | Remarks                                        |
-| ---------------- | --------- | -------- | --------- | --- | --------------------------------------------- | ---------------------------------------------- |
-| id               | INT       | ✔       |           | ✔  |                                               | Unique identifier                              |
-| submission_type  | INT       | ✔       |           |     | SubmissionStatus(Value)                       | Type of submission associated with information |
-| information_type | INT       | ✔       |           |     | InformationStatus(Value)                      | Type of information                            |
-| created_at       | TIMESTAMP |          |           |     | CURRENT_TIMESTAMP                             | Time when the record was created               |
-| created_by       | INT       |          | users(id) |     |                                               | User ID of the creator                         |
-| updated_at       | TIMESTAMP |          |           |     | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated          |
-| updated_by       | INT       |          | users(id) |     |                                               | User ID of the last updater                    |
-| deleted_at       | TIMESTAMP |          |           |     |                                               | Time when the record was soft deleted          |
-| deleted_by       | INT       |          | users(id) |     |                                               | User ID of the deleter                         |
+| Column           | Data Type | PK  | FK                       | Not NULL | Unique | Default                     | Remarks                                        |
+| ---------------- | --------- | --- | ------------------------ | -------- | ------ | --------------------------- | ---------------------------------------------- |
+| id               | INT       | ✔  |                          | ✔       |        |                             | Unique identifier                              |
+| submission_type  | INT       |     | SubmissionStatus(Value)  | ✔       |        |                             | Type of submission associated with information |
+| information_type | INT       |     | InformationStatus(Value) | ✔       |        |                             | Type of information                            |
+| created_at       | TIMESTAMP |     |                          |          |        | CURRENT_TIMESTAMP           | Time when the record was created               |
+| created_by       | INT       |     | users(id)                |          |        |                             | User ID of the creator                         |
+| updated_at       | TIMESTAMP |     |                          |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated          |
+| updated_by       | INT       |     | users(id)                |          |        |                             | User ID of the last updater                    |
+| deleted_at       | TIMESTAMP |     |                          |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted          |
+| deleted_by       | INT       |     | users(id)                |          |        |                             | User ID of the deleter                         |
 
 ## user_information
 
-| Column         | Data Type | PK  | FK              | Not NULL | Default | Remarks                     |
-| -------------- | --------- | --- | --------------- | -------- | ------- | --------------------------- |
-| id             | INT       | ✔  |                 | ✔       |         | Unique user role identifier |
-| user_id        | INT       |     | users(id)       | ✔       |         | Foreign key to Users        |
-| information_id | INT       |     | information(id) | ✔       |         | Foreign key to Information  |
+| Column         | Data Type | PK  | FK              | Not NULL | Unique                                          | Default | Remarks                     |
+| -------------- | --------- | --- | --------------- | -------- | ----------------------------------------------- | ------- | --------------------------- |
+| id             | INT       | ✔  |                 | ✔       |                                                 |         | Unique user role identifier |
+| user_id        | INT       |     | users(id)       | ✔       | (Unique user_id and information_id combination) |         | Foreign key to Users        |
+| information_id | INT       |     | information(id) | ✔       | (Unique user_id and information_id combination) |         | Foreign key to Information  |
+
+### Indexes
+* `user_id` and `information_id`: Unique index on the combination of user_id and information_id.
 
 ## user_created_information
 
-| Column           | Data Type    | Not NULL | Default   | PK  | FK                                            | Remarks                                               |
-| ---------------- | ------------ | -------- | --------- | --- | --------------------------------------------- | ----------------------------------------------------- |
-| id               | INT          | ✔       |           | ✔  |                                               | Unique identifier                                     |
-| user_id          | INT          | ✔       |           |     | users(id)                                     | Foreign key referencing Users.id                      |
-| title            | VARCHAR(255) | ✔       |           |     |                                               | Title of the information                              |
-| content          | TEXT         |          |           |     |                                               | Content or details of the information                 |
-| published_at     | DATETIME     |          |           |     |                                               | Date and time when the information was published      |
-| expires_at       | DATETIME     |          |           |     |                                               | Date and time when the information expires            |
-| is_active        | BOOLEAN      | ✔       | true      |     |                                               | Indicates whether the information is currently active |
-| submission_type  | INT          | ✔       |           |     | SubmissionStatus(Value)                       | Type of submission associated with information        |
-| information_type | INT          | ✔       |           |     | InformationStatus(Value)                      | Type of information                                   |
-| created_at       | TIMESTAMP    |          |           |     | CURRENT_TIMESTAMP                             | Time when the record was created                      |
-| created_by       | INT          |          | users(id) |     |                                               | User ID of the creator                                |
-| updated_at       | TIMESTAMP    |          |           |     | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time when the record was last updated                 |
-| updated_by       | INT          |          | users(id) |     |                                               | User ID of the last updater                           |
-| deleted_at       | TIMESTAMP    |          |           |     |                                               | Time when the record was soft deleted                 |
-| deleted_by       | INT          |          | users(id) |     |                                               | User ID of the deleter                                |
+| Column          | Data Type    | PK  | FK                      | Not NULL | Unique | Default                     | Remarks                                               |
+| --------------- | ------------ | --- | ----------------------- | -------- | ------ | --------------------------- | ----------------------------------------------------- |
+| id              | INT          | ✔  |                         | ✔       |        |                             | Unique identifier                                     |
+| user_id         | INT          |     | users(id)               | ✔       |        |                             | Foreign key referencing Users.id                      |
+| title           | VARCHAR(255) |     |                         | ✔       |        |                             | Title of the information                              |
+| content         | TEXT         |     |                         |          |        |                             | Content or details of the information                 |
+| published_at    | DATETIME     |     |                         |          |        |                             | Date and time when the information was published      |
+| expires_at      | DATETIME     |     |                         |          |        |                             | Date and time when the information expires            |
+| is_active       | BOOLEAN      |     |                         | ✔       |        |                             | Indicates whether the information is currently active |
+| submission_type | INT          |     | SubmissionStatus(Value) |          |        |                             | Type of submission associated with information        |
+| created_at      | TIMESTAMP    |     |                         |          |        | CURRENT_TIMESTAMP           | Time when the record was created                      |
+| created_by      | INT          |     | users(id)               |          |        |                             | User ID of the creator                                |
+| updated_at      | TIMESTAMP    |     |                         |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated                 |
+| updated_by      | INT          |     | users(id)               |          |        |                             | User ID of the last updater                           |
+| deleted_at      | TIMESTAMP    |     |                         |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted                 |
+| deleted_by      | INT          |     | users(id)               |          |        |                             | User ID of the deleter                                |
 
 ## payslip_contents
 
-| Column          | Data Type       | PK  | FK          | Not NULL | Default     | Remarks                                |
-| --------------- | --------------- | --- | ----------- | -------- | ----------- | -------------------------------------- |
-| id              | INT             | ✔   |             | ✔        |             | Unique identifier                      |
-| user_id         | INT             |     | users(id)   | ✔        |             | ID of the associated user               |
-| month           | DATE            |     |             | ✔        |             | Month for which the results are recorded|
-| content    | JSON            |     |             | ✔        |             | JSON format storing payslip contents   |
-| created_at      | TIMESTAMP       |     |             |          | CURRENT_TIMESTAMP | Time of creation                   |
-| created_by      | INT             |     | users(id)   |          |             | User ID of the creator                 |
-| updated_at      | TIMESTAMP       |     |             |          | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Time of last update        |
-| updated_by      | INT             |     | users(id)   |          |             | User ID of the last updater            |
-| deleted_at      | TIMESTAMP       |     |             |          |             | Time of soft deletion                  |
-| deleted_by      | INT             |     | users(id)   |          |             | User ID of the deleter                 |
+| Column     | Data Type | PK  | FK        | Not NULL | Unique | Default                     | Remarks                                  |
+| ---------- | --------- | --- | --------- | -------- | ------ | --------------------------- | ---------------------------------------- |
+| id         | INT       | ✔  |           | ✔       |        |                             | Unique identifier                        |
+| user_id    | INT       |     | users(id) | ✔       |        |                             | ID of the associated user                |
+| month      | DATE      |     |           | ✔       |        |                             | Month for which the results are recorded |
+| content    | JSON      |     |           | ✔       |        |                             | JSON format storing payslip contents     |
+| created_at | TIMESTAMP |     |           |          |        | CURRENT_TIMESTAMP           | Time of creation                         |
+| created_by | INT       |     | users(id) |          |        |                             | User ID of the creator                   |
+| updated_at | TIMESTAMP |     |           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time of last update                      |
+| updated_by | INT       |     | users(id) |          |        |                             | User ID of the last updater              |
+| deleted_at | TIMESTAMP |     |           |          |        | CURRENT_TIMESTAMP ON DELETE | Time of soft deletion                    |
+| deleted_by | INT       |     | users(id) |          |        |                             | User ID of the deleter                   |
 
 # Enums
 
@@ -324,7 +335,7 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 
 | Element    | Value | Description                                          |
 | ---------- | ----- | ---------------------------------------------------- |
-| Created    | 0     | A status that created in the registration process.    |
+| Created    | 0     | A status that created in the registration process.   |
 | Submitted  | 1     | A status that submitted in the registration process. |
 | Rejected   | 2     | A status that rejected in the management process.    |
 | Approved   | 3     | A status that approved in the management process.    |
@@ -339,17 +350,17 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 
 ## ExpenseOrDeduction
 
-| Element    | Value | Description |
-| ---------- | ----- | ----------- |
-| expense     | 0     |Expense     |
-| deduction    | 1     | Deduction|
+| Element   | Value | Description |
+| --------- | ----- | ----------- |
+| expense   | 0     | Expense     |
+| deduction | 1     | Deduction   |
 
 ## InformationType
 
-| Element    | Value | Description |
-| ---------- | ----- | ----------- |
-| Submit your attendance/expense| 0     | Information for propmting submission. |
-| Submission has submitted      | 1     | Information that submission has submitted. |
-| Submission has rejected       | 2     | Information that submission has rejected.    |
-| Submission has approved       | 3     | Information that submission has approved.    |
-| Normal Information            | 4     | Information created by user.    |
+| Element                        | Value | Description                                  |
+| ------------------------------ | ----- | -------------------------------------------- |
+| Submit your attendance/expense | 0     | Information for propmting submission.        |
+| Submission has submitted       | 1     | Information that submission has submitted.   |
+| Submission has rejected        | 2     | Information that submission has rejected.    |
+| Submission has approved        | 3     | Information that submission has approved.    |
+| Payslips have been created     | 4     | Information that payslips have been created. |
