@@ -1,6 +1,5 @@
 # Table Definition Document
 
-TODO:workbench見て、すでにあるdatatypeに合わせる
 - [Table Definition Document](#table-definition-document)
   - [users](#users)
     - [Indexes](#indexes)
@@ -22,6 +21,7 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
   - [user\_created\_information](#user_created_information)
   - [payslip\_contents](#payslip_contents)
 - [Enums](#enums)
+  - [Currency](#currency)
   - [ClosingDate](#closingdate)
   - [PayrollRoundingInterval](#payrollroundinginterval)
   - [PromptSubmissionReminderDays](#promptsubmissionreminderdays)
@@ -111,7 +111,7 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 | address                         | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's address                           |
 | phone_number                    | VARCHAR(20)  |     |                                     | ✔       |        |                             | Company's phone number                      |
 | email                           | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's email                             |
-| currency                        | VARCHAR(20)  |     |                                     | ✔       |        |                             | Setting for currency                        |
+| currency                        | INT          |     | Currency(Value)                     | ✔       |        |                             | Setting for currency                        |
 | closing_date                    | INT          |     | ClosingDate(Value)                  | ✔       |        |                             | Setting for closing date                    |
 | payroll_rounding_interval       | INT          |     | PayrollRoundingInterval(Value)      | ✔       |        |                             | Setting for payroll rounding interval       |
 | prompt_submission_reminder_days | INT          |     | PromptSubmissionReminderDays(Value) | ✔       |        |                             | Setting for prompt submission reminder days |
@@ -295,6 +295,13 @@ TODO:workbench見て、すでにあるdatatypeに合わせる
 | deleted_by | INT       |     | users(id) |          |        |                             | User ID of the deleter                   |
 
 # Enums
+
+## Currency
+
+| Element | Value | Description |
+| ------- | ----- | ----------- |
+| $       | 1     | USD         |
+| €       | 2     | EUR         |
 
 ## ClosingDate
 

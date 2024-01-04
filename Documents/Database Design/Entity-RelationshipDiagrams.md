@@ -4,9 +4,14 @@
   }
 </style>
 
-TODO:機能ごとに目次を作ってERDを分ける
-全体はテーブル名だけでいい
-各ERDのセクションはテーブルの中身も出す
+# Entity-Relationship Diagrams
+- [Entity-Relationship Diagrams](#entity-relationship-diagrams)
+  - [Attendance Relationship](#attendance-relationship)
+  - [Expense Relationship](#expense-relationship)
+  - [User Relationship](#user-relationship)
+  - [Payroll Calculation Relationship](#payroll-calculation-relationship)
+  - [Summary Relationship](#summary-relationship)
+
 
 ## Attendance Relationship
 ```mermaid
@@ -145,7 +150,7 @@ erDiagram
     address VARCHAR(255)
     phone_number VARCHAR(20)
     email VARCHAR(255)
-    currency VARCHAR(20)
+    currency INT FK
     closing_date INT FK
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
@@ -304,7 +309,7 @@ erDiagram
     address VARCHAR(255)
     phone_number VARCHAR(20)
     email VARCHAR(255)
-    currency VARCHAR(20)
+    currency INT FK
     closing_date INT FK
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
@@ -343,6 +348,162 @@ erDiagram
   users ||--o{ user_information: ""
   information ||--o{ user_information: ""
   attendance ||--o{ breaks: ""
+
+  users{
+    id INT PK
+    first_name VARCHAR(30) 
+    last_name VARCHAR(30) 
+    email VARCHAR(255) 
+    password VARCHAR(255) 
+    phone_number VARCHAR(20) 
+    gender VARCHAR(10) 
+    birth_date DATE
+    address VARCHAR(255)
+    hire_date DATE
+    retire_date DATE
+    company_id INT FK
+    hourly_wage_group_id INT FK
+    created_at TIMESTAMP
+    created_by INT
+    updated_at TIMESTAMP
+    updated_by INT
+    deleted_at TIMESTAMP
+    deleted_by INT 
+  }
+
+  hourly_wage_groups{
+    id INT PK
+    company_id INT FK
+    name VARCHAR(30)
+    hourly_rate DECIMAL
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  companies{
+    id INT PK
+    name VARCHAR(30)
+    address VARCHAR(255)
+    phone_number VARCHAR(20)
+    email VARCHAR(255)
+    currency INT FK
+    closing_date INT FK
+    payroll_rounding_interval INT FK
+    prompt_submission_reminder_days INT FK
+    standard_working_hours INT
+    overtime_pay_multiplier DECIMAL
+    night_shift_hours_from TIME
+    night_shift_hours_to TIME
+    night_shift_pay_multiplier DECIMAL
+    holiday JSON
+    holiday_pay_multiplier DECIMAL
+    attendance_ready BOOLEAN
+    expense_ready BOOLEAN
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  attendance{
+    id INT PK
+    user_id INT FK
+    start_time DATETIME
+    end_time DATETIME
+    date DATE
+    day_of_week INT
+    comment TEXT
+    submission_status INT FK
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  breaks{
+    id INT PK
+    user_id INT FK
+    attendance_id INT FK
+    start_time DATETIME
+    end_time DATETIME
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  expenses_and_deductions{
+    id INT PK
+    user_id INT FK
+    expense_or_deduction INT FK
+    name VARCHAR(30)
+    amount DECIMAL
+    date DATE
+    comment TEXT
+    submission_status INT FK
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  monthly_expenses_and_deductions{
+    id INT PK
+    user_id INT FK
+    expense_or_deduction INT FK
+    name VARCHAR(30)
+    amount DECIMAL
+    comment TEXT
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  information{
+    id INT PK
+    submission_type INT FK
+    information_type INT FK
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+  user_information{
+    id INT PK
+    user_id INT FK
+    information_id INT FK
+  }
+
+  payslip_contents{
+    id INT PK
+    user_id INT FK
+    month DATE
+    content JSON
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
 
 ```
 
@@ -427,7 +588,7 @@ erDiagram
     address VARCHAR(255)
     phone_number VARCHAR(20)
     email VARCHAR(255)
-    currency VARCHAR(20)
+    currency INT FK
     closing_date INT FK
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
