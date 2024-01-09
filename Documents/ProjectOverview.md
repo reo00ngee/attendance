@@ -28,31 +28,3 @@ Based on these assumptions, we have established the following scope.
 | prompt submission reminder days | 3 days / 5 days / 1 week                                                   | Other days                                       |
 | Breakdown of salary             | Calculation of hourly wages, premium wages, and expenses                   | Different types of payroll calculation and taxes |
 | Shift Management                | The company can register the days of the week when the business is closed. | Individual Employee Shift Management             |TODO:検討中
-
-```mermaid
-flowchart TD
-      subgraph one
-        A(Home)-->B(Col 1 - Level 1)
-        A-->C(Col 2 - Level 1)
-        A-->G(Col 3 - Level 1)
-        A-->J(Col 4 - Level 1)
-        A-->L(Col 5 - Level 1)
-      end
-      subgraph two
-        C-->F(Col 2 - Level 2)
-        J-->K(Col 4 - Level 2)
-        G-->H(Col 3 - Level 2)
-      end
-        H-->I(Col 3 - Level 3)
-        B-->E(End)
-        F-->E
-        I-->E
-        K-->E
-
-
-```
-
-| TH1 | TH2 |
-----|---- 
-| TD1 | TD3 |
-| TD2 | TD4 |

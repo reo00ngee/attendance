@@ -4,13 +4,12 @@
   }
 </style>
 
-# Entity-Relationship Diagrams
-- [Entity-Relationship Diagrams](#entity-relationship-diagrams)
-  - [Attendance Relationship](#attendance-relationship)
-  - [Expense Relationship](#expense-relationship)
-  - [User Relationship](#user-relationship)
-  - [Payroll Calculation Relationship](#payroll-calculation-relationship)
-  - [Summary Relationship](#summary-relationship)
+# Entity-Relationship Diagrams<!-- omit in toc -->
+- [Attendance Relationship](#attendance-relationship)
+- [Expense Relationship](#expense-relationship)
+- [User Relationship](#user-relationship)
+- [Payroll Calculation Relationship](#payroll-calculation-relationship)
+- [Summary Relationship](#summary-relationship)
 
 
 ## Attendance Relationship
@@ -295,6 +294,7 @@ erDiagram
     company_id INT FK
     name VARCHAR(30)
     hourly_rate DECIMAL
+    comment TEXT
     created_at TIMESTAMP
     created_by INT FK
     updated_at TIMESTAMP
@@ -376,6 +376,7 @@ erDiagram
     company_id INT FK
     name VARCHAR(30)
     hourly_rate DECIMAL
+    comment TEXT
     created_at TIMESTAMP
     created_by INT FK
     updated_at TIMESTAMP
@@ -561,6 +562,7 @@ erDiagram
     company_id INT FK
     name VARCHAR(30)
     hourly_rate DECIMAL
+    comment TEXT
     created_at TIMESTAMP
     created_by INT FK
     updated_at TIMESTAMP

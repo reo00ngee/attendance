@@ -1,4 +1,4 @@
-# Table Definition Document
+# Table Definition Document<!-- omit in toc -->
 
 - [Table Definition Document](#table-definition-document)
   - [users](#users)
@@ -77,6 +77,7 @@
 | company_id  | INT            |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
 | name        | VARCHAR(30)    |     |               | ✔       |        |                             | Name of the hourly wage group         |
 | hourly_rate | DECIMAL(10, 2) |     |               | ✔       |        |                             | Hourly rate for the wage group        |
+| comment     | TEXT           |     |               |          |        |                             | Comment                               |
 | created_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by  | INT            |     | users(id)     |          |        |                             | User ID of the creator                |
 | updated_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
