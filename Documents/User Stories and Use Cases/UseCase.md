@@ -7,7 +7,7 @@
 - [Finance Management(FM)](#finance-managementfm)
 - [User Management(UM)](#user-managementum)
 - [Setting Management(SM)](#setting-managementsm)
-- [System](#system)
+- [Batch job](#batch-job)
 
 
 ## Administrator
@@ -28,5 +28,5 @@
 ## Setting Management(SM)
 ![Project Logo](./image/SM-usecase.drawio.png)
 
-## System
+## Batch job
 ![Project Logo](./image/System-usecase.drawio.png)

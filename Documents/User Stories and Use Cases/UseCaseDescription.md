@@ -21,6 +21,7 @@
 - [Information Management](#information-management)
 - [Information Confirmation](#information-confirmation)
 - [Setting Management](#setting-management)
+- [Holiday Management](#holiday-management)
 - [Attendance Closure](#attendance-closure)
 - [Expense Closure](#expense-closure)
 - [Payroll Data Management](#payroll-data-management)
@@ -387,14 +388,29 @@
 | :--------------- | :----------------------------------------------------------------- |
 | Use Case Name    | Setting Management                                                 |
 | Actors           | Setting Management (SM)                                            |
-| Trigger          | SM navigates to "Configuration Management" option.                 |
+| Trigger          | SM navigates to "Setting Management" option.                 |
 | Preconditions    | 1. SM is logged in the system.                                     |
 |                  | 2. System settings are in need of update.                          |
-| Basic Flow       | 1. System presents a form for configuration management.            |
+| Basic Flow       | 1. System presents a form for setting management.            |
 |                  | 3. SM edit setting and press "Save" button.                        |
 |                  | 4. If valid data are entered, system displays an success message.  |
 | Alternative Flow | 4a. If Invalid data are entered, system displays an error message. |
-| Postconditions   | User data is updated.                                              |
+| Postconditions   | Company data is updated.                                              |
+| Remarks          |                                                                    |
+
+## Holiday Management
+
+| Element          | Content                                                            |
+| :--------------- | :----------------------------------------------------------------- |
+| Use Case Name    | Holiday Management                                                 |
+| Actors           | Setting Management (SM)                                            |
+| Trigger          | SM navigates to "Holiday Management" option.                       |
+| Preconditions    | 1. SM is logged in the system.                                     |
+| Basic Flow       | 1. System presents a form for holiday management.                  |
+|                  | 3. SM edit holiday and press "Save" button.                        |
+|                  | 4. If valid data are entered, system displays an success message.  |
+| Alternative Flow | 4a. If Invalid data are entered, system displays an error message. |
+| Postconditions   | Holiday data is updated.                                           |
 | Remarks          |                                                                    |
 
 ## Attendance Closure

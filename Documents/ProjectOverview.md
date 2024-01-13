@@ -27,4 +27,4 @@ Based on these assumptions, we have established the following scope.
 | Payroll rounding interval       | 1 min / 5 mins / 15 mins                                                   | Other rounding interval                          |
 | prompt submission reminder days | 3 days / 5 days / 1 week                                                   | Other days                                       |
 | Breakdown of salary             | Calculation of hourly wages, premium wages, and expenses                   | Different types of payroll calculation and taxes |
-| Shift Management                | The company can register the days of the week when the business is closed. | Individual Employee Shift Management             |TODO:検討中
+| Shift Management                | The company can register the days of the week when the business is closed. | Individual Employee Shift Management             |

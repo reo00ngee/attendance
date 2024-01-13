@@ -114,6 +114,7 @@
 | email                           | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's email                             |
 | currency                        | INT          |     | Currency(Value)                     | ✔       |        |                             | Setting for currency                        |
 | closing_date                    | INT          |     | ClosingDate(Value)                  | ✔       |        |                             | Setting for closing date                    |
+| last_closing_date               | DATE         |     |                                     | ✔       |        | CURRENT_DATE                | Last closing date                           |
 | payroll_rounding_interval       | INT          |     | PayrollRoundingInterval(Value)      | ✔       |        |                             | Setting for payroll rounding interval       |
 | prompt_submission_reminder_days | INT          |     | PromptSubmissionReminderDays(Value) | ✔       |        |                             | Setting for prompt submission reminder days |
 | standard_working_hours          | INT          |     |                                     | ✔       |        |                             | Setting for standard working hours          |
@@ -121,7 +122,6 @@
 | night_shift_hours_from          | TIME         |     |                                     |          |        |                             | Night shift starting hour                   |
 | night_shift_hours_to            | TIME         |     |                                     |          |        |                             | Night shift ending hour                     |
 | night_shift_pay_multiplier      | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for night shift pay              |
-| holiday                         | JSON         |     |                                     |          |        | []                          | Array of holidays                           |
 | holiday_pay_multiplier          | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for holiday pay                  |
 | attendance_ready                | BOOLEAN      |     |                                     |          |        | false                       | Flag indicating if attendance data is ready |
 | expense_ready                   | BOOLEAN      |     |                                     |          |        | false                       | Flag indicating if expense data is ready    |
@@ -132,6 +132,21 @@
 | deleted_at                      | TIMESTAMP    |     |                                     |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted       |
 | deleted_by                      | INT          |     | users(id)                           |          |        |                             | User ID of the deleter                      |
 
+## holidays
+
+| Column      | Data Type    | PK  | FK            | Not NULL | Unique | Default                     | Remarks                               |
+| ----------- | ------------ | --- | ------------- | -------- | ------ | --------------------------- | ------------------------------------- |
+| id          | INT          | ✔  |               | ✔       |        |                             | Unique company identifier             |
+| date        | DATE         |     |               | ✔       |        |                             | date                                  |
+| company_id  | INT          |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
+| description | VARCHAR(255) |     |               |          |        |                             | Holiday's description                 |
+| created_at  | TIMESTAMP    |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
+| created_by  | INT          |     | users(id)     |          |        |                             | User ID of the creator                |
+| updated_at  | TIMESTAMP    |     |               |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
+| updated_by  | INT          |     | users(id)     |          |        |                             | User ID of the last updater           |
+| deleted_at  | TIMESTAMP    |     |               |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
+| deleted_by  | INT          |     | users(id)     |          |        |                             | User ID of the deleter                |
+
 ## attendance
 
 | Column            | Data Type | PK  | FK                      | Not NULL | Unique | Default                     | Remarks                               |
@@ -140,8 +155,7 @@
 | user_id           | INT       |     | users(id)               | ✔       |        |                             | Foreign key referencing Users.id      |
 | start_time        | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks in          |
 | end_time          | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks out         |
-| date              | DATE      |     |                         | ✔       |        |                             | Date of the attendance record         |
-| day_of_week       | INT       |     |                         | ✔       |        |                             | Day of week                           |
+| is_holiday        | BOOLEAN   |     |                         | ✔       |        | false                       | Flag indicating if holiday            |
 | comment           | TEXT      |     |                         |          |        |                             | Comment                               |
 | submission_status | INT       |     | SubmissionStatus(Value) | ✔       |        |                             | Submission status                     |
 | created_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |

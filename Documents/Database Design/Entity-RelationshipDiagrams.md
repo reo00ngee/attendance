@@ -56,8 +56,7 @@ erDiagram
     user_id INT FK
     start_time DATETIME
     end_time DATETIME
-    date DATE
-    day_of_week INT
+    is_holiday BOOLEAN
     comment TEXT
     submission_status INT FK
     created_at TIMESTAMP
@@ -151,6 +150,7 @@ erDiagram
     email VARCHAR(255)
     currency INT FK
     closing_date INT FK
+    last_closing_date DATE
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
     standard_working_hours INT
@@ -158,7 +158,6 @@ erDiagram
     night_shift_hours_from TIME
     night_shift_hours_to TIME
     night_shift_pay_multiplier DECIMAL
-    holiday JSON
     holiday_pay_multiplier DECIMAL
     attendance_ready BOOLEAN
     expense_ready BOOLEAN
@@ -311,6 +310,7 @@ erDiagram
     email VARCHAR(255)
     currency INT FK
     closing_date INT FK
+    last_closing_date DATE
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
     standard_working_hours INT
@@ -318,7 +318,6 @@ erDiagram
     night_shift_hours_from TIME
     night_shift_hours_to TIME
     night_shift_pay_multiplier DECIMAL
-    holiday JSON
     holiday_pay_multiplier DECIMAL
     attendance_ready BOOLEAN
     expense_ready BOOLEAN
@@ -339,6 +338,7 @@ erDiagram
 erDiagram
   companies ||--|{ users: ""
   companies ||--o{ hourly_wage_groups: ""
+  companies ||--o{ holidays: ""
   hourly_wage_groups ||--o{ users: ""
   users ||--o{ attendance: ""
   users ||--o{ breaks: ""
@@ -393,6 +393,7 @@ erDiagram
     email VARCHAR(255)
     currency INT FK
     closing_date INT FK
+    last_closing_date DATE
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
     standard_working_hours INT
@@ -400,10 +401,22 @@ erDiagram
     night_shift_hours_from TIME
     night_shift_hours_to TIME
     night_shift_pay_multiplier DECIMAL
-    holiday JSON
     holiday_pay_multiplier DECIMAL
     attendance_ready BOOLEAN
     expense_ready BOOLEAN
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+    holidays{
+    id INT PK
+    date DATE
+    company_id INT FK
+    description VARCHAR(255)
     created_at TIMESTAMP
     created_by INT FK
     updated_at TIMESTAMP
@@ -417,8 +430,7 @@ erDiagram
     user_id INT FK
     start_time DATETIME
     end_time DATETIME
-    date DATE
-    day_of_week INT
+    is_holiday BOOLEAN
     comment TEXT
     submission_status INT FK
     created_at TIMESTAMP
@@ -516,6 +528,7 @@ erDiagram
   companies ||--o{ commonly_used_expenses_and_deductions: ""
   companies ||--|{ users: ""
   companies ||--o{ hourly_wage_groups: ""
+  companies ||--o{ holidays: ""
   hourly_wage_groups ||--o{ users: ""
   users ||--|{ user_role: ""
   users ||--o{ attendance: ""
@@ -592,6 +605,7 @@ erDiagram
     email VARCHAR(255)
     currency INT FK
     closing_date INT FK
+    last_closing_date DATE
     payroll_rounding_interval INT FK
     prompt_submission_reminder_days INT FK
     standard_working_hours INT
@@ -599,10 +613,22 @@ erDiagram
     night_shift_hours_from TIME
     night_shift_hours_to TIME
     night_shift_pay_multiplier DECIMAL
-    holiday JSON
     holiday_pay_multiplier DECIMAL
     attendance_ready BOOLEAN
     expense_ready BOOLEAN
+    created_at TIMESTAMP
+    created_by INT FK
+    updated_at TIMESTAMP
+    updated_by INT FK
+    deleted_at TIMESTAMP
+    deleted_by INT FK
+  }
+
+    holidays{
+    id INT PK
+    date DATE
+    company_id INT FK
+    description VARCHAR(255)
     created_at TIMESTAMP
     created_by INT FK
     updated_at TIMESTAMP
@@ -616,8 +642,7 @@ erDiagram
     user_id INT FK
     start_time DATETIME
     end_time DATETIME
-    date DATE
-    day_of_week INT
+    is_holiday BOOLEAN
     comment TEXT
     submission_status INT FK
     created_at TIMESTAMP
