@@ -9,6 +9,7 @@
   - [administrators](#administrators)
     - [Indexes](#indexes-2)
   - [companies](#companies)
+  - [holidays](#holidays)
   - [attendance](#attendance)
   - [breaks](#breaks)
   - [expenses\_and\_deductions](#expenses_and_deductions)
