@@ -1,26 +1,5 @@
 # Table Definition Document<!-- omit in toc -->
 
-- [Table Definition Document](#table-definition-document)
-  - [users](#users)
-    - [Indexes](#indexes)
-  - [user\_role](#user_role)
-    - [Indexes](#indexes-1)
-  - [hourly\_wage\_groups](#hourly_wage_groups)
-  - [administrators](#administrators)
-    - [Indexes](#indexes-2)
-  - [companies](#companies)
-  - [holidays](#holidays)
-  - [attendance](#attendance)
-  - [breaks](#breaks)
-  - [expenses\_and\_deductions](#expenses_and_deductions)
-  - [commonly\_used\_expenses\_and\_deductions](#commonly_used_expenses_and_deductions)
-  - [commonly\_used\_expenses](#commonly_used_expenses)
-  - [monthly\_expenses\_and\_deductions](#monthly_expenses_and_deductions)
-  - [information](#information)
-  - [user\_information](#user_information)
-    - [Indexes](#indexes-3)
-  - [user\_created\_information](#user_created_information)
-  - [payslip\_contents](#payslip_contents)
 - [Enums](#enums)
   - [Currency](#currency)
   - [ClosingDate](#closingdate)
@@ -77,7 +56,7 @@
 | id          | INT            | ✔  |               | ✔       |        |                             | Unique hourly wage group identifier   |
 | company_id  | INT            |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
 | name        | VARCHAR(30)    |     |               | ✔       |        |                             | Name of the hourly wage group         |
-| hourly_rate | DECIMAL(10, 2) |     |               | ✔       |        |                             | Hourly rate for the wage group        |
+| hourly_wage | DECIMAL(10, 2) |     |               | ✔       |        |                             | Hourly wage for the wage group        |
 | comment     | TEXT           |     |               |          |        |                             | Comment                               |
 | created_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by  | INT            |     | users(id)     |          |        |                             | User ID of the creator                |
@@ -387,3 +366,6 @@
 | Submission has rejected        | 2     | Information that submission has rejected.    |
 | Submission has approved        | 3     | Information that submission has approved.    |
 | Payslips have been created     | 4     | Information that payslips have been created. |
+
+
+

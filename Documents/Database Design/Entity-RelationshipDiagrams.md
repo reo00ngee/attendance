@@ -292,7 +292,7 @@ erDiagram
     id INT PK
     company_id INT FK
     name VARCHAR(30)
-    hourly_rate DECIMAL
+    hourly_wage DECIMAL
     comment TEXT
     created_at TIMESTAMP
     created_by INT FK
@@ -375,7 +375,7 @@ erDiagram
     id INT PK
     company_id INT FK
     name VARCHAR(30)
-    hourly_rate DECIMAL
+    hourly_wage DECIMAL
     comment TEXT
     created_at TIMESTAMP
     created_by INT FK
@@ -574,7 +574,7 @@ erDiagram
     id INT PK
     company_id INT FK
     name VARCHAR(30)
-    hourly_rate DECIMAL
+    hourly_wage DECIMAL
     comment TEXT
     created_at TIMESTAMP
     created_by INT FK
