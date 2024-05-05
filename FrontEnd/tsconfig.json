@@ -18,7 +18,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "./", // プロジェクトのルートディレクトリを指定します
+    "paths": {
+      // "@node_modules/*": ["node_modules/*"],
+      "@/*": ["src/*"], // @/ で始まるパスを src/ ディレクトリ以下から解決します
+    }
   },
   "include": [
     "src"
