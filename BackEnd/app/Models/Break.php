@@ -7,56 +7,57 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class HourlyWageGroup
+ * Class Break
  * 
  * @property int $id
- * @property int $company_id
- * @property string $name
- * @property float $hourly_wage
- * @property string|null $comment
+ * @property int $user_id
+ * @property int $attendance_id
+ * @property Carbon $start_time
+ * @property Carbon $end_time
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string|null $deleted_at
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by
+ * @property string|null $deleted_at
  * 
- * @property Company $company
- * @property Collection|User[] $users
+ * @property Attendance $attendance
+ * @property User $user
  *
  * @package App\Models
  */
-class HourlyWageGroup extends Model
+class Break extends Model
 {
 	use SoftDeletes;
-	protected $table = 'hourly_wage_groups';
+	protected $table = 'breaks';
 
 	protected $casts = [
-		'company_id' => 'int',
-		'hourly_wage' => 'float',
+		'user_id' => 'int',
+		'attendance_id' => 'int',
+		'start_time' => 'datetime',
+		'end_time' => 'datetime',
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
 	];
 
 	protected $fillable = [
-		'company_id',
-		'name',
-		'hourly_wage',
-		'comment',
+		'user_id',
+		'attendance_id',
+		'start_time',
+		'end_time',
 		'created_by',
 		'updated_by',
 		'deleted_by'
 	];
 
-	public function company()
+	public function attendance()
 	{
-		return $this->belongsTo(Company::class);
+		return $this->belongsTo(Attendance::class);
 	}
 
 	public function created_by()
@@ -74,8 +75,8 @@ class HourlyWageGroup extends Model
 		return $this->belongsTo(User::class, 'updated_by');
 	}
 
-	public function users()
+	public function user()
 	{
-		return $this->hasMany(User::class);
+		return $this->belongsTo(User::class);
 	}
 }

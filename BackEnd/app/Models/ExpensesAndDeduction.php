@@ -7,17 +7,19 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class HourlyWageGroup
+ * Class ExpensesAndDeduction
  * 
  * @property int $id
- * @property int $company_id
+ * @property int $user_id
+ * @property int $expense_or_deduction
  * @property string $name
- * @property float $hourly_wage
+ * @property float $amount
+ * @property Carbon $date
+ * @property int $submission_status
  * @property string|null $comment
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -26,38 +28,38 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $updated_by
  * @property int|null $deleted_by
  * 
- * @property Company $company
- * @property Collection|User[] $users
+ * @property User $user
  *
  * @package App\Models
  */
-class HourlyWageGroup extends Model
+class ExpensesAndDeduction extends Model
 {
 	use SoftDeletes;
-	protected $table = 'hourly_wage_groups';
+	protected $table = 'expenses_and_deductions';
 
 	protected $casts = [
-		'company_id' => 'int',
-		'hourly_wage' => 'float',
+		'user_id' => 'int',
+		'expense_or_deduction' => 'int',
+		'amount' => 'float',
+		'date' => 'datetime',
+		'submission_status' => 'int',
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
 	];
 
 	protected $fillable = [
-		'company_id',
+		'user_id',
+		'expense_or_deduction',
 		'name',
-		'hourly_wage',
+		'amount',
+		'date',
+		'submission_status',
 		'comment',
 		'created_by',
 		'updated_by',
 		'deleted_by'
 	];
-
-	public function company()
-	{
-		return $this->belongsTo(Company::class);
-	}
 
 	public function created_by()
 	{
@@ -74,8 +76,8 @@ class HourlyWageGroup extends Model
 		return $this->belongsTo(User::class, 'updated_by');
 	}
 
-	public function users()
+	public function user()
 	{
-		return $this->hasMany(User::class);
+		return $this->belongsTo(User::class);
 	}
 }

@@ -7,18 +7,20 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class HourlyWageGroup
+ * Class UserCreatedInformation
  * 
  * @property int $id
- * @property int $company_id
- * @property string $name
- * @property float $hourly_wage
- * @property string|null $comment
+ * @property int $user_id
+ * @property string $title
+ * @property string|null $content
+ * @property Carbon|null $published_at
+ * @property Carbon|null $expires_at
+ * @property bool $is_active
+ * @property int|null $submission_type
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string|null $deleted_at
@@ -26,38 +28,38 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $updated_by
  * @property int|null $deleted_by
  * 
- * @property Company $company
- * @property Collection|User[] $users
+ * @property User $user
  *
  * @package App\Models
  */
-class HourlyWageGroup extends Model
+class UserCreatedInformation extends Model
 {
 	use SoftDeletes;
-	protected $table = 'hourly_wage_groups';
+	protected $table = 'user_created_information';
 
 	protected $casts = [
-		'company_id' => 'int',
-		'hourly_wage' => 'float',
+		'user_id' => 'int',
+		'published_at' => 'datetime',
+		'expires_at' => 'datetime',
+		'is_active' => 'bool',
+		'submission_type' => 'int',
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
 	];
 
 	protected $fillable = [
-		'company_id',
-		'name',
-		'hourly_wage',
-		'comment',
+		'user_id',
+		'title',
+		'content',
+		'published_at',
+		'expires_at',
+		'is_active',
+		'submission_type',
 		'created_by',
 		'updated_by',
 		'deleted_by'
 	];
-
-	public function company()
-	{
-		return $this->belongsTo(Company::class);
-	}
 
 	public function created_by()
 	{
@@ -74,8 +76,8 @@ class HourlyWageGroup extends Model
 		return $this->belongsTo(User::class, 'updated_by');
 	}
 
-	public function users()
+	public function user()
 	{
-		return $this->hasMany(User::class);
+		return $this->belongsTo(User::class);
 	}
 }

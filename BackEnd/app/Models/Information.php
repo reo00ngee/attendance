@@ -12,13 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class HourlyWageGroup
+ * Class Information
  * 
  * @property int $id
- * @property int $company_id
- * @property string $name
- * @property float $hourly_wage
- * @property string|null $comment
+ * @property int $submission_type
+ * @property int $information_type
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string|null $deleted_at
@@ -26,38 +24,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $updated_by
  * @property int|null $deleted_by
  * 
- * @property Company $company
  * @property Collection|User[] $users
  *
  * @package App\Models
  */
-class HourlyWageGroup extends Model
+class Information extends Model
 {
 	use SoftDeletes;
-	protected $table = 'hourly_wage_groups';
+	protected $table = 'information';
 
 	protected $casts = [
-		'company_id' => 'int',
-		'hourly_wage' => 'float',
+		'submission_type' => 'int',
+		'information_type' => 'int',
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
 	];
 
 	protected $fillable = [
-		'company_id',
-		'name',
-		'hourly_wage',
-		'comment',
+		'submission_type',
+		'information_type',
 		'created_by',
 		'updated_by',
 		'deleted_by'
 	];
-
-	public function company()
-	{
-		return $this->belongsTo(Company::class);
-	}
 
 	public function created_by()
 	{
@@ -76,6 +66,8 @@ class HourlyWageGroup extends Model
 
 	public function users()
 	{
-		return $this->hasMany(User::class);
+		return $this->belongsToMany(User::class, 'user_information')
+					->withPivot('id', 'deleted_at')
+					->withTimestamps();
 	}
 }

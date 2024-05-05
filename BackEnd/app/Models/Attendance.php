@@ -12,13 +12,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class HourlyWageGroup
+ * Class Attendance
  * 
  * @property int $id
- * @property int $company_id
- * @property string $name
- * @property float $hourly_wage
+ * @property int $user_id
+ * @property Carbon $start_time
+ * @property Carbon $end_time
+ * @property bool $is_holiday
  * @property string|null $comment
+ * @property int $submission_status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string|null $deleted_at
@@ -26,38 +28,38 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $updated_by
  * @property int|null $deleted_by
  * 
- * @property Company $company
- * @property Collection|User[] $users
+ * @property User $user
+ * @property Collection|Break[] $breaks
  *
  * @package App\Models
  */
-class HourlyWageGroup extends Model
+class Attendance extends Model
 {
 	use SoftDeletes;
-	protected $table = 'hourly_wage_groups';
+	protected $table = 'attendance';
 
 	protected $casts = [
-		'company_id' => 'int',
-		'hourly_wage' => 'float',
+		'user_id' => 'int',
+		'start_time' => 'datetime',
+		'end_time' => 'datetime',
+		'is_holiday' => 'bool',
+		'submission_status' => 'int',
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
 	];
 
 	protected $fillable = [
-		'company_id',
-		'name',
-		'hourly_wage',
+		'user_id',
+		'start_time',
+		'end_time',
+		'is_holiday',
 		'comment',
+		'submission_status',
 		'created_by',
 		'updated_by',
 		'deleted_by'
 	];
-
-	public function company()
-	{
-		return $this->belongsTo(Company::class);
-	}
 
 	public function created_by()
 	{
@@ -74,8 +76,13 @@ class HourlyWageGroup extends Model
 		return $this->belongsTo(User::class, 'updated_by');
 	}
 
-	public function users()
+	public function user()
 	{
-		return $this->hasMany(User::class);
+		return $this->belongsTo(User::class);
+	}
+
+	public function breaks()
+	{
+		return $this->hasMany(Break::class);
 	}
 }

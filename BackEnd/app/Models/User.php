@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,6 +37,58 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by
+ * 
+ * @property Company|null $company
+ * @property HourlyWageGroup|null $hourly_wage_group
+ * @property Collection|Attendance[] $attendances_where_created_by
+ * @property Collection|Attendance[] $attendances_where_deleted_by
+ * @property Collection|Attendance[] $attendances_where_updated_by
+ * @property Collection|Attendance[] $attendances
+ * @property Collection|Break[] $breaks_where_created_by
+ * @property Collection|Break[] $breaks_where_deleted_by
+ * @property Collection|Break[] $breaks_where_updated_by
+ * @property Collection|Break[] $breaks
+ * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_created_by
+ * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_deleted_by
+ * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_updated_by
+ * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses
+ * @property Collection|CommonlyUsedExpensesAndDeduction[] $commonly_used_expenses_and_deductions_where_created_by
+ * @property Collection|CommonlyUsedExpensesAndDeduction[] $commonly_used_expenses_and_deductions_where_deleted_by
+ * @property Collection|CommonlyUsedExpensesAndDeduction[] $commonly_used_expenses_and_deductions_where_updated_by
+ * @property Collection|CommonlyUsedExpensesAndDeduction[] $commonly_used_expenses_and_deductions
+ * @property Collection|ExpensesAndDeduction[] $expenses_and_deductions_where_created_by
+ * @property Collection|ExpensesAndDeduction[] $expenses_and_deductions_where_deleted_by
+ * @property Collection|ExpensesAndDeduction[] $expenses_and_deductions_where_updated_by
+ * @property Collection|ExpensesAndDeduction[] $expenses_and_deductions
+ * @property Collection|Holiday[] $holidays_where_created_by
+ * @property Collection|Holiday[] $holidays_where_deleted_by
+ * @property Collection|Holiday[] $holidays_where_updated_by
+ * @property Collection|HourlyWageGroup[] $hourly_wage_groups_where_created_by
+ * @property Collection|HourlyWageGroup[] $hourly_wage_groups_where_deleted_by
+ * @property Collection|HourlyWageGroup[] $hourly_wage_groups_where_updated_by
+ * @property Collection|Information[] $information_where_created_by
+ * @property Collection|Information[] $information_where_deleted_by
+ * @property Collection|Information[] $information_where_updated_by
+ * @property Collection|MonthlyExpensesAndDeduction[] $monthly_expenses_and_deductions_where_created_by
+ * @property Collection|MonthlyExpensesAndDeduction[] $monthly_expenses_and_deductions_where_deleted_by
+ * @property Collection|MonthlyExpensesAndDeduction[] $monthly_expenses_and_deductions_where_updated_by
+ * @property Collection|MonthlyExpensesAndDeduction[] $monthly_expenses_and_deductions
+ * @property Collection|PayslipContent[] $payslip_contents_where_created_by
+ * @property Collection|PayslipContent[] $payslip_contents_where_deleted_by
+ * @property Collection|PayslipContent[] $payslip_contents_where_updated_by
+ * @property Collection|PayslipContent[] $payslip_contents
+ * @property Collection|UserCreatedInformation[] $user_created_informations_where_created_by
+ * @property Collection|UserCreatedInformation[] $user_created_informations_where_deleted_by
+ * @property Collection|UserCreatedInformation[] $user_created_informations_where_updated_by
+ * @property Collection|UserCreatedInformation[] $user_created_informations
+ * @property Collection|Information[] $information
+ * @property Collection|UserRole[] $user_roles_where_created_by
+ * @property Collection|UserRole[] $user_roles_where_deleted_by
+ * @property Collection|UserRole[] $user_roles_where_updated_by
+ * @property Collection|UserRole[] $user_roles
+ * @property Collection|User[] $users_where_created_by
+ * @property Collection|User[] $users_where_deleted_by
+ * @property Collection|User[] $users_where_updated_by
  *
  * @package App\Models
  */
@@ -77,4 +130,276 @@ class User extends Authenticatable
 		'updated_by',
 		'deleted_by'
 	];
+
+	public function company()
+	{
+		return $this->belongsTo(Company::class);
+	}
+
+	public function created_by()
+	{
+		return $this->belongsTo(User::class, 'created_by');
+	}
+
+	public function deleted_by()
+	{
+		return $this->belongsTo(User::class, 'deleted_by');
+	}
+
+	public function hourly_wage_group()
+	{
+		return $this->belongsTo(HourlyWageGroup::class);
+	}
+
+	public function updated_by()
+	{
+		return $this->belongsTo(User::class, 'updated_by');
+	}
+
+	public function attendances_where_created_by()
+	{
+		return $this->hasMany(Attendance::class, 'created_by');
+	}
+
+	public function attendances_where_deleted_by()
+	{
+		return $this->hasMany(Attendance::class, 'deleted_by');
+	}
+
+	public function attendances_where_updated_by()
+	{
+		return $this->hasMany(Attendance::class, 'updated_by');
+	}
+
+	public function attendances()
+	{
+		return $this->hasMany(Attendance::class);
+	}
+
+	public function breaks_where_created_by()
+	{
+		return $this->hasMany(Break::class, 'created_by');
+	}
+
+	public function breaks_where_deleted_by()
+	{
+		return $this->hasMany(Break::class, 'deleted_by');
+	}
+
+	public function breaks_where_updated_by()
+	{
+		return $this->hasMany(Break::class, 'updated_by');
+	}
+
+	public function breaks()
+	{
+		return $this->hasMany(Break::class);
+	}
+
+	public function commonly_used_expenses_where_created_by()
+	{
+		return $this->hasMany(CommonlyUsedExpense::class, 'created_by');
+	}
+
+	public function commonly_used_expenses_where_deleted_by()
+	{
+		return $this->hasMany(CommonlyUsedExpense::class, 'deleted_by');
+	}
+
+	public function commonly_used_expenses_where_updated_by()
+	{
+		return $this->hasMany(CommonlyUsedExpense::class, 'updated_by');
+	}
+
+	public function commonly_used_expenses()
+	{
+		return $this->hasMany(CommonlyUsedExpense::class);
+	}
+
+	public function commonly_used_expenses_and_deductions_where_created_by()
+	{
+		return $this->hasMany(CommonlyUsedExpensesAndDeduction::class, 'created_by');
+	}
+
+	public function commonly_used_expenses_and_deductions_where_deleted_by()
+	{
+		return $this->hasMany(CommonlyUsedExpensesAndDeduction::class, 'deleted_by');
+	}
+
+	public function commonly_used_expenses_and_deductions_where_updated_by()
+	{
+		return $this->hasMany(CommonlyUsedExpensesAndDeduction::class, 'updated_by');
+	}
+
+	public function commonly_used_expenses_and_deductions()
+	{
+		return $this->hasMany(CommonlyUsedExpensesAndDeduction::class);
+	}
+
+	public function expenses_and_deductions_where_created_by()
+	{
+		return $this->hasMany(ExpensesAndDeduction::class, 'created_by');
+	}
+
+	public function expenses_and_deductions_where_deleted_by()
+	{
+		return $this->hasMany(ExpensesAndDeduction::class, 'deleted_by');
+	}
+
+	public function expenses_and_deductions_where_updated_by()
+	{
+		return $this->hasMany(ExpensesAndDeduction::class, 'updated_by');
+	}
+
+	public function expenses_and_deductions()
+	{
+		return $this->hasMany(ExpensesAndDeduction::class);
+	}
+
+	public function holidays_where_created_by()
+	{
+		return $this->hasMany(Holiday::class, 'created_by');
+	}
+
+	public function holidays_where_deleted_by()
+	{
+		return $this->hasMany(Holiday::class, 'deleted_by');
+	}
+
+	public function holidays_where_updated_by()
+	{
+		return $this->hasMany(Holiday::class, 'updated_by');
+	}
+
+	public function hourly_wage_groups_where_created_by()
+	{
+		return $this->hasMany(HourlyWageGroup::class, 'created_by');
+	}
+
+	public function hourly_wage_groups_where_deleted_by()
+	{
+		return $this->hasMany(HourlyWageGroup::class, 'deleted_by');
+	}
+
+	public function hourly_wage_groups_where_updated_by()
+	{
+		return $this->hasMany(HourlyWageGroup::class, 'updated_by');
+	}
+
+	public function information_where_created_by()
+	{
+		return $this->hasMany(Information::class, 'created_by');
+	}
+
+	public function information_where_deleted_by()
+	{
+		return $this->hasMany(Information::class, 'deleted_by');
+	}
+
+	public function information_where_updated_by()
+	{
+		return $this->hasMany(Information::class, 'updated_by');
+	}
+
+	public function monthly_expenses_and_deductions_where_created_by()
+	{
+		return $this->hasMany(MonthlyExpensesAndDeduction::class, 'created_by');
+	}
+
+	public function monthly_expenses_and_deductions_where_deleted_by()
+	{
+		return $this->hasMany(MonthlyExpensesAndDeduction::class, 'deleted_by');
+	}
+
+	public function monthly_expenses_and_deductions_where_updated_by()
+	{
+		return $this->hasMany(MonthlyExpensesAndDeduction::class, 'updated_by');
+	}
+
+	public function monthly_expenses_and_deductions()
+	{
+		return $this->hasMany(MonthlyExpensesAndDeduction::class);
+	}
+
+	public function payslip_contents_where_created_by()
+	{
+		return $this->hasMany(PayslipContent::class, 'created_by');
+	}
+
+	public function payslip_contents_where_deleted_by()
+	{
+		return $this->hasMany(PayslipContent::class, 'deleted_by');
+	}
+
+	public function payslip_contents_where_updated_by()
+	{
+		return $this->hasMany(PayslipContent::class, 'updated_by');
+	}
+
+	public function payslip_contents()
+	{
+		return $this->hasMany(PayslipContent::class);
+	}
+
+	public function user_created_informations_where_created_by()
+	{
+		return $this->hasMany(UserCreatedInformation::class, 'created_by');
+	}
+
+	public function user_created_informations_where_deleted_by()
+	{
+		return $this->hasMany(UserCreatedInformation::class, 'deleted_by');
+	}
+
+	public function user_created_informations_where_updated_by()
+	{
+		return $this->hasMany(UserCreatedInformation::class, 'updated_by');
+	}
+
+	public function user_created_informations()
+	{
+		return $this->hasMany(UserCreatedInformation::class);
+	}
+
+	public function information()
+	{
+		return $this->belongsToMany(Information::class, 'user_information')
+					->withPivot('id', 'deleted_at')
+					->withTimestamps();
+	}
+
+	public function user_roles_where_created_by()
+	{
+		return $this->hasMany(UserRole::class, 'created_by');
+	}
+
+	public function user_roles_where_deleted_by()
+	{
+		return $this->hasMany(UserRole::class, 'deleted_by');
+	}
+
+	public function user_roles_where_updated_by()
+	{
+		return $this->hasMany(UserRole::class, 'updated_by');
+	}
+
+	public function user_roles()
+	{
+		return $this->hasMany(UserRole::class);
+	}
+
+	public function users_where_created_by()
+	{
+		return $this->hasMany(User::class, 'created_by');
+	}
+
+	public function users_where_deleted_by()
+	{
+		return $this->hasMany(User::class, 'deleted_by');
+	}
+
+	public function users_where_updated_by()
+	{
+		return $this->hasMany(User::class, 'updated_by');
+	}
 }
