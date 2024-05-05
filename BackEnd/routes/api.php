@@ -19,5 +19,5 @@ use App\Http\Controllers\AttendanceController;
 //     return $request->user();
 // });
 
-Route::post('/start-work', [AttendanceController::class, 'startWork']);
-Route::post('/finish-work', [AttendanceController::class, 'finishWork']);
+Route::post('/start_work', [AttendanceController::class, 'startWork']);
+Route::post('/finish_work', [AttendanceController::class, 'finishWork']);

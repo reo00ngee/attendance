@@ -52,7 +52,7 @@ export const App = () => {
     const fetchFunction = async() => {
     try {
       // 実際のバックエンドAPIのURLを指定
-      const response = await fetch('http://localhost/api/start-work', {
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
         method: 'POST',
         mode: 'cors',
       });
@@ -69,7 +69,7 @@ export const App = () => {
   const onClickStartWork = async () => {
     try {
       // 実際のバックエンドAPIのURLを指定
-      const response = await fetch('http://localhost/api/start-work', {
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
         method: 'POST',
         mode: 'cors',
       });
