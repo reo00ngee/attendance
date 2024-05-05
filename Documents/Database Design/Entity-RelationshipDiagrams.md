@@ -18,10 +18,10 @@
 erDiagram
   users ||--|{ user_role: ""
   users ||--o{ attendance: ""
-  users ||--o{ breaks: ""
+  users ||--o{ attendance_breaks: ""
   users ||--o{ user_information: ""
   information ||--o{ user_information: ""
-  attendance ||--o{ breaks: ""
+  attendance ||--o{ attendance_breaks: ""
 
   users{
     id BIGINT PK
@@ -73,7 +73,7 @@ erDiagram
     deleted_by BIGINT FK
   }
 
-  breaks{
+  attendance_breaks{
     id BIGINT PK
     user_id BIGINT FK
     attendance_id BIGINT FK
@@ -365,13 +365,13 @@ erDiagram
   companies ||--o{ holidays: ""
   hourly_wage_groups ||--o{ users: ""
   users ||--o{ attendance: ""
-  users ||--o{ breaks: ""
+  users ||--o{ attendance_breaks: ""
   users ||--o{ expenses_and_deductions: ""
   users ||--o{ monthly_expenses_and_deductions: ""
   users ||--o{ payslip_contents: ""
   users ||--o{ user_information: ""
   information ||--o{ user_information: ""
-  attendance ||--o{ breaks: ""
+  attendance ||--o{ attendance_breaks: ""
 
   users{
     id BIGINT PK
@@ -465,7 +465,7 @@ erDiagram
     deleted_by BIGINT FK
   }
 
-  breaks{
+  attendance_breaks{
     id BIGINT PK
     user_id BIGINT FK
     attendance_id BIGINT FK
@@ -559,7 +559,7 @@ erDiagram
   hourly_wage_groups ||--o{ users: ""
   users ||--|{ user_role: ""
   users ||--o{ attendance: ""
-  users ||--o{ breaks: ""
+  users ||--o{ attendance_breaks: ""
   users ||--o{ expenses_and_deductions: ""
   users ||--o{ commonly_used_expenses: ""
   users ||--o{ monthly_expenses_and_deductions: ""
@@ -567,7 +567,7 @@ erDiagram
   users ||--o{ user_created_information: ""
   users ||--o{ user_information: ""
   information ||--o{ user_information: ""
-  attendance ||--o{ breaks: ""
+  attendance ||--o{ attendance_breaks: ""
 
   users{
     id BIGINT PK
@@ -686,7 +686,7 @@ erDiagram
     deleted_by BIGINT FK
   }
 
-  breaks{
+  attendance_breaks{
     id BIGINT PK
     user_id BIGINT FK
     attendance_id BIGINT FK

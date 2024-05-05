@@ -44,10 +44,10 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Collection|Attendance[] $attendances_where_deleted_by
  * @property Collection|Attendance[] $attendances_where_updated_by
  * @property Collection|Attendance[] $attendances
- * @property Collection|Break[] $breaks_where_created_by
- * @property Collection|Break[] $breaks_where_deleted_by
- * @property Collection|Break[] $breaks_where_updated_by
- * @property Collection|Break[] $breaks
+ * @property Collection|AttendanceBreak[] $attendances_breaks_where_created_by
+ * @property Collection|AttendanceBreak[] $attendances_breaks_where_deleted_by
+ * @property Collection|AttendanceBreak[] $attendances_breaks_where_updated_by
+ * @property Collection|AttendanceBreak[] $attendances_breaks
  * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_created_by
  * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_deleted_by
  * @property Collection|CommonlyUsedExpense[] $commonly_used_expenses_where_updated_by
@@ -176,24 +176,24 @@ class User extends Authenticatable
 		return $this->hasMany(Attendance::class);
 	}
 
-	public function breaks_where_created_by()
+	public function attendances_breaks_where_created_by()
 	{
-		return $this->hasMany(Break::class, 'created_by');
+		return $this->hasMany(AttendanceBreak::class, 'created_by');
 	}
 
-	public function breaks_where_deleted_by()
+	public function attendances_breaks_where_deleted_by()
 	{
-		return $this->hasMany(Break::class, 'deleted_by');
+		return $this->hasMany(AttendanceBreak::class, 'deleted_by');
 	}
 
-	public function breaks_where_updated_by()
+	public function attendances_breaks_where_updated_by()
 	{
-		return $this->hasMany(Break::class, 'updated_by');
+		return $this->hasMany(AttendanceBreak::class, 'updated_by');
 	}
 
-	public function breaks()
+	public function attendances_breaks()
 	{
-		return $this->hasMany(Break::class);
+		return $this->hasMany(AttendanceBreak::class);
 	}
 
 	public function commonly_used_expenses_where_created_by()

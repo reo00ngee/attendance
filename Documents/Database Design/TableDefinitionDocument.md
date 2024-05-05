@@ -11,7 +11,7 @@
   - [companies](#companies)
   - [holidays](#holidays)
   - [attendance](#attendance)
-  - [breaks](#breaks)
+  - [attendance\_breaks](#attendance_breaks)
   - [expenses\_and\_deductions](#expenses_and_deductions)
   - [commonly\_used\_expenses\_and\_deductions](#commonly_used_expenses_and_deductions)
   - [commonly\_used\_expenses](#commonly_used_expenses)
@@ -173,7 +173,7 @@
 | deleted_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
 | deleted_by        | BIGINT    |     | users(id)               |          |        |                             | User ID of the deleter                |
 
-## breaks
+## attendance_breaks
 
 | Column        | Data Type | PK  | FK             | Not NULL | Unique | Default                     | Remarks                               |
 | ------------- | --------- | --- | -------------- | -------- | ------ | --------------------------- | ------------------------------------- |
