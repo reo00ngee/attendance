@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WorkTimeController;
+use App\Http\Controllers\AttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,5 +19,5 @@ use App\Http\Controllers\WorkTimeController;
 //     return $request->user();
 // });
 
-Route::post('/start-work', [WorkTimeController::class, 'startWork']);
-Route::post('/finish-work', [WorkTimeController::class, 'finishWork']);
+Route::post('/start-work', [AttendanceController::class, 'startWork']);
+Route::post('/finish-work', [AttendanceController::class, 'finishWork']);

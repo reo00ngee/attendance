@@ -46,7 +46,7 @@ const rows = [
 // exportとconstの前に書くことでコンポーネントとして利用できる
 export const App = () => {
   // useStateを書く
-  const [attendance, setAttendance] = useState({start_work_time: '', finish_work_time: '' });
+  const [attendance, setAttendance] = useState({start_time: '', end_time: '' });
 
   useEffect( () => {
     const fetchFunction = async() => {
@@ -58,7 +58,7 @@ export const App = () => {
       });
       const data = await response.json();
       setAttendance(data);
-      console.log(attendance.start_work_time);
+      console.log(attendance.start_time);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -75,7 +75,7 @@ export const App = () => {
       });
       const data = await response.json();
       setAttendance(data);
-      console.log(attendance.start_work_time);
+      console.log(attendance.start_time);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -154,7 +154,7 @@ export const App = () => {
         <Grid item xs={1}></Grid>
 
         <Grid item xs={9}>
-          <div>{attendance.start_work_time}</div>
+          <div>{attendance.start_time}</div>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>

@@ -2,26 +2,26 @@
 
 namespace App\Traits;
 
-use App\Repositories\WorkTimeRepository;
+use App\Repositories\AttendanceRepository;
 
 
 trait FetchAttendanceTimeTrait
 {
 
-    private WorkTimeRepository $workTimeRepository;
-    public function __construct(WorkTimeRepository $workTimeRepository)
+    private AttendanceRepository $attendanceRepository;
+    public function __construct(AttendanceRepository $attendanceRepository)
     {
-        $this->workTimeRepository = $workTimeRepository;
+        $this->attendanceRepository = $attendanceRepository;
     }
 
-    public function getLatestWorkTimesForUser(): \Illuminate\Http\JsonResponse
+    public function getLatestAttendancesForUser(): \Illuminate\Http\JsonResponse
     {
-        $latestWorkTime = $this->workTimeRepository->getLatestWorkTimesForUser();
+        $latestAttendance = $this->attendanceRepository->getLatestAttendancesForUser();
 
-        if ($latestWorkTime) {
-            $latestStartWorkTime = $latestWorkTime->start_work_time === null ? '' : $latestWorkTime->start_work_time->format('G:i');
-            $latestFinishWorkTime = $latestWorkTime->finish_work_time === null ? '' : $latestWorkTime->finish_work_time->format('G:i');
-            return response()->json(['start_work_time' => $latestStartWorkTime, 'finish_work_time' => $latestFinishWorkTime]);
+        if ($latestAttendance) {
+            $latestStartAttendance = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('G:i');
+            $latestFinishAttendance = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('G:i');
+            return response()->json(['start_time' => $latestStartAttendance, 'end_time' => $latestFinishAttendance]);
         } else {
             Log::info("it doesn't exist");
             return response()->json(['error' => 'error'], 500);

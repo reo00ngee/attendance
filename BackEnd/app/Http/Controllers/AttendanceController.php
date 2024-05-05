@@ -3,27 +3,27 @@
 namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Services\WorkTimeService;
+use App\Services\AttendanceService;
 use Illuminate\Database\Eloquent\Casts\Json;
 
-class WorkTimeController extends Controller
+class AttendanceController extends Controller
 {
-    private WorkTimeService $workTimeService;
+    private AttendanceService $attendanceService;
 
-    public function __construct(WorkTimeService $workTimeService)
+    public function __construct(AttendanceService $attendanceService)
     {
-        $this->workTimeService = $workTimeService;
+        $this->attendanceService = $attendanceService;
     }
 
     public function startWork()
     {
-        $this->workTimeService->startWork();
-        return $this->workTimeService->getLatestWorkTimesForUser();
+        $this->attendanceService->startWork();
+        return $this->attendanceService->getLatestAttendancesForUser();
     }
 
     public function finishWork()
     {
-        $this->workTimeService->finishWork();
+        $this->attendanceService->finishWork();
 
         return response()->json(['message' => 'Work finished successfully']);
     }

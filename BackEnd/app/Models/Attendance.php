@@ -83,6 +83,6 @@ class Attendance extends Model
 
 	public function breaks()
 	{
-		return $this->hasMany(Break::class);
+		return $this->hasMany(AttendanceBreak::class);
 	}
 }
