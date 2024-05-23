@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +18,13 @@ Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
 
-Route::get('/api/user', function (Request $request) {
-    return request()->user();
+Route::prefix('api')->name('api.')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return request()->user();
+    });
+    Route::post('/start_work', [AttendanceController::class, 'startWork']);
+    Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
 });
+
 
 require __DIR__.'/auth.php';

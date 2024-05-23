@@ -55,6 +55,7 @@ export const App = () => {
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
         method: 'POST',
         mode: 'cors',
+        credentials: 'include',
       });
       const data = await response.json();
       setAttendance(data);
@@ -72,6 +73,24 @@ export const App = () => {
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
         method: 'POST',
         mode: 'cors',
+        credentials: 'include',
+      });
+      const body = response.body;
+      const data = await response.json();
+      setAttendance(data);
+      console.log(attendance.start_time);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const onClickFinishWork = async () => {
+    try {
+      // 実際のバックエンドAPIのURLを指定
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/finish_work`, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
       });
       const data = await response.json();
       setAttendance(data);
@@ -80,9 +99,6 @@ export const App = () => {
       console.error('Error fetching data:', error);
     }
   };
-  // fetchでdataをとってくる
-  // jsonに変換する
-  // setDataで変換データをセットする
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -125,7 +141,7 @@ export const App = () => {
 
         <Grid item xs={3}>
           <Box>
-            <Button size="large" variant="contained">
+            <Button size="large" variant="contained" onClick={onClickFinishWork}>
               Finish Work
             </Button>
           </Box>
@@ -179,7 +195,7 @@ export const App = () => {
                       {row.title}
                     </TableCell>
 
-                    <TableCell align="right">{row.startTime}</TableCell>
+                    <TableCell align="right">{attendance.start_time}</TableCell>
 
                     <TableCell align="right">~</TableCell>
 

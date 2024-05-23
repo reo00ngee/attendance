@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Services\AttendanceService;
 use Illuminate\Database\Eloquent\Casts\Json;
 
@@ -15,17 +16,29 @@ class AttendanceController extends Controller
         $this->attendanceService = $attendanceService;
     }
 
-    public function startWork()
+    public function startWork(Request $request)
     {
-        $this->attendanceService->startWork();
-        return $this->attendanceService->getLatestAttendancesForUser();
+        \Log::info('startWork in');
+        $user_id = Auth::id();
+        // $user = Auth::user();
+        // $user2 = request()->user();
+        // \Log::info('User: ' , [$user,$user2] );
+        // \Log::info('User ID: ' . $user_id);
+        $this->attendanceService->startWork($user_id);
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
     }
 
-    public function finishWork()
+    public function finishWork(Request $request)
     {
-        $this->attendanceService->finishWork();
+        $user_id = Auth::id();
+        $this->attendanceService->finishWork($user_id);
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
 
-        return response()->json(['message' => 'Work finished successfully']);
+    public function startBreak(Request $request)
+    {
+        $this->attendanceService->startBreak();
+        return $this->attendanceService->getLatestAttendancesForUser();
     }
     /**
      * Display a listing of the resource.

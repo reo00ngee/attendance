@@ -42,8 +42,7 @@ class PayrollProcessingJob extends Command
                 $endDate = Carbon::now()->day($company->closing_date)->format('Y-m-d');
             }
         }
-    }
-    // 勤怠データを取得
+            // 勤怠データを取得
     $attendances = Attendance::whereBetween('date', [$startDate, $endDate])->get();
 
     // 経費データを取得
@@ -54,5 +53,7 @@ class PayrollProcessingJob extends Command
 
     // 結果を返すまたは保存する
     // ...
+    }
+
 
 }

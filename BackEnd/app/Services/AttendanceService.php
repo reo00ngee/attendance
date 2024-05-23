@@ -15,13 +15,18 @@ class AttendanceService
         $this->attendanceRepository = $attendanceRepository;
     }
 
-    public function startWork()
+    public function startWork($user_id)
     {
-        return $this->attendanceRepository->saveStartAttendance();
+        return $this->attendanceRepository->saveStartAttendance($user_id);
     }
 
-    public function finishWork()
+    public function finishWork($user_id)
     {
-        $this->attendanceRepository->saveFinishAttendance();
+        $this->attendanceRepository->saveFinishAttendance($user_id);
+    }
+
+    public function startBreak()
+    {
+        return $this->attendanceRepository->saveStartBreak();
     }
 }

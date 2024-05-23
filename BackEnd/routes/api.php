@@ -19,5 +19,7 @@ use App\Http\Controllers\AttendanceController;
 //     return $request->user();
 // });
 
-Route::post('/start_work', [AttendanceController::class, 'startWork']);
-Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
+// Route::middleware(['auth:sanctum'])->group(function () {
+//   Route::post('/start_work', [AttendanceController::class, 'startWork']);
+//   Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
+// });

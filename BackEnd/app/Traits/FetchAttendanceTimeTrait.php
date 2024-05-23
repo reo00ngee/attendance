@@ -14,9 +14,9 @@ trait FetchAttendanceTimeTrait
         $this->attendanceRepository = $attendanceRepository;
     }
 
-    public function getLatestAttendancesForUser(): \Illuminate\Http\JsonResponse
+    public function getLatestAttendancesForUser($user_id): \Illuminate\Http\JsonResponse
     {
-        $latestAttendance = $this->attendanceRepository->getLatestAttendancesForUser();
+        $latestAttendance = $this->attendanceRepository->getLatestAttendancesForUser($user_id);
 
         if ($latestAttendance) {
             $latestStartAttendance = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('G:i');
