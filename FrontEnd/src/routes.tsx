@@ -1,8 +1,12 @@
-import { createBrowserRouter, redirect } from 'react-router-dom'
+import { createBrowserRouter, 
+    redirect,
+    RouterProvider,
+    Route,
+    Link, } from 'react-router-dom'
 import { UseAuthUser } from './hooks/useAuth'
 import AttendanceRegistration from './pages/AttendanceRegistration'
 import Login from './pages/Login'
-import Test from './pages/Test'
+import NotFound from './pages/NotFound'
  
 /**
  * ログイン済みのみアクセス可能
@@ -30,7 +34,7 @@ export const router = createBrowserRouter([
         element: <AttendanceRegistration />,
         loader: guardLoader
     }, {
-      path: '/test',
-      element: <Test />
+      path: '/*',
+      element: <NotFound />
   }
 ])
