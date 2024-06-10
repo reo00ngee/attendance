@@ -21,11 +21,12 @@ export const UseLogin = () => {
       mutationFn: api.login,
       onError: (error: AxiosError) => {
           console.log(error)
+          window.location.href = '/login'
       },
       onSuccess: (data) => {
           console.log(data)
           queryClient.invalidateQueries({queryKey: ['auth'] })
-          window.location.href = '/'
+          window.location.href = '/attendance_registration'
       }
   })
 }
