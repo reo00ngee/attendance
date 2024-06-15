@@ -1,9 +1,8 @@
 import * as React from "react";
 import { styled } from "@mui/material/styles";
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 
-import Grid from "@mui/material/Grid";
+import { Grid, Box, Typography } from '@mui/material';
 
 import Button from "@mui/material/Button";
 
@@ -46,26 +45,26 @@ const rows = [
 // exportとconstの前に書くことでコンポーネントとして利用できる
 export const App = () => {
   // useStateを書く
-  const [attendance, setAttendance] = useState({start_time: '', end_time: '' });
+  const [attendance, setAttendance] = useState({ start_time: '', end_time: '' });
 
-  useEffect( () => {
-    const fetchFunction = async() => {
-    try {
-      // 実際のバックエンドAPIのURLを指定
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-      });
-      const data = await response.json();
-      setAttendance(data);
-      console.log(attendance.start_time);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+  useEffect(() => {
+    const fetchFunction = async () => {
+      try {
+        // 実際のバックエンドAPIのURLを指定
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        setAttendance(data);
+        console.log(attendance.start_time);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     }
-  }
-  fetchFunction();
-  },[]);
+    fetchFunction();
+  }, []);
   // onClickのボタンの処理を書く
   const onClickStartWork = async () => {
     try {
@@ -103,18 +102,12 @@ export const App = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        <Grid item xs={3}>
-          <Box>2023/11/18 19:10</Box>
+        <Grid item xs={8}>
+          <Box><Typography variant="h1">Attendance Registration For Today</Typography></Box>
         </Grid>
 
         <Grid item xs={6}>
           <Box>UserName:YAMADA</Box>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Box>
-            <Button variant="contained">log out</Button>
-          </Box>
         </Grid>
       </Grid>
 
@@ -202,28 +195,28 @@ export const App = () => {
                     <TableCell align="right">{row.endTime}</TableCell>
                   </TableRow>
                 ))}
-                  <TableRow>
-                    <TableCell component="th" scope="row">
+                <TableRow>
+                  <TableCell component="th" scope="row">
                     Total working hours
-                    </TableCell>
+                  </TableCell>
 
-                    <TableCell align="right">aaaa</TableCell>
+                  <TableCell align="right">aaaa</TableCell>
 
-                    <TableCell align="right">~</TableCell>
+                  <TableCell align="right">~</TableCell>
 
-                    <TableCell align="right">bbb</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">
+                  <TableCell align="right">bbb</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
                     Total break time
-                    </TableCell>
+                  </TableCell>
 
-                    <TableCell align="right">aaaa</TableCell>
+                  <TableCell align="right">aaaa</TableCell>
 
-                    <TableCell align="right">~</TableCell>
+                  <TableCell align="right">~</TableCell>
 
-                    <TableCell align="right">bbb</TableCell>
-                  </TableRow>
+                  <TableCell align="right">bbb</TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
