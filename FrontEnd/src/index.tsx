@@ -15,9 +15,10 @@ const theme = createTheme({
   //     main: '#dc004e',
   //   },
   // },
+
   typography: {
     h1: {
-      fontSize: '2rem',
+      fontSize: '1.5rem',
       color: 'rgb(25, 118, 210)',
     },
   },
