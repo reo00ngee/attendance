@@ -21,6 +21,7 @@ export const UseLogin = () => {
       mutationFn: api.login,
       onError: (error: AxiosError) => {
           console.log(error)
+          alert('You failed to login. Please try again.')
           window.location.href = '/login'
       },
       onSuccess: (data) => {
