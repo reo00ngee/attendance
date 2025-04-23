@@ -192,7 +192,7 @@ export const App = () => {
 
                     <TableCell align="right">~</TableCell>
 
-                    <TableCell align="right">{row.endTime}</TableCell>
+                    <TableCell align="right">{attendance.end_time}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow>
