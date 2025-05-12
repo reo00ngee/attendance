@@ -40,6 +40,13 @@ class AttendanceController extends Controller
         $this->attendanceService->startBreak();
         return $this->attendanceService->getLatestAttendancesForUser();
     }
+
+
+    public function getLatestAttendancesForUser(Request $request)
+    {
+        $user_id = Auth::id();
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
     /**
      * Display a listing of the resource.
      */
