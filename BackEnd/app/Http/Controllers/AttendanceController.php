@@ -37,8 +37,16 @@ class AttendanceController extends Controller
 
     public function startBreak(Request $request)
     {
-        $this->attendanceService->startBreak();
-        return $this->attendanceService->getLatestAttendancesForUser();
+        $user_id = Auth::id();
+        $this->attendanceService->startBreak($user_id);
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
+
+    public function finishBreak(Request $request)
+    {
+        $user_id = Auth::id();
+        $this->attendanceService->finishBreak($user_id);
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
     }
 
 

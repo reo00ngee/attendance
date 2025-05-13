@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Attendance;
 use App\Models\AttendanceBreak;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceRepository
 {
@@ -25,28 +26,42 @@ class AttendanceRepository
         $attendance->save();
     }
 
-    public function saveStartBreak()
+    public function saveStartBreak($user_id)
     {
-        $attendance = new Attendance();
-        $attendance->start_time = now();
-        // $attendance->date = now()->format('Y-m-d');
-        $attendance->user_id = 1;
-        $attendance->submission_status = 0;
-        $attendance->save();
-        // return Attendance::orderBy('created_at', 'desc')->value('start_work_time')->format('H:i:s');
+        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendanceBreak = new AttendanceBreak();
+        $attendanceBreak->start_time = now();
+        $attendanceBreak->attendance_id = $attendance->id;
+        $attendanceBreak->user_id = $user_id;
+        $attendanceBreak->save();
     }
+
+    public function saveFinishBreak($user_id)
+    {
+        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendanceBreak = AttendanceBreak::where('attendance_id', $attendance->id)->latest()->first();
+        $attendanceBreak->end_time = now();
+        $attendanceBreak->save();
+    }
+
+
+
 
     public function getLatestAttendancesForUser($user_id)
     {
         try {
-            $latestattendance = Attendance::where('user_id', $user_id)
-                ->orderBy('start_time', 'desc')
-                ->orderBy('end_time', 'desc')
-                ->first();
+            $latestattendance = Attendance::with('attendanceBreaks')
+            ->where('user_id', $user_id)
+            ->orderBy('start_time', 'desc')
+            ->orderBy('end_time', 'desc')
+            ->first();
+
+            // dd($latestattendance);
 
             return $latestattendance;
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
+            \Log::error('エラー内容: ' . $e->getMessage());
             return null;
         }
     }

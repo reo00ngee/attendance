@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @package App\Models
  */
-class Break extends Model
+class AttendanceBreak extends Model
 {
 	use SoftDeletes;
 	protected $table = 'breaks';

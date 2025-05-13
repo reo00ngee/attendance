@@ -1,228 +1,180 @@
 import * as React from "react";
-import { styled } from "@mui/material/styles";
-import Paper from "@mui/material/Paper";
-
-import { Grid, Box, Typography } from '@mui/material';
-
-import Button from "@mui/material/Button";
-
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-
 import { useState, useEffect } from "react";
+import { styled } from "@mui/material/styles";
+import {
+  Paper,
+  Grid,
+  Box,
+  Typography,
+  Button,
+  FormControlLabel,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import { Attendance, AttendanceBreak } from "../types/Attendance";
 
-const rows = [
-  {
-    id: 1,
-    title: "勤務時間",
-    startTime: "10:00",
-    mark: "～",
-    endTime: "18:00",
-  },
-  {
-    id: 2,
-    title: "休憩時間",
-    startTime: "11:00",
-    mark: "～",
-    endTime: "11:30",
-  },
-  {
-    id: 3,
-    title: "休憩時間",
-    startTime: "12:00",
-    mark: "～",
-    endTime: "13:00",
-  },
-];
-// exportとconstの前に書くことでコンポーネントとして利用できる
 export const App = () => {
-  // useStateを書く
-  const [attendance, setAttendance] = useState({ start_time: '', end_time: '' });
+  const [workMinutes, setWorkMinutes] = useState<number>(0);
+  const [breakMinutes, setBreakMinutes] = useState<number>(0);
+  const [attendance, setAttendance] = useState<Attendance>({
+    start_time: "",
+    end_time: "",
+    attendance_breaks: [],
+  });
+
+  const calculateTime = (startTime: string, endTime: string): number => {
+    if (!startTime || !endTime) return 0;
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+    return (end.getTime() - start.getTime()) / 1000 / 60; // minutes
+  };
+
+  const convertToHoursAndMinutes = (totalMinutes: number): string => {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours} hours ${minutes} minutes`;
+  };
 
   useEffect(() => {
-    const fetchFunction = async () => {
+    const fetchAttendance = async () => {
       try {
-        // 実際のバックエンドAPIのURLを指定
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'include',
+        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_latest_attendances_for_user`, {
+          method: "GET",
+          mode: "cors",
+          credentials: "include",
         });
-        const data = await response.json();
+        const data: Attendance = await res.json();
         setAttendance(data);
-        console.log(attendance.start_time);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+
+        const work = calculateTime(data.start_time, data.end_time);
+        const breakSum = data.attendance_breaks.reduce((sum, b) => {
+          return sum + calculateTime(b.start_time, b.end_time);
+        }, 0);
+
+        setWorkMinutes(work);
+        setBreakMinutes(breakSum);
+      } catch (err) {
+        console.error("Error fetching attendance:", err);
       }
-    }
-    fetchFunction();
+    };
+    fetchAttendance();
   }, []);
-  // onClickのボタンの処理を書く
-  const onClickStartWork = async () => {
+
+  // Button click function (can be shared)
+  const postAction = async (endpoint: string) => {
     try {
-      // 実際のバックエンドAPIのURLを指定
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/start_work`, {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/${endpoint}`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
       });
-      const body = response.body;
-      const data = await response.json();
+      const data = await res.json();
       setAttendance(data);
-      console.log(attendance.start_time);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch (err) {
+      console.error(`Error during ${endpoint}:`, err);
     }
   };
 
-  const onClickFinishWork = async () => {
-    try {
-      // 実際のバックエンドAPIのURLを指定
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/finish_work`, {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-      });
-      const data = await response.json();
-      setAttendance(data);
-      console.log(attendance.start_time);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  const netWorkingMinutes = workMinutes - breakMinutes;
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, padding: 3 }}>
       <Grid container spacing={2}>
-        <Grid item xs={8}>
-          <Box><Typography variant="h1">Attendance Registration For Today</Typography></Box>
+        <Grid item xs={12}>
+          <Typography variant="h4">Attendance Registration For Today</Typography>
         </Grid>
+        <Grid item xs={12}>
+          <Typography>UserName: YAMADA</Typography>
+        </Grid>
+      </Grid>
 
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid item xs={3}>
+          <Button fullWidth variant="contained" onClick={() => postAction("start_work")}>
+            Start Work
+          </Button>
+        </Grid>
+        <Grid item xs={3}>
+          <Button fullWidth variant="contained" onClick={() => postAction("start_break")}>
+            Start Break
+          </Button>
+        </Grid>
+        <Grid item xs={3}>
+          <Button fullWidth variant="contained" onClick={() => postAction("finish_break")}>
+            Finish Break
+          </Button>
+        </Grid>
+        <Grid item xs={3}>
+          <Button fullWidth variant="contained" onClick={() => postAction("finish_work")}>
+            Finish Work
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2} sx={{ mt: 3, alignItems: "center" }}>
+        <Grid item xs={3}>
+          <Typography>Working Time Today</Typography>
+        </Grid>
         <Grid item xs={6}>
-          <Box>UserName:YAMADA</Box>
+          <FormControlLabel control={<Switch />} label="Modify" />
+          <Button variant="contained" disabled>
+            Save
+          </Button>
         </Grid>
       </Grid>
 
-      <Grid sx={{ padding: "20px" }} container spacing={2}>
-        <Grid item xs={3}>
-          <Box>
-            <Button variant="contained" onClick={onClickStartWork}>
-              Start Work
-            </Button>
-          </Box>{" "}
-        </Grid>
-
-        <Grid item xs={3}>
-          <Box>
-            <Button variant="contained">Start Break</Button>
-          </Box>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Box>
-            <Button variant="contained">End Break</Button>
-          </Box>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Box>
-            <Button size="large" variant="contained" onClick={onClickFinishWork}>
-              Finish Work
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={2}>
-        <Grid item xs={3}>
-          <Box>WorkingTime in Today</Box>
-        </Grid>
-
-        <Grid item xs={6}>
-          <Box>
-            <FormControlLabel control={<Switch />} label="Modify" />
-
-            <Button variant="contained" disabled>
-              Save
-            </Button>
-          </Box>
-        </Grid>
-
-        <Grid item xs={3}></Grid>
-      </Grid>
-
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={1}></Grid>
-
-        <Grid item xs={9}>
-          <div>{attendance.start_time}</div>
+        <Grid item xs={10}>
           <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table>
               <TableHead>
                 <TableRow>
                   <TableCell></TableCell>
-
                   <TableCell align="right">Start Time</TableCell>
-
                   <TableCell align="right"></TableCell>
-
                   <TableCell align="right">End Time</TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {row.title}
-                    </TableCell>
+                <TableRow>
+                  <TableCell>Working Hours</TableCell>
+                  <TableCell align="right">{attendance.start_time}</TableCell>
+                  <TableCell align="right">～</TableCell>
+                  <TableCell align="right">{attendance.end_time}</TableCell>
+                </TableRow>
 
-                    <TableCell align="right">{attendance.start_time}</TableCell>
-
-                    <TableCell align="right">~</TableCell>
-
-                    <TableCell align="right">{attendance.end_time}</TableCell>
+                {attendance.attendance_breaks.map((b, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{`Break ${idx + 1}`}</TableCell>
+                    <TableCell align="right">{b.start_time}</TableCell>
+                    <TableCell align="right">～</TableCell>
+                    <TableCell align="right">{b.end_time}</TableCell>
                   </TableRow>
                 ))}
+
+
                 <TableRow>
-                  <TableCell component="th" scope="row">
-                    Total working hours
-                  </TableCell>
-
-                  <TableCell align="right">aaaa</TableCell>
-
-                  <TableCell align="right">~</TableCell>
-
-                  <TableCell align="right">bbb</TableCell>
+                  <TableCell>Total Break Hours</TableCell>
+                  <TableCell align="right">{convertToHoursAndMinutes(breakMinutes)}</TableCell>
+                  <TableCell />
+                  <TableCell />
                 </TableRow>
                 <TableRow>
-                  <TableCell component="th" scope="row">
-                    Total break time
-                  </TableCell>
-
-                  <TableCell align="right">aaaa</TableCell>
-
-                  <TableCell align="right">~</TableCell>
-
-                  <TableCell align="right">bbb</TableCell>
+                  <TableCell>Net Working Hours</TableCell>
+                  <TableCell />
+                  <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutes)}</TableCell>
+                  <TableCell />
                 </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
         </Grid>
-
-        <Grid item xs={2}></Grid>
       </Grid>
     </Box>
   );

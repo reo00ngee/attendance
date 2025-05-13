@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $deleted_by
  * 
  * @property User $user
- * @property Collection|Break[] $breaks
+ * @property Collection|AttendanceBreak[] $attendanceBreaks
  *
  * @package App\Models
  */
@@ -81,8 +81,8 @@ class Attendance extends Model
 		return $this->belongsTo(User::class);
 	}
 
-	public function breaks()
+	public function attendanceBreaks()
 	{
-		return $this->hasMany(AttendanceBreak::class);
+			return $this->hasMany(AttendanceBreak::class);
 	}
 }

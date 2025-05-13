@@ -25,8 +25,13 @@ class AttendanceService
         $this->attendanceRepository->saveFinishAttendance($user_id);
     }
 
-    public function startBreak()
+    public function startBreak($user_id)
     {
-        return $this->attendanceRepository->saveStartBreak();
+        return $this->attendanceRepository->saveStartBreak($user_id);
+    }
+
+    public function finishBreak($user_id)
+    {
+        return $this->attendanceRepository->saveFinishBreak($user_id);
     }
 }
