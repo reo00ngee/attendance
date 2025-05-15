@@ -5,12 +5,11 @@ import {
     Route,
     Link,
 } from 'react-router-dom'
-import AuthLayout from './components/AuthLayout'
-import { UseAuthUser } from './hooks/useAuth'
-import AttendanceRegistration from './pages/AttendanceRegistration'
-import Login from './pages/Login'
-import NotFound from './pages/NotFound'
-
+import AttendanceRegistration from '../pages/AttendanceRegistration'
+import Login from '../pages/Login'
+import NotFound from '../pages/NotFound'
+import AuthLayout from '../components/AuthLayout'
+import { UseAuthUser } from '../hooks/useAuth'
 /**
  * ログイン済みのみアクセス可能
  */

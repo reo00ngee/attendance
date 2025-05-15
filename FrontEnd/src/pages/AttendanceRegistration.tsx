@@ -158,18 +158,15 @@ export const App = () => {
                   </TableRow>
                 ))}
 
-
                 <TableRow>
                   <TableCell>Total Break Hours</TableCell>
+                  <TableCell colSpan={2} />
                   <TableCell align="right">{convertToHoursAndMinutes(breakMinutes)}</TableCell>
-                  <TableCell />
-                  <TableCell />
                 </TableRow>
                 <TableRow>
                   <TableCell>Net Working Hours</TableCell>
-                  <TableCell />
+                  <TableCell colSpan={2} />
                   <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutes)}</TableCell>
-                  <TableCell />
                 </TableRow>
               </TableBody>
             </Table>
