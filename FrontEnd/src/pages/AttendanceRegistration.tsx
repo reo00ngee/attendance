@@ -27,16 +27,32 @@ export const App = () => {
     attendance_breaks: [],
   });
 
-  const calculateTime = (startTime: string, endTime: string): number => {
-    if (!startTime || !endTime) return 0;
-    const start = new Date(`1970-01-01T${startTime}:00`);
-    const end = new Date(`1970-01-01T${endTime}:00`);
-    return (end.getTime() - start.getTime()) / 1000 / 60; // minutes
+  const calculateTime = (startTime: string, endTime?: string): number => {
+    if (!startTime) return 0;
+  
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(startHour, startMin, 0, 0);
+  
+    let end: Date;
+  
+    if (endTime) {
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      end = new Date(now);
+      end.setHours(endHour, endMin, 0, 0);
+    } else {
+      end = new Date(); // 現在時刻
+    }
+  
+    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // 分
+  
+    return diff >= 0 ? diff : 0;
   };
 
   const convertToHoursAndMinutes = (totalMinutes: number): string => {
     const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
+    const minutes = Math.floor(totalMinutes % 60);
     return `${hours} hours ${minutes} minutes`;
   };
 
