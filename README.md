@@ -10,3 +10,14 @@
 - [Entity-Relationship Diagrams](/Documents/Database%20Design/Entity-RelationshipDiagrams.md)
 
 # Introduction<!-- omit in toc -->
+Set time zone with this process
+
+
+## Setting of timezone
+
+```php
+// config/app.php
+
+'timezone' => 'Asia/Tokyo',
+
+```

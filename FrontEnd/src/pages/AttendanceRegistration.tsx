@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { styled } from "@mui/material/styles";
 import {
   Paper,
   Grid,
@@ -16,46 +15,71 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { Attendance, AttendanceBreak } from "../types/Attendance";
+import { Attendance } from "../types/Attendance";
 
 export const App = () => {
-  const [workMinutes, setWorkMinutes] = useState<number>(0);
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
+  const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
     start_time: "",
     end_time: "",
     attendance_breaks: [],
   });
 
-  const calculateTime = (startTime: string, endTime?: string): number => {
+  function calculateTime(startTime: string, endTime?: string): number {
     if (!startTime) return 0;
-  
-    const [startHour, startMin] = startTime.split(':').map(Number);
+
     const now = new Date();
+
+    // startTime（例: "23:30"）を Date オブジェクトに変換
+    const [startHour, startMin] = startTime.split(':').map(Number);
     const start = new Date(now);
     start.setHours(startHour, startMin, 0, 0);
-  
+
     let end: Date;
-  
     if (endTime) {
       const [endHour, endMin] = endTime.split(':').map(Number);
       end = new Date(now);
       end.setHours(endHour, endMin, 0, 0);
-    } else {
-      end = new Date(); // 現在時刻
-    }
-  
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // 分
-  
-    return diff >= 0 ? diff : 0;
-  };
 
-  const convertToHoursAndMinutes = (totalMinutes: number): string => {
+      // 終了時間が開始時間よりも前なら翌日の時間とみなす
+      if (end < start) {
+        end.setDate(end.getDate() + 1);
+      }
+    } else {
+      end = now;
+    }
+
+    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒 → 分
+    return Math.max(diff, 0); // 差が負なら0を返す（安全対策）
+  }
+
+
+  function convertToHoursAndMinutes(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = Math.floor(totalMinutes % 60);
-    return `${hours} hours ${minutes} minutes`;
+
+    const hourStr = hours > 0 ? `${hours} hour${hours !== 1 ? 's' : ''}` : '';
+    const minStr = minutes > 0 ? `${minutes} minute${minutes !== 1 ? 's' : ''}` : '';
+
+    return [hourStr, minStr].filter(Boolean).join(' ');
+  }
+
+  function updateCalculations() {
+    const work = calculateTime(attendance.start_time, attendance.end_time || undefined);
+    const breakSum = attendance.attendance_breaks.reduce((sum, b) => {
+      return sum + calculateTime(b.start_time, b.end_time || undefined);
+    }, 0);
+
+    setNetWorkingMinutes(work);
+    setBreakMinutes(breakSum);
+
+    // Net Working Hoursを計算し、負の値を防ぐ
+    const netWorking = Math.max(work - breakSum, 0);
+    setNetWorkingMinutes(netWorking);
   };
 
+  // 初回データ取得と計算
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -66,14 +90,7 @@ export const App = () => {
         });
         const data: Attendance = await res.json();
         setAttendance(data);
-
-        const work = calculateTime(data.start_time, data.end_time);
-        const breakSum = data.attendance_breaks.reduce((sum, b) => {
-          return sum + calculateTime(b.start_time, b.end_time);
-        }, 0);
-
-        setWorkMinutes(work);
-        setBreakMinutes(breakSum);
+        updateCalculations();
       } catch (err) {
         console.error("Error fetching attendance:", err);
       }
@@ -81,7 +98,19 @@ export const App = () => {
     fetchAttendance();
   }, []);
 
-  // Button click function (can be shared)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateCalculations();
+    }, 60 * 1000); // 1分ごとに再計算
+
+    return () => clearInterval(interval); // クリーンアップ
+  }, [attendance]);
+
+  useEffect(() => {
+    updateCalculations(); // attendanceが更新されたら再計算
+  }, [attendance]);
+
+  // ボタンを押したときの処理
   const postAction = async (endpoint: string) => {
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/${endpoint}`, {
@@ -91,12 +120,11 @@ export const App = () => {
       });
       const data = await res.json();
       setAttendance(data);
+      updateCalculations(); // ボタン押下時に計算を更新
     } catch (err) {
       console.error(`Error during ${endpoint}:`, err);
     }
   };
-
-  const netWorkingMinutes = workMinutes - breakMinutes;
 
   return (
     <Box sx={{ flexGrow: 1, padding: 3 }}>
@@ -162,7 +190,7 @@ export const App = () => {
                   <TableCell>Working Hours</TableCell>
                   <TableCell align="right">{attendance.start_time}</TableCell>
                   <TableCell align="right">～</TableCell>
-                  <TableCell align="right">{attendance.end_time}</TableCell>
+                  <TableCell align="right">{attendance.end_time || "Still Working"}</TableCell>
                 </TableRow>
 
                 {attendance.attendance_breaks.map((b, idx) => (
@@ -170,7 +198,7 @@ export const App = () => {
                     <TableCell>{`Break ${idx + 1}`}</TableCell>
                     <TableCell align="right">{b.start_time}</TableCell>
                     <TableCell align="right">～</TableCell>
-                    <TableCell align="right">{b.end_time}</TableCell>
+                    <TableCell align="right">{b.end_time || "Still on Break"}</TableCell>
                   </TableRow>
                 ))}
 
