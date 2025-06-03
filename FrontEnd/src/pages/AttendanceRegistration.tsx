@@ -14,6 +14,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
 
@@ -25,61 +26,94 @@ export const App = () => {
     end_time: "",
     attendance_breaks: [],
   });
+  const [editMode, setEditMode] = useState(false);
+  const [editedStartTime, setEditedStartTime] = useState("");
+  const [editedEndTime, setEditedEndTime] = useState("");
+  const [editedBreaks, setEditedBreaks] = useState<{ start_time: string; end_time: string }[]>([]);
 
-  function calculateTime(startTime: string, endTime?: string): number {
-    if (!startTime) return 0;
+function calculateTime(startTime: string, endTime?: string): number {
+  if (!startTime) return 0;
 
-    const now = new Date();
+  const start = new Date(startTime);
+  if (isNaN(start.getTime())) return 0;
 
-    // startTime（例: "23:30"）を Date オブジェクトに変換
-    const [startHour, startMin] = startTime.split(':').map(Number);
-    const start = new Date(now);
-    start.setHours(startHour, startMin, 0, 0);
+  let end: Date;
+  if (endTime) {
+    end = new Date(endTime);
+    if (isNaN(end.getTime())) return 0;
 
-    let end: Date;
-    if (endTime) {
-      const [endHour, endMin] = endTime.split(':').map(Number);
-      end = new Date(now);
-      end.setHours(endHour, endMin, 0, 0);
-
-      // 終了時間が開始時間よりも前なら翌日の時間とみなす
-      if (end < start) {
-        end.setDate(end.getDate() + 1);
-      }
-    } else {
-      end = now;
+    // 翌日をまたぐ処理は ISO形式でも一応必要（稀なケースだが）
+    if (end < start) {
+      end.setDate(end.getDate() + 1);
     }
-
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒 → 分
-    return Math.max(diff, 0); // 差が負なら0を返す（安全対策）
+  } else {
+    end = new Date(); // 今の時刻
   }
 
+  const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒→分
+  return Math.max(diff, 0);
+}
+
+const handleStartWork = () => {
+  if (!attendance.end_time) {
+    alert("The previous work end time is not registered. Please register the end time first.");
+    return;
+  }
+  postAction("start_work");
+};
+
+const handleStartBreak = () => {
+  const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+
+  if (unfinishedBreak) {
+    alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+    return;
+  }
+
+  postAction("start_break");
+};
 
   function convertToHoursAndMinutes(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = Math.floor(totalMinutes % 60);
 
-    const hourStr = hours > 0 ? `${hours} hour${hours !== 1 ? 's' : ''}` : '';
-    const minStr = minutes > 0 ? `${minutes} minute${minutes !== 1 ? 's' : ''}` : '';
+    const hourStr = hours > 0 ? `${hours}h` : "";
+    const minStr = minutes > 0 ? `${minutes}m` : "";
 
-    return [hourStr, minStr].filter(Boolean).join(' ');
+    return [hourStr, minStr].filter(Boolean).join(" ");
   }
 
-  function updateCalculations() {
-    const work = calculateTime(attendance.start_time, attendance.end_time || undefined);
-    const breakSum = attendance.attendance_breaks.reduce((sum, b) => {
+  function formatTimeHHMM(time: string): string {
+    if (!time) return "";
+    const timePart = time.includes("T") ? time.split("T")[1] : time;
+    const [hh, mm] = timePart.split(":");
+    const hhPadded = hh.padStart(2, "0");
+    const mmPadded = mm.padStart(2, "0");
+    return `${hhPadded}:${mmPadded}`;
+  }
+
+  // 新たに追加した関数：ISO日時（2025-05-31T17:56:22）を時分だけのフォーマットに変換
+  function formatTimeForInput(time: string): string {
+    if (!time) return "";
+    if (time.includes("T")) {
+      const timePart = time.split("T")[1];
+      const [hh, mm] = timePart.split(":");
+      return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}`;
+    }
+    return time;
+  }
+
+  function updateCalculations(att: Attendance) {
+    const work = calculateTime(att.start_time, att.end_time || undefined);
+    const breakSum = att.attendance_breaks.reduce((sum, b) => {
       return sum + calculateTime(b.start_time, b.end_time || undefined);
     }, 0);
 
-    setNetWorkingMinutes(work);
     setBreakMinutes(breakSum);
-
-    // Net Working Hoursを計算し、負の値を防ぐ
     const netWorking = Math.max(work - breakSum, 0);
     setNetWorkingMinutes(netWorking);
-  };
+  }
 
-  // 初回データ取得と計算
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -90,7 +124,15 @@ export const App = () => {
         });
         const data: Attendance = await res.json();
         setAttendance(data);
-        updateCalculations();
+        updateCalculations(data);
+        setEditedStartTime(formatTimeForInput(data.start_time));
+        setEditedEndTime(formatTimeForInput(data.end_time || ""));
+        setEditedBreaks(
+          data.attendance_breaks.map((b) => ({
+            start_time: formatTimeForInput(b.start_time),
+            end_time: formatTimeForInput(b.end_time || ""),
+          }))
+        );
       } catch (err) {
         console.error("Error fetching attendance:", err);
       }
@@ -100,17 +142,16 @@ export const App = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      updateCalculations();
-    }, 60 * 1000); // 1分ごとに再計算
+      updateCalculations(attendance);
+    }, 60 * 1000);
 
-    return () => clearInterval(interval); // クリーンアップ
+    return () => clearInterval(interval);
   }, [attendance]);
 
   useEffect(() => {
-    updateCalculations(); // attendanceが更新されたら再計算
+    updateCalculations(attendance);
   }, [attendance]);
 
-  // ボタンを押したときの処理
   const postAction = async (endpoint: string) => {
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/${endpoint}`, {
@@ -120,9 +161,93 @@ export const App = () => {
       });
       const data = await res.json();
       setAttendance(data);
-      updateCalculations(); // ボタン押下時に計算を更新
+      updateCalculations(data);
+      setEditedStartTime(formatTimeForInput(data.start_time));
+      setEditedEndTime(formatTimeForInput(data.end_time || ""));
+      setEditedBreaks(
+        data.attendance_breaks.map((b: { start_time: any; end_time: any }) => ({
+          start_time: formatTimeForInput(b.start_time),
+          end_time: formatTimeForInput(b.end_time || ""),
+        }))
+      );
     } catch (err) {
       console.error(`Error during ${endpoint}:`, err);
+    }
+  };
+
+  // 保存ボタン押下時の処理を追加
+  const handleSave = async () => {
+    try {
+      // 現在日時をISOで取得し、HH:MM:00まで整形する関数
+      const getCurrentDateTimeString = () => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const min = String(now.getMinutes()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}:00`;
+      };
+
+      // 日付部分だけ抽出し、時間を置き換える関数
+      const replaceTimePart = (originalDateTime: string, newHHMM: string): string => {
+        const datePart = originalDateTime.split("T")[0];
+        return `${datePart}T${newHHMM}:00`;
+      };
+
+      // attendanceのstart_timeは必ずある前提で置換
+      const updatedStartTime = replaceTimePart(attendance.start_time, editedStartTime);
+
+      // attendanceのend_timeが空・undefinedなら現在時刻をセット、それ以外は置換
+      const updatedEndTime = attendance.end_time
+        ? replaceTimePart(attendance.end_time, editedEndTime)
+        : getCurrentDateTimeString();
+
+      const updatedBreaks = editedBreaks.map((breakItem, idx) => {
+        const datePart =
+          (attendance.attendance_breaks[idx]?.start_time?.split("T")[0]) ||
+          new Date().toISOString().split("T")[0];
+
+        return {
+          start_time: `${datePart}T${breakItem.start_time}:00`,
+          end_time: breakItem.end_time
+            ? `${datePart}T${breakItem.end_time}:00`
+            : `${datePart}T${new Date().toTimeString().slice(0, 5)}:00`,
+        };
+      });
+
+      const body = {
+        start_time: updatedStartTime,
+        end_time: updatedEndTime,
+        attendance_breaks: updatedBreaks,
+      };
+
+      console.log("Updated body:", body);
+
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/update_attendance`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data: Attendance = await res.json();
+      setAttendance(data);
+      updateCalculations(data);
+      setEditedStartTime(formatTimeForInput(data.start_time));
+      setEditedEndTime(formatTimeForInput(data.end_time || ""));
+      setEditedBreaks(
+        data.attendance_breaks.map((b) => ({
+          start_time: formatTimeForInput(b.start_time),
+          end_time: formatTimeForInput(b.end_time || ""),
+        }))
+      );
+      setEditMode(false);
+    } catch (err) {
+      console.error("Error saving attendance:", err);
     }
   };
 
@@ -139,12 +264,12 @@ export const App = () => {
 
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={() => postAction("start_work")}>
+          <Button fullWidth variant="contained" onClick={handleStartWork}>
             Start Work
           </Button>
         </Grid>
         <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={() => postAction("start_break")}>
+          <Button fullWidth variant="contained" onClick={handleStartBreak}>
             Start Break
           </Button>
         </Grid>
@@ -165,8 +290,8 @@ export const App = () => {
           <Typography>Working Time Today</Typography>
         </Grid>
         <Grid item xs={6}>
-          <FormControlLabel control={<Switch />} label="Modify" />
-          <Button variant="contained" disabled>
+          <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
+          <Button variant="contained" disabled={!editMode} onClick={handleSave} sx={{ ml: 2 }}>
             Save
           </Button>
         </Grid>
@@ -188,20 +313,78 @@ export const App = () => {
               <TableBody>
                 <TableRow>
                   <TableCell>Working Hours</TableCell>
-                  <TableCell align="right">{attendance.start_time}</TableCell>
+                  <TableCell align="right">
+                    {editMode ? (
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={editedStartTime}
+                        onChange={(e) => setEditedStartTime(e.target.value)}
+                        inputProps={{ step: 60 }}
+                      />
+                    ) : (
+                      formatTimeHHMM(attendance.start_time)
+                    )}
+                  </TableCell>
                   <TableCell align="right">～</TableCell>
-                  <TableCell align="right">{attendance.end_time || "Still Working"}</TableCell>
+                  <TableCell align="right">
+                    {editMode ? (
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={editedEndTime}
+                        onChange={(e) => setEditedEndTime(e.target.value)}
+                        inputProps={{ step: 60 }}
+                      />
+                    ) : attendance.end_time ? (
+                      formatTimeHHMM(attendance.end_time)
+                    ) : (
+                      "Still Working"
+                    )}
+                  </TableCell>
                 </TableRow>
-
                 {attendance.attendance_breaks.map((b, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{`Break ${idx + 1}`}</TableCell>
-                    <TableCell align="right">{b.start_time}</TableCell>
+                    <TableCell align="right">
+                      {editMode ? (
+                        <TextField
+                          size="small"
+                          type="time"
+                          value={editedBreaks[idx]?.start_time || ""}
+                          onChange={(e) => {
+                            const updated = [...editedBreaks];
+                            updated[idx].start_time = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          inputProps={{ step: 60 }}
+                        />
+                      ) : (
+                        formatTimeHHMM(b.start_time)
+                      )}
+                    </TableCell>
                     <TableCell align="right">～</TableCell>
-                    <TableCell align="right">{b.end_time || "Still on Break"}</TableCell>
+                    <TableCell align="right">
+                      {editMode ? (
+                        <TextField
+                          size="small"
+                          type="time"
+                          value={editedBreaks[idx]?.end_time || ""}
+                          onChange={(e) => {
+                            const updated = [...editedBreaks];
+                            updated[idx].end_time = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          inputProps={{ step: 60 }}
+                        />
+                      ) : b.end_time ? (
+                        formatTimeHHMM(b.end_time)
+                      ) : (
+                        "Still on Break"
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
-
                 <TableRow>
                   <TableCell>Total Break Hours</TableCell>
                   <TableCell colSpan={2} />
@@ -216,6 +399,7 @@ export const App = () => {
             </Table>
           </TableContainer>
         </Grid>
+        <Grid item xs={1}></Grid>
       </Grid>
     </Box>
   );

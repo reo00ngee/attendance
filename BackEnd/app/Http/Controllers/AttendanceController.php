@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +21,6 @@ class AttendanceController extends Controller
     {
         \Log::info('startWork in');
         $user_id = Auth::id();
-        // $user = Auth::user();
-        // $user2 = request()->user();
-        // \Log::info('User: ' , [$user,$user2] );
-        // \Log::info('User ID: ' . $user_id);
         $this->attendanceService->startWork($user_id);
         return $this->attendanceService->getLatestAttendancesForUser($user_id);
     }
@@ -46,6 +43,21 @@ class AttendanceController extends Controller
     {
         $user_id = Auth::id();
         $this->attendanceService->finishBreak($user_id);
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
+
+    public function updateAttendance(Request $request)
+    {
+        $user_id = Auth::id();
+        $validated = $request->validate([
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after_or_equal:start_time',
+            'attendance_breaks' => 'nullable|array',
+            'attendance_breaks.*.start_time' => 'required|date',
+            'attendance_breaks.*.end_time' => 'required|date|after_or_equal:attendance_breaks.*.start_time',
+        ]);
+
+        $this->attendanceService->updateAttendance($user_id, $validated);
         return $this->attendanceService->getLatestAttendancesForUser($user_id);
     }
 

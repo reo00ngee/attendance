@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Log;
 trait FetchAttendanceTimeTrait
 {
 
-    private AttendanceRepository $attendanceRepository;
-    public function __construct(AttendanceRepository $attendanceRepository)
-    {
-        $this->attendanceRepository = $attendanceRepository;
-    }
+    // private AttendanceRepository $attendanceRepository;
+    // public function __construct(AttendanceRepository $attendanceRepository)
+    // {
+    //     $this->attendanceRepository = $attendanceRepository;
+    // }
 
     public function getLatestAttendancesForUser($user_id): \Illuminate\Http\JsonResponse
     {
@@ -21,14 +21,14 @@ trait FetchAttendanceTimeTrait
 
         if ($latestAttendance) {
             // 最後の出席時間と終了時間をフォーマット
-            $latestStartAttendance = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('G:i');
-            $latestFinishAttendance = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('G:i');
+            $latestStartAttendance = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('Y-m-d\TH:i:s');
+            $latestFinishAttendance = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('Y-m-d\TH:i:s');
 
             // attendanceBreaks（休憩）をフォーマットして追加
             $attendanceBreaks = $latestAttendance->attendanceBreaks->map(function ($break) {
                 return [
-                    'start_time' => $break->start_time ? $break->start_time->format('G:i') : '',
-                    'end_time' => $break->end_time ? $break->end_time->format('G:i') : '',
+                    'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',
+                    'end_time' => $break->end_time ? $break->end_time->format('Y-m-d\TH:i:s') : '',
                 ];
             });
 

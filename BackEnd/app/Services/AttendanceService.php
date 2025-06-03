@@ -34,4 +34,9 @@ class AttendanceService
     {
         return $this->attendanceRepository->saveFinishBreak($user_id);
     }
+
+    public function updateAttendance($user_id, $validated)
+    {
+        return $this->attendanceRepository->updateAttendance($user_id, $validated);
+    }
 }

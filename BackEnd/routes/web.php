@@ -26,6 +26,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
     Route::post('/start_break', [AttendanceController::class, 'startBreak']);
     Route::post('/finish_break', [AttendanceController::class, 'finishBreak']);
+    Route::post('/update_attendance', [AttendanceController::class, 'updateAttendance']);
     Route::get('/get_latest_attendances_for_user', [AttendanceController::class, 'getLatestAttendancesForUser']);
 });
 

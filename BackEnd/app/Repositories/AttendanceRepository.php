@@ -44,6 +44,29 @@ class AttendanceRepository
         $attendanceBreak->save();
     }
 
+    public function updateAttendance($user_id, $validated)
+    {
+
+        Log::info($validated);
+        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendance->start_time = $validated['start_time'];
+        $attendance->end_time = $validated['end_time'];
+        $attendance->save();
+
+        // 既存の休憩データを削除（完全置き換えの場合）
+        $attendance->attendanceBreaks()->delete();
+
+        // 新しい休憩データを挿入
+        foreach ($validated['attendance_breaks'] as $break) {
+        // Log::info($break);
+            $attendance->attendanceBreaks()->create([
+                'user_id' => $user_id,
+                'start_time' => $break['start_time'],
+                'end_time' => $break['end_time'],
+            ]);
+        }
+    }
+
 
 
 
@@ -55,8 +78,6 @@ class AttendanceRepository
             ->orderBy('start_time', 'desc')
             ->orderBy('end_time', 'desc')
             ->first();
-
-            // dd($latestattendance);
 
             return $latestattendance;
         } catch (\Exception $e) {
