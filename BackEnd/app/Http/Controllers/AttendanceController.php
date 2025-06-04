@@ -67,6 +67,12 @@ class AttendanceController extends Controller
         $user_id = Auth::id();
         return $this->attendanceService->getLatestAttendancesForUser($user_id);
     }
+
+    public function getAllAttendancesForUser(Request $request)
+    {
+        $user_id = Auth::id();
+        return $this->attendanceService->getAllAttendancesForUser($user_id);
+    }
     /**
      * Display a listing of the resource.
      */

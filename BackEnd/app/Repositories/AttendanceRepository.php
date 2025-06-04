@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Attendance;
 use App\Models\AttendanceBreak;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceRepository
 {
@@ -46,38 +47,47 @@ class AttendanceRepository
 
     public function updateAttendance($user_id, $validated)
     {
+        try {
+            DB::beginTransaction();
 
-        Log::info($validated);
-        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
-        $attendance->start_time = $validated['start_time'];
-        $attendance->end_time = $validated['end_time'];
-        $attendance->save();
+            $attendance = Attendance::where('user_id', $user_id)->latest()->first();
 
-        // 既存の休憩データを削除（完全置き換えの場合）
-        $attendance->attendanceBreaks()->delete();
+            if (!$attendance) {
+                throw new \Exception("Attendance record not found for user ID: {$user_id}");
+            }
 
-        // 新しい休憩データを挿入
-        foreach ($validated['attendance_breaks'] as $break) {
-        // Log::info($break);
-            $attendance->attendanceBreaks()->create([
-                'user_id' => $user_id,
-                'start_time' => $break['start_time'],
-                'end_time' => $break['end_time'],
-            ]);
+            $attendance->start_time = $validated['start_time'];
+            $attendance->end_time = $validated['end_time'];
+            $attendance->save();
+
+            $attendance->attendanceBreaks()->delete();
+
+            foreach ($validated['attendance_breaks'] as $break) {
+                $attendance->attendanceBreaks()->create([
+                    'user_id' => $user_id,
+                    'start_time' => $break['start_time'],
+                    'end_time' => $break['end_time'],
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("Failed to update attendance: " . $e->getMessage());
+
+            throw $e;
         }
     }
-
-
-
 
     public function getLatestAttendancesForUser($user_id)
     {
         try {
             $latestattendance = Attendance::with('attendanceBreaks')
-            ->where('user_id', $user_id)
-            ->orderBy('start_time', 'desc')
-            ->orderBy('end_time', 'desc')
-            ->first();
+                ->where('user_id', $user_id)
+                ->orderBy('start_time', 'desc')
+                ->orderBy('end_time', 'desc')
+                ->first();
 
             return $latestattendance;
         } catch (\Exception $e) {
@@ -85,5 +95,10 @@ class AttendanceRepository
             \Log::error('エラー内容: ' . $e->getMessage());
             return null;
         }
+    }
+
+    public function getAllAttendancesForUser($user_id)
+    {
+        // 月ごとに勤怠を全権取得する
     }
 }

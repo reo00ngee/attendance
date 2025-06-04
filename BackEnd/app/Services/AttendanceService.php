@@ -39,4 +39,9 @@ class AttendanceService
     {
         return $this->attendanceRepository->updateAttendance($user_id, $validated);
     }
+
+    public function getAllAttendancesForUser($user_id)
+    {
+        return $this->attendanceRepository->getAllAttendancesForUser($user_id);
+    }
 }

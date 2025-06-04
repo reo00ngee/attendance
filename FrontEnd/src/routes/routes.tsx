@@ -5,7 +5,8 @@ import {
     Route,
     Link,
 } from 'react-router-dom'
-import AttendanceRegistration from '../pages/AttendanceRegistration'
+import AttendanceRegistrationForDaily from '../pages/AttendanceRegistrationForDaily'
+import AttendanceRegistrationForMonthly from '../pages/AttendanceRegistrationForMonthly'
 import Login from '../pages/Login'
 import NotFound from '../pages/NotFound'
 import AuthLayout from '../components/AuthLayout'
@@ -23,7 +24,7 @@ const guardLoader = async () => {
  */
 const guestLoader = async () => {
     const user = await UseAuthUser()
-    return user ? redirect('/attendance_registration') : true
+    return user ? redirect('/attendance_registration_for_daily') : true
 }
 
 export const router = createBrowserRouter([
@@ -37,8 +38,13 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
             {
-                path: 'attendance_registration',
-                element: <AttendanceRegistration />,
+                path: 'attendance_registration_for_daily',
+                element: <AttendanceRegistrationForDaily />,
+                loader: guardLoader
+            },
+            {
+                path: 'attendance_registration_for_monthly',
+                element: <AttendanceRegistrationForMonthly />,
                 loader: guardLoader
             }, {
                 path: '*',

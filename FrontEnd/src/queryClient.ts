@@ -27,7 +27,7 @@ export const UseLogin = () => {
       onSuccess: (data) => {
           console.log(data)
           queryClient.invalidateQueries({queryKey: ['auth'] })
-          window.location.href = '/attendance_registration'
+          window.location.href = '/attendance_registration_for_daily'
       }
   })
 }

@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
 
-export const App = () => {
+const AttendanceRegistrationForDaily = () => {
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
@@ -405,4 +405,4 @@ const handleStartBreak = () => {
   );
 };
 
-export default App;
+export default AttendanceRegistrationForDaily;
