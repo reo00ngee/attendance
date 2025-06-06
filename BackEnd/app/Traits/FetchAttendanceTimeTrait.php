@@ -21,8 +21,8 @@ trait FetchAttendanceTimeTrait
 
         if ($latestAttendance) {
             // 最後の出席時間と終了時間をフォーマット
-            $latestStartAttendance = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('Y-m-d\TH:i:s');
-            $latestFinishAttendance = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('Y-m-d\TH:i:s');
+            $startTime = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('Y-m-d\TH:i:s');
+            $endTime = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('Y-m-d\TH:i:s');
 
             // attendanceBreaks（休憩）をフォーマットして追加
             $attendanceBreaks = $latestAttendance->attendanceBreaks->map(function ($break) {
@@ -33,8 +33,8 @@ trait FetchAttendanceTimeTrait
             });
 
             return response()->json([
-                'start_time' => $latestStartAttendance,
-                'end_time' => $latestFinishAttendance,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
                 'attendance_breaks' => $attendanceBreaks,  // attendanceBreaks を追加
             ]);
         } else {

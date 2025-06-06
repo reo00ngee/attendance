@@ -31,47 +31,57 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndTime, setEditedEndTime] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<{ start_time: string; end_time: string }[]>([]);
 
-function calculateTime(startTime: string, endTime?: string): number {
-  if (!startTime) return 0;
+  function calculateTime(startTime: string, endTime?: string): number {
+    if (!startTime) return 0;
 
-  const start = new Date(startTime);
-  if (isNaN(start.getTime())) return 0;
+    const start = new Date(startTime);
+    if (isNaN(start.getTime())) return 0;
 
-  let end: Date;
-  if (endTime) {
-    end = new Date(endTime);
-    if (isNaN(end.getTime())) return 0;
+    let end: Date;
+    if (endTime) {
+      end = new Date(endTime);
+      if (isNaN(end.getTime())) return 0;
 
-    // 翌日をまたぐ処理は ISO形式でも一応必要（稀なケースだが）
-    if (end < start) {
-      end.setDate(end.getDate() + 1);
+      // 翌日をまたぐ処理は ISO形式でも一応必要（稀なケースだが）
+      if (end < start) {
+        end.setDate(end.getDate() + 1);
+      }
+    } else {
+      end = new Date(); // 今の時刻
     }
-  } else {
-    end = new Date(); // 今の時刻
+
+    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒→分
+    return Math.max(diff, 0);
   }
 
-  const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒→分
-  return Math.max(diff, 0);
-}
+  const handleStartWork = () => {
+    if (!attendance.end_time) {
+      alert("The previous work end time is not registered. Please register the end time first.");
+      return;
+    }
+    postAction("start_work");
+  };
 
-const handleStartWork = () => {
-  if (!attendance.end_time) {
-    alert("The previous work end time is not registered. Please register the end time first.");
-    return;
-  }
-  postAction("start_work");
-};
+  const handleFinishWork = () => {
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
 
-const handleStartBreak = () => {
-  const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+    if (unfinishedBreak) {
+      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+      return;
+    }
+    postAction("finish_work");
+  };
 
-  if (unfinishedBreak) {
-    alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
-    return;
-  }
+  const handleStartBreak = () => {
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
 
-  postAction("start_break");
-};
+    if (unfinishedBreak) {
+      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+      return;
+    }
+
+    postAction("start_break");
+  };
 
   function convertToHoursAndMinutes(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
@@ -279,7 +289,7 @@ const handleStartBreak = () => {
           </Button>
         </Grid>
         <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={() => postAction("finish_work")}>
+          <Button fullWidth variant="contained" onClick={handleFinishWork}>
             Finish Work
           </Button>
         </Grid>

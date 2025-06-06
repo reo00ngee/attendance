@@ -82,23 +82,22 @@ class AttendanceRepository
 
     public function getLatestAttendancesForUser($user_id)
     {
-        try {
-            $latestattendance = Attendance::with('attendanceBreaks')
-                ->where('user_id', $user_id)
-                ->orderBy('start_time', 'desc')
-                ->orderBy('end_time', 'desc')
-                ->first();
+        $latestattendance = Attendance::with('attendanceBreaks')
+            ->where('user_id', $user_id)
+            ->orderBy('start_time', 'desc')
+            ->orderBy('end_time', 'desc')
+            ->first();
 
-            return $latestattendance;
-        } catch (\Exception $e) {
-            \Log::info($e->getMessage());
-            \Log::error('エラー内容: ' . $e->getMessage());
-            return null;
-        }
+        return $latestattendance;
     }
 
-    public function getAllAttendancesForUser($user_id)
+    public function getAllAttendancesForUser($user_id, $year, $month)
     {
-        // 月ごとに勤怠を全権取得する
+        return Attendance::with('attendanceBreaks')
+            ->where('user_id', $user_id)
+            ->whereYear('start_time', $year)
+            ->whereMonth('start_time', $month)
+            ->orderBy('start_time', 'desc')
+            ->get();
     }
 }

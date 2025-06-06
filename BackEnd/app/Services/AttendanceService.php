@@ -22,7 +22,7 @@ class AttendanceService
 
     public function finishWork($user_id)
     {
-        $this->attendanceRepository->saveFinishAttendance($user_id);
+        return $this->attendanceRepository->saveFinishAttendance($user_id);
     }
 
     public function startBreak($user_id)
@@ -40,8 +40,21 @@ class AttendanceService
         return $this->attendanceRepository->updateAttendance($user_id, $validated);
     }
 
-    public function getAllAttendancesForUser($user_id)
+    public function getAllAttendancesForUser($user_id, $year, $month)
     {
-        return $this->attendanceRepository->getAllAttendancesForUser($user_id);
+        $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $year, $month);
+        return $attendances->map(function ($attendance) {
+            return [
+                'attendance_id'     => $attendance->id,
+                'start_time'        => $attendance->start_time->format('Y-m-d\TH:i:s'),
+                'end_time'          => optional($attendance->end_time)->format('Y-m-d\TH:i:s'),
+                'attendance_breaks' => $attendance->attendanceBreaks->map(function ($break) {
+                    return [
+                        'start_time' => $break->start_time->format('Y-m-d\TH:i:s'),
+                        'end_time'   => optional($break->end_time)->format('Y-m-d\TH:i:s'),
+                    ];
+                }),
+            ];
+        });
     }
 }
