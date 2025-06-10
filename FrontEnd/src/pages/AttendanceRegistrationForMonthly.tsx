@@ -16,6 +16,9 @@ import {
   TextField,
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
+import { formatTimeHHMM } from "../utils/format";
+import { calculateDiffTime } from "../utils/calculate";
+
 
 
 // type AttendanceRow = {
@@ -27,7 +30,7 @@ import { Attendance } from "../types/Attendance";
 // };
 
 const AttendanceRegistrationForMonthly = () => {
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
 
@@ -58,7 +61,7 @@ const AttendanceRegistrationForMonthly = () => {
   };
 
   useEffect(() => {
-    const fetchAttendance = async () => {
+    const fetchAttendances = async () => {
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_attendances_for_user?year=${year}&month=${month}`, {
           method: "GET",
@@ -66,7 +69,7 @@ const AttendanceRegistrationForMonthly = () => {
           credentials: "include",
         });
         const data = await res.json();
-        setAttendance(data);
+        setAttendances(data);
         console.log("Attendance data:", data);
 
       } catch (err) {
@@ -74,7 +77,7 @@ const AttendanceRegistrationForMonthly = () => {
       }
     };
 
-    fetchAttendance();
+    fetchAttendances();
   }
     , [year, month]);
   return (
@@ -96,20 +99,19 @@ const AttendanceRegistrationForMonthly = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="right">日付</TableCell>
-                <TableCell align="right">開始</TableCell>
-                <TableCell align="right">終了</TableCell>
-                <TableCell align="right">休憩</TableCell>
-                <TableCell align="right">労働時間</TableCell>
+                <TableCell align="right">Date</TableCell>
+                <TableCell align="right">Start Time</TableCell>
+                <TableCell align="right">End Time</TableCell>
+                <TableCell align="right">Break</TableCell>
+                <TableCell align="right">Working Hours</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {attendance.map((row, i) => (
+              {attendances.map((attendance, i) => (
                 <TableRow key={i}>
-                  {/* <TableCell>{row.date}</TableCell> */}
-                  <TableCell align="right">{formatDate(row.start_time)}</TableCell>
-                  <TableCell align="right">{row.start_time}</TableCell>
-                  <TableCell align="right">{row.end_time}</TableCell>
+                  <TableCell align="right">{formatDate(attendance.start_time)}</TableCell>
+                  <TableCell align="right">{formatTimeHHMM(attendance.start_time)}</TableCell>
+                  <TableCell align="right">{formatTimeHHMM(attendance.end_time)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

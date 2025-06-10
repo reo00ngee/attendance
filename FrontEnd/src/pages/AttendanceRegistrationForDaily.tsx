@@ -17,6 +17,8 @@ import {
   TextField,
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
+import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes } from "../utils/format";
+import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 
 const AttendanceRegistrationForDaily = () => {
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
@@ -31,32 +33,11 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndTime, setEditedEndTime] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<{ start_time: string; end_time: string }[]>([]);
 
-  function calculateTime(startTime: string, endTime?: string): number {
-    if (!startTime) return 0;
 
-    const start = new Date(startTime);
-    if (isNaN(start.getTime())) return 0;
-
-    let end: Date;
-    if (endTime) {
-      end = new Date(endTime);
-      if (isNaN(end.getTime())) return 0;
-
-      // 翌日をまたぐ処理は ISO形式でも一応必要（稀なケースだが）
-      if (end < start) {
-        end.setDate(end.getDate() + 1);
-      }
-    } else {
-      end = new Date(); // 今の時刻
-    }
-
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60); // ミリ秒→分
-    return Math.max(diff, 0);
-  }
 
   const handleStartWork = () => {
     if (!attendance.end_time) {
-      alert("The previous work end time is not registered. Please register the end time first.");
+      alert("The previous work end time is not registered. Please register the start time first.");
       return;
     }
     postAction("start_work");
@@ -83,47 +64,6 @@ const AttendanceRegistrationForDaily = () => {
     postAction("start_break");
   };
 
-  function convertToHoursAndMinutes(totalMinutes: number): string {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.floor(totalMinutes % 60);
-
-    const hourStr = hours > 0 ? `${hours}h` : "";
-    const minStr = minutes > 0 ? `${minutes}m` : "";
-
-    return [hourStr, minStr].filter(Boolean).join(" ");
-  }
-
-  function formatTimeHHMM(time: string): string {
-    if (!time) return "";
-    const timePart = time.includes("T") ? time.split("T")[1] : time;
-    const [hh, mm] = timePart.split(":");
-    const hhPadded = hh.padStart(2, "0");
-    const mmPadded = mm.padStart(2, "0");
-    return `${hhPadded}:${mmPadded}`;
-  }
-
-  // 新たに追加した関数：ISO日時（2025-05-31T17:56:22）を時分だけのフォーマットに変換
-  function formatTimeForInput(time: string): string {
-    if (!time) return "";
-    if (time.includes("T")) {
-      const timePart = time.split("T")[1];
-      const [hh, mm] = timePart.split(":");
-      return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}`;
-    }
-    return time;
-  }
-
-  function updateCalculations(att: Attendance) {
-    const work = calculateTime(att.start_time, att.end_time || undefined);
-    const breakSum = att.attendance_breaks.reduce((sum, b) => {
-      return sum + calculateTime(b.start_time, b.end_time || undefined);
-    }, 0);
-
-    setBreakMinutes(breakSum);
-    const netWorking = Math.max(work - breakSum, 0);
-    setNetWorkingMinutes(netWorking);
-  }
-
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -134,7 +74,7 @@ const AttendanceRegistrationForDaily = () => {
         });
         const data: Attendance = await res.json();
         setAttendance(data);
-        updateCalculations(data);
+        calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
         setEditedStartTime(formatTimeForInput(data.start_time));
         setEditedEndTime(formatTimeForInput(data.end_time || ""));
         setEditedBreaks(
@@ -152,14 +92,14 @@ const AttendanceRegistrationForDaily = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      updateCalculations(attendance);
+      calculateBreakMinutesAndNetWorkingMinutes(attendance, setBreakMinutes, setNetWorkingMinutes);
     }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [attendance]);
 
   useEffect(() => {
-    updateCalculations(attendance);
+    calculateBreakMinutesAndNetWorkingMinutes(attendance, setBreakMinutes, setNetWorkingMinutes);
   }, [attendance]);
 
   const postAction = async (endpoint: string) => {
@@ -171,7 +111,7 @@ const AttendanceRegistrationForDaily = () => {
       });
       const data = await res.json();
       setAttendance(data);
-      updateCalculations(data);
+      calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedBreaks(
@@ -246,7 +186,7 @@ const AttendanceRegistrationForDaily = () => {
 
       const data: Attendance = await res.json();
       setAttendance(data);
-      updateCalculations(data);
+      calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedBreaks(
@@ -303,6 +243,15 @@ const AttendanceRegistrationForDaily = () => {
           <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
           <Button variant="contained" disabled={!editMode} onClick={handleSave} sx={{ ml: 2 }}>
             Save
+          </Button>
+        </Grid>
+        <Grid item xs={3} sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button fullWidth
+            variant="contained"
+            component="a"
+            href="/attendance_registration_for_monthly"
+          >
+            MONTHLY ATTENDANCE
           </Button>
         </Grid>
       </Grid>
