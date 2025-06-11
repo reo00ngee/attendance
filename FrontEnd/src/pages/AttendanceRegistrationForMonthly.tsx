@@ -15,24 +15,28 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
+import { format } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { formatTimeHHMM } from "../utils/format";
-import { calculateDiffTime } from "../utils/calculate";
-
-
-
-// type AttendanceRow = {
-//   date: string;
-//   start: string;
-//   end: string;
-//   break: string;
-//   work: string;
-// };
+import { getUserName } from "../utils/user";
+import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
+import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 
 const AttendanceRegistrationForMonthly = () => {
+  const pageTitle = "Attendance Registration For Monthly";
+  const tableHeaders = [
+    "Date",
+    "Start Time",
+    "",
+    "End Time",
+    "Break",
+    "Working Hours"
+  ];
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [breakMinutesArray, setBreakMinutesArray] = useState<number[]>([]);
+  const [netWorkingMinutesArray, setNetWorkingMinutesArray] = useState<number[]>([]);
+  const [totalWorkingMinutes, setTotalWorkingMinutes] = useState<number>(0);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -52,14 +56,6 @@ const AttendanceRegistrationForMonthly = () => {
     }
   };
 
-  const formatDate = (startTime: string): string => {
-    const date = new Date(startTime);
-    const month = date.getMonth() + 1; // 0-indexed
-    const day = date.getDate();
-    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' }); // 例: "Thu"
-    return `${month}/${day} ${weekday}`;
-  };
-
   useEffect(() => {
     const fetchAttendances = async () => {
       try {
@@ -68,9 +64,24 @@ const AttendanceRegistrationForMonthly = () => {
           mode: "cors",
           credentials: "include",
         });
-        const data = await res.json();
+        const data: Attendance[] = await res.json();
         setAttendances(data);
         console.log("Attendance data:", data);
+
+        const breaks: number[] = [];
+        const netWorks: number[] = [];
+
+        data.forEach((att) => {
+          const [b, n] = calculateBreakMinutesAndNetWorkingMinutes(att);
+          breaks.push(b);
+          netWorks.push(n);
+        });
+
+        setBreakMinutesArray(breaks);
+        setNetWorkingMinutesArray(netWorks);
+
+        const total = netWorkingMinutesArray.reduce((sum, minutes) => sum + minutes, 0);
+        setTotalWorkingMinutes(total);
 
       } catch (err) {
         console.error("Error saving attendance:", err);
@@ -81,29 +92,38 @@ const AttendanceRegistrationForMonthly = () => {
   }
     , [year, month]);
   return (
-    <>
-      <Box sx={{ p: 3 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button onClick={handlePrevMonth}>&lt;</button>
-          <span>{year}年 {String(month).padStart(2, '0')}月</span>
-          <button onClick={handleNextMonth}>&gt;</button>
-        </div>
-      </Box>
-
+    <Box sx={{ flexGrow: 1, padding: 3 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Typography variant="h4">{pageTitle}</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>{getUserName()}</Typography>
+        </Grid>
+      </Grid>
       <Box sx={{ p: 3 }}>
         <Typography variant="h6">月間勤務表（月次勤怠）</Typography>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          総労働時間:
+          総労働時間:{convertToHoursAndMinutes(totalWorkingMinutes)}
         </Typography>
+        <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <button onClick={handlePrevMonth}>&lt;</button>
+            <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+              {format(new Date(year, month - 1), "MMMM yyyy")}
+            </span>
+            <button onClick={handleNextMonth}>&gt;</button>
+          </div>
+        </Box>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="right">Date</TableCell>
-                <TableCell align="right">Start Time</TableCell>
-                <TableCell align="right">End Time</TableCell>
-                <TableCell align="right">Break</TableCell>
-                <TableCell align="right">Working Hours</TableCell>
+                {tableHeaders.map((header, index) => (
+                  <TableCell key={index} align="right">
+                    {header}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -111,14 +131,17 @@ const AttendanceRegistrationForMonthly = () => {
                 <TableRow key={i}>
                   <TableCell align="right">{formatDate(attendance.start_time)}</TableCell>
                   <TableCell align="right">{formatTimeHHMM(attendance.start_time)}</TableCell>
+                  <TableCell align="right">~</TableCell>
                   <TableCell align="right">{formatTimeHHMM(attendance.end_time)}</TableCell>
+                  <TableCell align="right">{convertToHoursAndMinutes(breakMinutesArray[i])} </TableCell>
+                  <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutesArray[i])} </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
-    </>
+    </Box>
   );
 };
 

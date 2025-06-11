@@ -16,17 +16,12 @@ export function calculateDiffTime(startTime: string, endTime?: string): number {
   return Math.max(diffMinutes, 0);
 }
 
-export function calculateBreakMinutesAndNetWorkingMinutes(
-  att: Attendance,
-  setBreakMinutes: SetNumberFn,
-  setNetWorkingMinutes: SetNumberFn
-) {
+// Calculates the BreakMinutes And NetWorkingMinutes
+export function calculateBreakMinutesAndNetWorkingMinutes(att: Attendance): [number, number] {
   const work = calculateDiffTime(att.start_time, att.end_time || undefined);
   const breakSum = att.attendance_breaks.reduce((sum, b) => {
     return sum + calculateDiffTime(b.start_time, b.end_time || undefined);
   }, 0);
-
-  setBreakMinutes(breakSum);
   const netWorking = Math.max(work - breakSum, 0);
-  setNetWorkingMinutes(netWorking);
+  return [breakSum, netWorking];
 }

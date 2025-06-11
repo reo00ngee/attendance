@@ -17,10 +17,18 @@ import {
   TextField,
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
-import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes } from "../utils/format";
+import { getUserName } from "../utils/user";
+import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 
 const AttendanceRegistrationForDaily = () => {
+  const pageTitle = "Attendance Registration For Daily";
+  const tableHeaders = [
+    "",
+    "Start Time",
+    "",
+    "End Time",
+  ]
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
@@ -74,7 +82,10 @@ const AttendanceRegistrationForDaily = () => {
         });
         const data: Attendance = await res.json();
         setAttendance(data);
-        calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
+        const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
+        setBreakMinutes(breakSum);
+        setNetWorkingMinutes(netWorking);
+
         setEditedStartTime(formatTimeForInput(data.start_time));
         setEditedEndTime(formatTimeForInput(data.end_time || ""));
         setEditedBreaks(
@@ -92,14 +103,18 @@ const AttendanceRegistrationForDaily = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      calculateBreakMinutesAndNetWorkingMinutes(attendance, setBreakMinutes, setNetWorkingMinutes);
+        const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
+        setBreakMinutes(breakSum);
+        setNetWorkingMinutes(netWorking);
     }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [attendance]);
 
   useEffect(() => {
-    calculateBreakMinutesAndNetWorkingMinutes(attendance, setBreakMinutes, setNetWorkingMinutes);
+    const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
+    setBreakMinutes(breakSum);
+    setNetWorkingMinutes(netWorking);
   }, [attendance]);
 
   const postAction = async (endpoint: string) => {
@@ -111,7 +126,9 @@ const AttendanceRegistrationForDaily = () => {
       });
       const data = await res.json();
       setAttendance(data);
-      calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
+      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
+      setBreakMinutes(breakSum);
+      setNetWorkingMinutes(netWorking);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedBreaks(
@@ -186,7 +203,9 @@ const AttendanceRegistrationForDaily = () => {
 
       const data: Attendance = await res.json();
       setAttendance(data);
-      calculateBreakMinutesAndNetWorkingMinutes(data, setBreakMinutes, setNetWorkingMinutes);
+      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
+      setBreakMinutes(breakSum);
+      setNetWorkingMinutes(netWorking);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedBreaks(
@@ -205,10 +224,10 @@ const AttendanceRegistrationForDaily = () => {
     <Box sx={{ flexGrow: 1, padding: 3 }}>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h4">Attendance Registration For Today</Typography>
+          <Typography variant="h4">{pageTitle}</Typography>
         </Grid>
         <Grid item xs={12}>
-          <Typography>UserName: YAMADA</Typography>
+          <Typography>{getUserName()}</Typography>
         </Grid>
       </Grid>
 
@@ -237,7 +256,7 @@ const AttendanceRegistrationForDaily = () => {
 
       <Grid container spacing={2} sx={{ mt: 3, alignItems: "center" }}>
         <Grid item xs={3}>
-          <Typography>Working Time Today</Typography>
+          <Typography>{formatDate(attendance.start_time)}</Typography>
         </Grid>
         <Grid item xs={6}>
           <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
@@ -263,10 +282,11 @@ const AttendanceRegistrationForDaily = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell></TableCell>
-                  <TableCell align="right">Start Time</TableCell>
-                  <TableCell align="right"></TableCell>
-                  <TableCell align="right">End Time</TableCell>
+                  {tableHeaders.map((header, index) => (
+                    <TableCell key={index} align="right">
+                      {header}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
