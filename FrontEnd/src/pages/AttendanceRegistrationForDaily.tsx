@@ -32,6 +32,7 @@ const AttendanceRegistrationForDaily = () => {
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
+    attendance_id: 0,
     start_time: "",
     end_time: "",
     attendance_breaks: [],

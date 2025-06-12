@@ -29,7 +29,8 @@ const AttendanceRegistrationForMonthly = () => {
     "",
     "End Time",
     "Break",
-    "Working Hours"
+    "Working Hours",
+    ""
   ];
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -37,6 +38,7 @@ const AttendanceRegistrationForMonthly = () => {
   const [breakMinutesArray, setBreakMinutesArray] = useState<number[]>([]);
   const [netWorkingMinutesArray, setNetWorkingMinutesArray] = useState<number[]>([]);
   const [totalWorkingMinutes, setTotalWorkingMinutes] = useState<number>(0);
+  const [totalWorkingDays, setTotalWorkingDays] = useState<number>(0);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -54,6 +56,11 @@ const AttendanceRegistrationForMonthly = () => {
     } else {
       setMonth(month + 1);
     }
+  };
+
+  const handleModify = (attendanceId: number) => {
+    // Implement the logic to modify the attendance record
+    console.log("Modify attendance with ID:", attendanceId);
   };
 
   useEffect(() => {
@@ -83,6 +90,9 @@ const AttendanceRegistrationForMonthly = () => {
         const total = netWorkingMinutesArray.reduce((sum, minutes) => sum + minutes, 0);
         setTotalWorkingMinutes(total);
 
+        const totalWorkingDays = attendances.filter(att => att.start_time).length;
+        setTotalWorkingDays(totalWorkingDays);
+
       } catch (err) {
         console.error("Error saving attendance:", err);
       }
@@ -91,6 +101,7 @@ const AttendanceRegistrationForMonthly = () => {
     fetchAttendances();
   }
     , [year, month]);
+
   return (
     <Box sx={{ flexGrow: 1, padding: 3 }}>
       <Grid container spacing={2}>
@@ -102,9 +113,11 @@ const AttendanceRegistrationForMonthly = () => {
         </Grid>
       </Grid>
       <Box sx={{ p: 3 }}>
-        <Typography variant="h6">月間勤務表（月次勤怠）</Typography>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          総労働時間:{convertToHoursAndMinutes(totalWorkingMinutes)}
+          Total Working Hours: {convertToHoursAndMinutes(totalWorkingMinutes)}
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Total Working Days: {totalWorkingDays}d
         </Typography>
         <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -135,6 +148,15 @@ const AttendanceRegistrationForMonthly = () => {
                   <TableCell align="right">{formatTimeHHMM(attendance.end_time)}</TableCell>
                   <TableCell align="right">{convertToHoursAndMinutes(breakMinutesArray[i])} </TableCell>
                   <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutesArray[i])} </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleModify(attendance.attendance_id)}
+                    >
+                      Modify
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
