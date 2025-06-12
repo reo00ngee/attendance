@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import {
   Paper,
-  Grid,
-  Box,
   Typography,
   Button,
-  FormControlLabel,
-  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
+  Box,
 } from "@mui/material";
 import { format } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { getUserName } from "../utils/user";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
+import Section from "../components/Section";
 
 const AttendanceRegistrationForMonthly = () => {
   const pageTitle = "Attendance Registration For Monthly";
@@ -73,7 +71,6 @@ const AttendanceRegistrationForMonthly = () => {
         });
         const data: Attendance[] = await res.json();
         setAttendances(data);
-        console.log("Attendance data:", data);
 
         const breaks: number[] = [];
         const netWorks: number[] = [];
@@ -87,11 +84,8 @@ const AttendanceRegistrationForMonthly = () => {
         setBreakMinutesArray(breaks);
         setNetWorkingMinutesArray(netWorks);
 
-        const total = netWorkingMinutesArray.reduce((sum, minutes) => sum + minutes, 0);
-        setTotalWorkingMinutes(total);
-
-        const totalWorkingDays = attendances.filter(att => att.start_time).length;
-        setTotalWorkingDays(totalWorkingDays);
+        setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
+        setTotalWorkingDays(data.filter(att => att.start_time).length);
 
       } catch (err) {
         console.error("Error saving attendance:", err);
@@ -99,34 +93,40 @@ const AttendanceRegistrationForMonthly = () => {
     };
 
     fetchAttendances();
-  }
-    , [year, month]);
+  }, [year, month]);
 
   return (
-    <Box sx={{ flexGrow: 1, padding: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h4">{pageTitle}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography>{getUserName()}</Typography>
-        </Grid>
-      </Grid>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Total Working Hours: {convertToHoursAndMinutes(totalWorkingMinutes)}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Total Working Days: {totalWorkingDays}d
-        </Typography>
-        <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <button onClick={handlePrevMonth}>&lt;</button>
-            <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
-              {format(new Date(year, month - 1), "MMMM yyyy")}
-            </span>
-            <button onClick={handleNextMonth}>&gt;</button>
-          </div>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Section>
+        {/* タイトル・ユーザー名 */}
+        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
+      </Section>
+
+      <Section>
+        <Typography align="left" sx={{ mb: 1 }}>{getUserName()}</Typography>
+      </Section>
+
+      {/* サマリー・操作ボタン */}
+      <Section>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 4, mb: 2 }}>
+          <Typography variant="body1">
+            Total Working Hours: {convertToHoursAndMinutes(totalWorkingMinutes)}
+          </Typography>
+          <Typography variant="body1">
+            Total Working Days: {totalWorkingDays}d
+          </Typography>
+        </Box>
+
+      </Section>
+
+      {/* テーブル */}
+      <Section>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Button onClick={handlePrevMonth} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
+          <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
+            {format(new Date(year, month - 1), "MMMM yyyy")}
+          </span>
+          <Button onClick={handleNextMonth} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
         <TableContainer component={Paper}>
           <Table>
@@ -152,6 +152,12 @@ const AttendanceRegistrationForMonthly = () => {
                     <Button
                       variant="contained"
                       size="small"
+                      sx={{
+                        minWidth: 120,
+                        height: 40,
+                        fontSize: "1rem",
+                        px: 2,
+                      }}
                       onClick={() => handleModify(attendance.attendance_id)}
                     >
                       Modify
@@ -162,7 +168,7 @@ const AttendanceRegistrationForMonthly = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      </Box>
+      </Section>
     </Box>
   );
 };

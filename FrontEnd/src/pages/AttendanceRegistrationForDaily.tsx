@@ -20,6 +20,7 @@ import { Attendance } from "../types/Attendance";
 import { getUserName } from "../utils/user";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
+import Section from "../components/Section";
 
 const AttendanceRegistrationForDaily = () => {
   const pageTitle = "Attendance Registration For Daily";
@@ -104,9 +105,9 @@ const AttendanceRegistrationForDaily = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-        const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
-        setBreakMinutes(breakSum);
-        setNetWorkingMinutes(netWorking);
+      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
+      setBreakMinutes(breakSum);
+      setNetWorkingMinutes(netWorking);
     }, 60 * 1000);
 
     return () => clearInterval(interval);
@@ -222,88 +223,124 @@ const AttendanceRegistrationForDaily = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, padding: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h4">{pageTitle}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography>{getUserName()}</Typography>
-        </Grid>
-      </Grid>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Section>
+        {/* タイトル・ユーザー名 */}
+        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
+      </Section>
 
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={handleStartWork}>
-            Start Work
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={handleStartBreak}>
-            Start Break
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={() => postAction("finish_break")}>
-            Finish Break
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button fullWidth variant="contained" onClick={handleFinishWork}>
-            Finish Work
-          </Button>
-        </Grid>
-      </Grid>
+      <Section>
+        <Typography align="left" sx={{ mb: 1 }}>{getUserName()}</Typography>
+      </Section>
 
-      <Grid container spacing={2} sx={{ mt: 3, alignItems: "center" }}>
-        <Grid item xs={3}>
+      <Section>
+        {/* ボタン群 */}
+        <Grid container spacing={2}>
+          <Grid item xs={6} sm={3}>
+            <Button fullWidth variant="contained" onClick={handleStartWork}>
+              Start Work
+            </Button>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Button fullWidth variant="contained" onClick={handleStartBreak}>
+              Start Break
+            </Button>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Button fullWidth variant="contained" onClick={() => postAction("finish_break")}>
+              Finish Break
+            </Button>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Button fullWidth variant="contained" onClick={handleFinishWork}>
+              Finish Work
+            </Button>
+          </Grid>
+        </Grid>
+      </Section>
+
+      <Section>
+        {/* サマリーや操作ボタン */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
           <Typography>{formatDate(attendance.start_time)}</Typography>
-        </Grid>
-        <Grid item xs={6}>
-          <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
-          <Button variant="contained" disabled={!editMode} onClick={handleSave} sx={{ ml: 2 }}>
-            Save
-          </Button>
-        </Grid>
-        <Grid item xs={3} sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button fullWidth
+          <Box>
+            <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
+            <Button variant="contained" disabled={!editMode} onClick={handleSave} sx={{ ml: 2 }}>
+              Save
+            </Button>
+          </Box>
+          <Button
             variant="contained"
             component="a"
             href="/attendance_registration_for_monthly"
+            sx={{ minWidth: 180 }}
           >
             MONTHLY ATTENDANCE
           </Button>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {tableHeaders.map((header, index) => (
-                    <TableCell key={index} align="right">
-                      {header}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell>Working Hours</TableCell>
+        </Box>
+        {/* テーブル */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {tableHeaders.map((header, index) => (
+                  <TableCell key={index} align="right">
+                    {header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>Working Hours</TableCell>
+                <TableCell align="right">
+                  {editMode ? (
+                    <TextField
+                      size="small"
+                      type="time"
+                      value={editedStartTime}
+                      onChange={(e) => setEditedStartTime(e.target.value)}
+                      inputProps={{ step: 60 }}
+                    />
+                  ) : (
+                    formatTimeHHMM(attendance.start_time)
+                  )}
+                </TableCell>
+                <TableCell align="right">～</TableCell>
+                <TableCell align="right">
+                  {editMode ? (
+                    <TextField
+                      size="small"
+                      type="time"
+                      value={editedEndTime}
+                      onChange={(e) => setEditedEndTime(e.target.value)}
+                      inputProps={{ step: 60 }}
+                    />
+                  ) : attendance.end_time ? (
+                    formatTimeHHMM(attendance.end_time)
+                  ) : (
+                    "Still Working"
+                  )}
+                </TableCell>
+              </TableRow>
+              {attendance.attendance_breaks.map((b, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{`Break ${idx + 1}`}</TableCell>
                   <TableCell align="right">
                     {editMode ? (
                       <TextField
                         size="small"
                         type="time"
-                        value={editedStartTime}
-                        onChange={(e) => setEditedStartTime(e.target.value)}
+                        value={editedBreaks[idx]?.start_time || ""}
+                        onChange={(e) => {
+                          const updated = [...editedBreaks];
+                          updated[idx].start_time = e.target.value;
+                          setEditedBreaks(updated);
+                        }}
                         inputProps={{ step: 60 }}
                       />
                     ) : (
-                      formatTimeHHMM(attendance.start_time)
+                      formatTimeHHMM(b.start_time)
                     )}
                   </TableCell>
                   <TableCell align="right">～</TableCell>
@@ -312,75 +349,36 @@ const AttendanceRegistrationForDaily = () => {
                       <TextField
                         size="small"
                         type="time"
-                        value={editedEndTime}
-                        onChange={(e) => setEditedEndTime(e.target.value)}
+                        value={editedBreaks[idx]?.end_time || ""}
+                        onChange={(e) => {
+                          const updated = [...editedBreaks];
+                          updated[idx].end_time = e.target.value;
+                          setEditedBreaks(updated);
+                        }}
                         inputProps={{ step: 60 }}
                       />
-                    ) : attendance.end_time ? (
-                      formatTimeHHMM(attendance.end_time)
+                    ) : b.end_time ? (
+                      formatTimeHHMM(b.end_time)
                     ) : (
-                      "Still Working"
+                      "Still on Break"
                     )}
                   </TableCell>
                 </TableRow>
-                {attendance.attendance_breaks.map((b, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{`Break ${idx + 1}`}</TableCell>
-                    <TableCell align="right">
-                      {editMode ? (
-                        <TextField
-                          size="small"
-                          type="time"
-                          value={editedBreaks[idx]?.start_time || ""}
-                          onChange={(e) => {
-                            const updated = [...editedBreaks];
-                            updated[idx].start_time = e.target.value;
-                            setEditedBreaks(updated);
-                          }}
-                          inputProps={{ step: 60 }}
-                        />
-                      ) : (
-                        formatTimeHHMM(b.start_time)
-                      )}
-                    </TableCell>
-                    <TableCell align="right">～</TableCell>
-                    <TableCell align="right">
-                      {editMode ? (
-                        <TextField
-                          size="small"
-                          type="time"
-                          value={editedBreaks[idx]?.end_time || ""}
-                          onChange={(e) => {
-                            const updated = [...editedBreaks];
-                            updated[idx].end_time = e.target.value;
-                            setEditedBreaks(updated);
-                          }}
-                          inputProps={{ step: 60 }}
-                        />
-                      ) : b.end_time ? (
-                        formatTimeHHMM(b.end_time)
-                      ) : (
-                        "Still on Break"
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell>Total Break Hours</TableCell>
-                  <TableCell colSpan={2} />
-                  <TableCell align="right">{convertToHoursAndMinutes(breakMinutes)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Net Working Hours</TableCell>
-                  <TableCell colSpan={2} />
-                  <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutes)}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-        <Grid item xs={1}></Grid>
-      </Grid>
+              ))}
+              <TableRow>
+                <TableCell>Total Break Hours</TableCell>
+                <TableCell colSpan={2} />
+                <TableCell align="right">{convertToHoursAndMinutes(breakMinutes)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Net Working Hours</TableCell>
+                <TableCell colSpan={2} />
+                <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutes)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Section>
     </Box>
   );
 };

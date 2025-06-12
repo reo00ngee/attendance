@@ -10,10 +10,10 @@
 - [Entity-Relationship Diagrams](/Documents/Database%20Design/Entity-RelationshipDiagrams.md)
 
 # Introduction<!-- omit in toc -->
-Set time zone with this process
 
 
 ## Setting of timezone
+Set time zone with this process
 
 ```php
 // config/app.php
