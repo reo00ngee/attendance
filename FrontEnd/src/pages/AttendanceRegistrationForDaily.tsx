@@ -16,11 +16,11 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
+import { useSearchParams } from 'react-router-dom';
+import Section from "../components/Section";
 import { Attendance } from "../types/Attendance";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
-import { useSearchParams } from 'react-router-dom';
-import Section from "../components/Section";
 
 const AttendanceRegistrationForDaily = () => {
   const pageTitle = "Attendance Registration For Daily";
@@ -43,7 +43,9 @@ const AttendanceRegistrationForDaily = () => {
   const [editMode, setEditMode] = useState(false);
   const [editedStartTime, setEditedStartTime] = useState("");
   const [editedEndTime, setEditedEndTime] = useState("");
-  const [editedBreaks, setEditedBreaks] = useState<{ start_time: string; end_time: string }[]>([]);
+  const [editedStartDate, setEditedStartDate] = useState("");
+  const [editedEndDate, setEditedEndDate] = useState("");
+  const [editedBreaks, setEditedBreaks] = useState<{ start_date: string; start_time: string; end_date: string; end_time: string }[]>([]);
 
 
 
@@ -101,9 +103,13 @@ const AttendanceRegistrationForDaily = () => {
 
         setEditedStartTime(formatTimeForInput(data.start_time));
         setEditedEndTime(formatTimeForInput(data.end_time || ""));
+        setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+        setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
         setEditedBreaks(
           data.attendance_breaks.map((b) => ({
+            start_date: b.start_time ? b.start_time.split("T")[0] : "",
             start_time: formatTimeForInput(b.start_time),
+            end_date: b.end_time ? b.end_time.split("T")[0] : "",
             end_time: formatTimeForInput(b.end_time || ""),
           }))
         );
@@ -144,9 +150,13 @@ const AttendanceRegistrationForDaily = () => {
       setNetWorkingMinutes(netWorking);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
+      setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+      setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
       setEditedBreaks(
         data.attendance_breaks.map((b: { start_time: any; end_time: any }) => ({
+          start_date: b.start_time ? b.start_time.split("T")[0] : "",
           start_time: formatTimeForInput(b.start_time),
+          end_date: b.end_time ? b.end_time.split("T")[0] : "",
           end_time: formatTimeForInput(b.end_time || ""),
         }))
       );
@@ -169,32 +179,22 @@ const AttendanceRegistrationForDaily = () => {
         return `${yyyy}-${mm}-${dd}T${hh}:${min}:00`;
       };
 
-      // 日付部分だけ抽出し、時間を置き換える関数
-      const replaceTimePart = (originalDateTime: string, newHHMM: string): string => {
-        const datePart = originalDateTime.split("T")[0];
-        return `${datePart}T${newHHMM}:00`;
-      };
+      const replaceDateTime = (date: string, time: string) => `${date}T${time}:00`;
 
       // attendanceのstart_timeは必ずある前提で置換
-      const updatedStartTime = replaceTimePart(attendance.start_time, editedStartTime);
+      const updatedStartTime = replaceDateTime(editedStartDate, editedStartTime);
 
       // attendanceのend_timeが空・undefinedなら現在時刻をセット、それ以外は置換
-      const updatedEndTime = attendance.end_time
-        ? replaceTimePart(attendance.end_time, editedEndTime)
+      const updatedEndTime = editedEndTime && editedEndDate
+        ? replaceDateTime(editedEndDate, editedEndTime)
         : getCurrentDateTimeString();
 
-      const updatedBreaks = editedBreaks.map((breakItem, idx) => {
-        const datePart =
-          (attendance.attendance_breaks[idx]?.start_time?.split("T")[0]) ||
-          new Date().toISOString().split("T")[0];
-
-        return {
-          start_time: `${datePart}T${breakItem.start_time}:00`,
-          end_time: breakItem.end_time
-            ? `${datePart}T${breakItem.end_time}:00`
-            : `${datePart}T${new Date().toTimeString().slice(0, 5)}:00`,
-        };
-      });
+      const updatedBreaks = editedBreaks.map((breakItem) => ({
+        start_time: replaceDateTime(breakItem.start_date, breakItem.start_time),
+        end_time: breakItem.end_time && breakItem.end_date
+          ? replaceDateTime(breakItem.end_date, breakItem.end_time)
+          : "",
+      }));
 
       const body = {
         attendance_id: attendance.attendance_id,
@@ -222,9 +222,13 @@ const AttendanceRegistrationForDaily = () => {
       setNetWorkingMinutes(netWorking);
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
+      setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+      setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
       setEditedBreaks(
         data.attendance_breaks.map((b) => ({
+          start_date: b.start_time ? b.start_time.split("T")[0] : "",
           start_time: formatTimeForInput(b.start_time),
+          end_date: b.end_time ? b.end_time.split("T")[0] : "",
           end_time: formatTimeForInput(b.end_time || ""),
         }))
       );
@@ -303,13 +307,23 @@ const AttendanceRegistrationForDaily = () => {
                 <TableCell>Working Hours</TableCell>
                 <TableCell align="right">
                   {editMode ? (
-                    <TextField
-                      size="small"
-                      type="time"
-                      value={editedStartTime}
-                      onChange={(e) => setEditedStartTime(e.target.value)}
-                      inputProps={{ step: 60 }}
-                    />
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                      <TextField
+                        size="small"
+                        type="date"
+                        value={editedStartDate}
+                        onChange={e => setEditedStartDate(e.target.value)}
+                        sx={{ minWidth: 100, flex: 1 }}
+                      />
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={editedStartTime}
+                        onChange={e => setEditedStartTime(e.target.value)}
+                        inputProps={{ step: 60 }}
+                        sx={{ minWidth: 80, flex: 1 }}
+                      />
+                    </Box>
                   ) : (
                     formatTimeHHMM(attendance.start_time)
                   )}
@@ -317,13 +331,23 @@ const AttendanceRegistrationForDaily = () => {
                 <TableCell align="right">～</TableCell>
                 <TableCell align="right">
                   {editMode ? (
-                    <TextField
-                      size="small"
-                      type="time"
-                      value={editedEndTime}
-                      onChange={(e) => setEditedEndTime(e.target.value)}
-                      inputProps={{ step: 60 }}
-                    />
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                      <TextField
+                        size="small"
+                        type="date"
+                        value={editedEndDate}
+                        onChange={e => setEditedEndDate(e.target.value)}
+                        sx={{ minWidth: 100, flex: 1 }}
+                      />
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={editedEndTime}
+                        onChange={e => setEditedEndTime(e.target.value)}
+                        inputProps={{ step: 60 }}
+                        sx={{ minWidth: 80, flex: 1 }}
+                      />
+                    </Box>
                   ) : attendance.end_time ? (
                     formatTimeHHMM(attendance.end_time)
                   ) : (
@@ -336,17 +360,31 @@ const AttendanceRegistrationForDaily = () => {
                   <TableCell>{`Break ${idx + 1}`}</TableCell>
                   <TableCell align="right">
                     {editMode ? (
-                      <TextField
-                        size="small"
-                        type="time"
-                        value={editedBreaks[idx]?.start_time || ""}
-                        onChange={(e) => {
-                          const updated = [...editedBreaks];
-                          updated[idx].start_time = e.target.value;
-                          setEditedBreaks(updated);
-                        }}
-                        inputProps={{ step: 60 }}
-                      />
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        <TextField
+                          size="small"
+                          type="date"
+                          value={editedBreaks[idx]?.start_date || ""}
+                          onChange={e => {
+                            const updated = [...editedBreaks];
+                            updated[idx].start_date = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          sx={{ minWidth: 100, flex: 1 }}
+                        />
+                        <TextField
+                          size="small"
+                          type="time"
+                          value={editedBreaks[idx]?.start_time || ""}
+                          onChange={e => {
+                            const updated = [...editedBreaks];
+                            updated[idx].start_time = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          inputProps={{ step: 60 }}
+                          sx={{ minWidth: 80, flex: 1 }}
+                        />
+                      </Box>
                     ) : (
                       formatTimeHHMM(b.start_time)
                     )}
@@ -354,17 +392,31 @@ const AttendanceRegistrationForDaily = () => {
                   <TableCell align="right">～</TableCell>
                   <TableCell align="right">
                     {editMode ? (
-                      <TextField
-                        size="small"
-                        type="time"
-                        value={editedBreaks[idx]?.end_time || ""}
-                        onChange={(e) => {
-                          const updated = [...editedBreaks];
-                          updated[idx].end_time = e.target.value;
-                          setEditedBreaks(updated);
-                        }}
-                        inputProps={{ step: 60 }}
-                      />
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        <TextField
+                          size="small"
+                          type="date"
+                          value={editedBreaks[idx]?.end_date || ""}
+                          onChange={e => {
+                            const updated = [...editedBreaks];
+                            updated[idx].end_date = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          sx={{ minWidth: 100, flex: 1 }}
+                        />
+                        <TextField
+                          size="small"
+                          type="time"
+                          value={editedBreaks[idx]?.end_time || ""}
+                          onChange={e => {
+                            const updated = [...editedBreaks];
+                            updated[idx].end_time = e.target.value;
+                            setEditedBreaks(updated);
+                          }}
+                          inputProps={{ step: 60 }}
+                          sx={{ minWidth: 80, flex: 1 }}
+                        />
+                      </Box>
                     ) : b.end_time ? (
                       formatTimeHHMM(b.end_time)
                     ) : (

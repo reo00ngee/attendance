@@ -12,11 +12,11 @@ import {
   TableRow,
   Box,
 } from "@mui/material";
+import Section from "../components/Section";
 import { format } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
-import Section from "../components/Section";
 
 const AttendanceRegistrationForMonthly = () => {
   const pageTitle = "Attendance Registration For Monthly";
