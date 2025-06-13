@@ -183,7 +183,104 @@ const AttendanceRegistrationForDaily = () => {
   // 保存ボタン押下時の処理を追加
   const handleSave = async () => {
     try {
-      // 現在日時をISOで取得し、HH:MM:00まで整形する関数
+      // バリデーション
+      if (!editedStartDate || !editedStartTime) {
+        alert("Start date and time are required.");
+        return;
+      }
+      // 開始・終了日時の整合性チェック
+      const start = new Date(`${editedStartDate}T${editedStartTime}:00`);
+      if (editedEndDate && editedEndTime) {
+        const end = new Date(`${editedEndDate}T${editedEndTime}:00`);
+        if (end < start) {
+          alert("End time must be after start time.");
+          return;
+        }
+      }
+
+      // 休憩のバリデーション
+      for (let i = 0; i < editedBreaks.length; i++) {
+        const b = editedBreaks[i];
+        if (!b.start_date || !b.start_time) {
+          alert(`Break ${i + 1}: Start date and time are required.`);
+          return;
+        }
+        if (b.end_date && !b.end_time) {
+          alert(`Break ${i + 1}: End time is required if end date is set.`);
+          return;
+        }
+        if (!b.end_date && b.end_time) {
+          alert(`Break ${i + 1}: End date is required if end time is set.`);
+          return;
+        }
+        if (b.end_date && b.end_time) {
+          const breakStart = new Date(`${b.start_date}T${b.start_time}:00`);
+          const breakEnd = new Date(`${b.end_date}T${b.end_time}:00`);
+          if (breakEnd < breakStart) {
+            alert(`Break ${i + 1}: End time must be after start time.`);
+            return;
+          }
+        }
+      }
+      // 後続breakがある場合、start_timeまたはend_timeが空はNG
+      for (let i = 0; i < editedBreaks.length - 1; i++) {
+        if (
+          (!editedBreaks[i].start_time || !editedBreaks[i].start_date ||
+           !editedBreaks[i].end_time || !editedBreaks[i].end_date) &&
+          editedBreaks[i + 1].start_time && editedBreaks[i + 1].start_date
+        ) {
+          alert(`Break ${i + 1}: Start and end time must be set if there is a subsequent break.`);
+          return;
+        }
+      }
+
+      // attendanceのstart_time, end_timeをDate型で取得
+      const attendanceStart = new Date(`${editedStartDate}T${editedStartTime}:00`);
+      const attendanceEnd =
+        editedEndDate && editedEndTime
+          ? new Date(`${editedEndDate}T${editedEndTime}:00`)
+          : null;
+
+      for (let i = 0; i < editedBreaks.length; i++) {
+        const b = editedBreaks[i];
+
+        // breakの開始がattendanceの開始より前
+        if (b.start_date && b.start_time) {
+          const breakStart = new Date(`${b.start_date}T${b.start_time}:00`);
+          if (breakStart < attendanceStart) {
+            alert(`Break ${i + 1}: Start time must not be before attendance start time.`);
+            return;
+          }
+          // breakの終了がattendanceの開始より前
+          if (b.end_date && b.end_time) {
+            const breakEnd = new Date(`${b.end_date}T${b.end_time}:00`);
+            if (breakEnd < attendanceStart) {
+              alert(`Break ${i + 1}: End time must not be before attendance start time.`);
+              return;
+            }
+          }
+        }
+
+        // breakの開始・終了がattendanceの終了より後
+        if (attendanceEnd) {
+          if (b.start_date && b.start_time) {
+            const breakStart = new Date(`${b.start_date}T${b.start_time}:00`);
+            if (breakStart > attendanceEnd) {
+              alert(`Break ${i + 1}: Start time must not be after attendance end time.`);
+              return;
+            }
+          }
+          if (b.end_date && b.end_time) {
+            const breakEnd = new Date(`${b.end_date}T${b.end_time}:00`);
+            if (breakEnd > attendanceEnd) {
+              alert(`Break ${i + 1}: End time must not be after attendance end time.`);
+              return;
+            }
+          }
+        }
+      }
+
+      // ...既存の保存処理...
       const getCurrentDateTimeString = () => {
         const now = new Date();
         const yyyy = now.getFullYear();
@@ -196,10 +293,7 @@ const AttendanceRegistrationForDaily = () => {
 
       const replaceDateTime = (date: string, time: string) => `${date}T${time}:00`;
 
-      // attendanceのstart_timeは必ずある前提で置換
       const updatedStartTime = replaceDateTime(editedStartDate, editedStartTime);
-
-      // attendanceのend_timeが空・undefinedなら現在時刻をセット、それ以外は置換
       const updatedEndTime = editedEndTime && editedEndDate
         ? replaceDateTime(editedEndDate, editedEndTime)
         : getCurrentDateTimeString();
@@ -217,8 +311,6 @@ const AttendanceRegistrationForDaily = () => {
         end_time: updatedEndTime,
         attendance_breaks: updatedBreaks,
       };
-
-      console.log("Updated body:", body);
 
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/update_attendance`, {
         method: "POST",
