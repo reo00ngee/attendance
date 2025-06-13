@@ -47,37 +47,6 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndDate, setEditedEndDate] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<{ start_date: string; start_time: string; end_date: string; end_time: string }[]>([]);
 
-
-
-  const handleStartWork = () => {
-    if (!attendance.end_time) {
-      alert("The previous work end time is not registered. Please register the start time first.");
-      return;
-    }
-    postAction("start_work");
-  };
-
-  const handleFinishWork = () => {
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
-
-    if (unfinishedBreak) {
-      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
-      return;
-    }
-    postAction("finish_work");
-  };
-
-  const handleStartBreak = () => {
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
-
-    if (unfinishedBreak) {
-      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
-      return;
-    }
-
-    postAction("start_break");
-  };
-
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -136,9 +105,55 @@ const AttendanceRegistrationForDaily = () => {
     setNetWorkingMinutes(netWorking);
   }, [attendance]);
 
+  const handleStartWork = () => {
+    if (!attendance.end_time) {
+      alert("The previous work end time is not registered. Please register the start time first.");
+      return;
+    }
+    postAction("start_work");
+  };
+
+  const handleFinishWork = () => {
+    if (attendance.end_time) {
+      alert("End time has already been set.");
+      return;
+    }
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+    if (unfinishedBreak) {
+      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+      return;
+    }
+    postAction("finish_work");
+  };
+
+  const handleStartBreak = () => {
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+
+    if (unfinishedBreak) {
+      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+      return;
+    }
+
+    postAction("start_break");
+  };
+
+  const handleFinishBreak = () => {
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+    if (!unfinishedBreak) {
+      alert("There is no ongoing break to finish.");
+      return;
+    }
+    postAction("finish_break");
+  };
+
   const postAction = async (endpoint: string) => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/${endpoint}`, {
+      let url = `${process.env.REACT_APP_BASE_URL}api/${endpoint}`;
+
+      if (endpoint !== "start_work" && attendanceId) {
+        url += `?attendance_id=${attendanceId}`;
+      }
+      const res = await fetch(url, {
         method: "POST",
         mode: "cors",
         credentials: "include",
@@ -259,7 +274,7 @@ const AttendanceRegistrationForDaily = () => {
             </Button>
           </Grid>
           <Grid item xs={6} sm={3}>
-            <Button fullWidth variant="contained" onClick={() => postAction("finish_break")}>
+            <Button fullWidth variant="contained" onClick={handleFinishBreak}>
               Finish Break
             </Button>
           </Grid>

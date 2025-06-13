@@ -13,34 +13,42 @@ class AttendanceRepository
     {
         $attendance = new Attendance();
         $attendance->start_time = now();
-        // $attendance->date = now()->format('Y-m-d');
         $attendance->user_id = $user_id;
         $attendance->submission_status = 0;
         $attendance->save();
-        // return Attendance::orderBy('created_at', 'desc')->value('start_work_time')->format('H:i:s');
     }
 
-    public function saveFinishAttendance($user_id)
+    public function saveFinishAttendance($attendance_id)
     {
-        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendance = Attendance::find($attendance_id);
+        if (!$attendance) {
+            throw new \Exception("Attendance record not found for ID: {$attendance_id}");
+        }
         $attendance->end_time = now();
         $attendance->save();
     }
-
-    public function saveStartBreak($user_id)
+    public function saveStartBreak($attendance_id)
     {
-        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendance = Attendance::find($attendance_id);
+        if (!$attendance) {
+            throw new \Exception("Attendance record not found for ID: {$attendance_id}");
+        }
         $attendanceBreak = new AttendanceBreak();
         $attendanceBreak->start_time = now();
         $attendanceBreak->attendance_id = $attendance->id;
-        $attendanceBreak->user_id = $user_id;
+        $attendanceBreak->user_id = $attendance->user_id;
         $attendanceBreak->save();
     }
-
-    public function saveFinishBreak($user_id)
+    public function saveFinishBreak($attendance_id)
     {
-        $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+        $attendance = Attendance::find($attendance_id);
+        if (!$attendance) {
+            throw new \Exception("Attendance record not found for ID: {$attendance_id}");
+        }
         $attendanceBreak = AttendanceBreak::where('attendance_id', $attendance->id)->latest()->first();
+        if (!$attendanceBreak) {
+            throw new \Exception("No break found for attendance ID: {$attendance_id}");
+        }
         $attendanceBreak->end_time = now();
         $attendanceBreak->save();
     }

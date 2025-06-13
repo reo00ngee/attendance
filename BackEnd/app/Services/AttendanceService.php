@@ -20,19 +20,19 @@ class AttendanceService
         return $this->attendanceRepository->saveStartAttendance($user_id);
     }
 
-    public function finishWork($user_id)
+    public function finishWork($attendance_id)
     {
-        return $this->attendanceRepository->saveFinishAttendance($user_id);
+        return $this->attendanceRepository->saveFinishAttendance($attendance_id);
     }
 
-    public function startBreak($user_id)
+    public function startBreak($attendance_id)
     {
-        return $this->attendanceRepository->saveStartBreak($user_id);
+        return $this->attendanceRepository->saveStartBreak($attendance_id);
     }
 
-    public function finishBreak($user_id)
+    public function finishBreak($attendance_id)
     {
-        return $this->attendanceRepository->saveFinishBreak($user_id);
+        return $this->attendanceRepository->saveFinishBreak($attendance_id);
     }
 
     public function updateAttendance($user_id, $validated)

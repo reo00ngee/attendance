@@ -20,7 +20,6 @@ class AttendanceController extends Controller
 
     public function startWork(Request $request)
     {
-        \Log::info('startWork in');
         $user_id = Auth::id();
         $this->attendanceService->startWork($user_id);
         return $this->attendanceService->getLatestAttendancesForUser($user_id);
@@ -28,23 +27,23 @@ class AttendanceController extends Controller
 
     public function finishWork(Request $request)
     {
-        $user_id = Auth::id();
-        $this->attendanceService->finishWork($user_id);
-        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->finishWork($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
     }
 
     public function startBreak(Request $request)
     {
-        $user_id = Auth::id();
-        $this->attendanceService->startBreak($user_id);
-        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->startBreak($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
     }
 
     public function finishBreak(Request $request)
     {
-        $user_id = Auth::id();
-        $this->attendanceService->finishBreak($user_id);
-        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->finishBreak($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
     }
 
     public function updateAttendance(Request $request)
