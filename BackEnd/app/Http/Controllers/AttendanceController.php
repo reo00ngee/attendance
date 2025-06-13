@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AttendanceService;
 use Illuminate\Database\Eloquent\Casts\Json;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -50,6 +51,7 @@ class AttendanceController extends Controller
     {
         $user_id = Auth::id();
         $validated = $request->validate([
+            'attendance_id' => 'required|integer|exists:attendance,id',
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'attendance_breaks' => 'nullable|array',
@@ -58,7 +60,7 @@ class AttendanceController extends Controller
         ]);
 
         $this->attendanceService->updateAttendance($user_id, $validated);
-        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+        return $this->attendanceService->getAttendanceForUser($validated['attendance_id']);
     }
 
 
@@ -66,6 +68,12 @@ class AttendanceController extends Controller
     {
         $user_id = Auth::id();
         return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
+
+    public function getAttendanceForUser(Request $request)
+    {
+        $attendance_id = $request->query('attendance_id');
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
     }
 
     public function getAllAttendancesForUser(Request $request)

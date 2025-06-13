@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { getUserName } from "../utils/user";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import Section from "../components/Section";
@@ -97,13 +96,9 @@ const AttendanceRegistrationForMonthly = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
+      {/* タイトル */}
       <Section>
-        {/* タイトル・ユーザー名 */}
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
-
-      <Section>
-        <Typography align="left" sx={{ mb: 1 }}>{getUserName()}</Typography>
       </Section>
 
       {/* サマリー・操作ボタン */}
@@ -158,7 +153,8 @@ const AttendanceRegistrationForMonthly = () => {
                         fontSize: "1rem",
                         px: 2,
                       }}
-                      onClick={() => handleModify(attendance.attendance_id)}
+            component="a"
+            href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
                     >
                       Modify
                     </Button>

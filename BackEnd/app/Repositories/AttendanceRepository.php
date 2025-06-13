@@ -49,8 +49,7 @@ class AttendanceRepository
     {
         try {
             DB::beginTransaction();
-
-            $attendance = Attendance::where('user_id', $user_id)->latest()->first();
+            $attendance = Attendance::find($validated['attendance_id']);
 
             if (!$attendance) {
                 throw new \Exception("Attendance record not found for user ID: {$user_id}");
@@ -89,6 +88,13 @@ class AttendanceRepository
             ->first();
 
         return $latestattendance;
+    }
+
+    public function getAttendanceForUser($attendance_id)
+    {
+        return Attendance::with('attendanceBreaks')
+            ->where('id', $attendance_id)
+            ->first();
     }
 
     public function getAllAttendancesForUser($user_id, $year, $month)

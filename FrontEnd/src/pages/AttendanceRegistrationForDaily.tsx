@@ -17,9 +17,9 @@ import {
   TextField,
 } from "@mui/material";
 import { Attendance } from "../types/Attendance";
-import { getUserName } from "../utils/user";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
+import { useSearchParams } from 'react-router-dom';
 import Section from "../components/Section";
 
 const AttendanceRegistrationForDaily = () => {
@@ -30,6 +30,8 @@ const AttendanceRegistrationForDaily = () => {
     "",
     "End Time",
   ]
+  const [searchParams] = useSearchParams();
+  const attendanceId = searchParams.get("attendance_id");
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
@@ -77,11 +79,20 @@ const AttendanceRegistrationForDaily = () => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_latest_attendances_for_user`, {
-          method: "GET",
-          mode: "cors",
-          credentials: "include",
-        });
+        let res;
+        if (attendanceId) {
+          res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_attendance_for_user?attendance_id=${attendanceId}`, {
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
+          });
+        } else {
+          res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_latest_attendances_for_user`, {
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
+          });
+        }
         const data: Attendance = await res.json();
         setAttendance(data);
         const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
@@ -186,6 +197,7 @@ const AttendanceRegistrationForDaily = () => {
       });
 
       const body = {
+        attendance_id: attendance.attendance_id,
         start_time: updatedStartTime,
         end_time: updatedEndTime,
         attendance_breaks: updatedBreaks,
@@ -224,13 +236,9 @@ const AttendanceRegistrationForDaily = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
+      {/* タイトル */}
       <Section>
-        {/* タイトル・ユーザー名 */}
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
-
-      <Section>
-        <Typography align="left" sx={{ mb: 1 }}>{getUserName()}</Typography>
       </Section>
 
       <Section>
