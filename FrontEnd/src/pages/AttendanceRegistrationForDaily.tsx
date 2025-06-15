@@ -151,8 +151,8 @@ const AttendanceRegistrationForDaily = () => {
     try {
       let url = `${process.env.REACT_APP_BASE_URL}api/${endpoint}`;
 
-      if (endpoint !== "start_work" && attendanceId) {
-        url += `?attendance_id=${attendanceId}`;
+      if (endpoint !== "start_work" && attendance.attendance_id) {
+        url += `?attendance_id=${attendance.attendance_id}`;
       }
       const res = await fetch(url, {
         method: "POST",
