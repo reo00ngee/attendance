@@ -22,6 +22,7 @@ import { Attendance } from "../types/Attendance";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { validateAttendanceInput } from "../utils/attendanceValidation";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AttendanceRegistrationForDaily = () => {
   const pageTitle = "Attendance Registration For Daily";
@@ -487,10 +488,10 @@ const AttendanceRegistrationForDaily = () => {
                         <Button
                           color="error"
                           size="small"
-                          sx={{ ml: 1, minWidth: 40 }}
+                          sx={{ ml: 1, minWidth: "auto", p: 0 }}
                           onClick={() => handleRemoveBreak(idx)}
                         >
-                          DELETE
+                          <DeleteIcon />
                         </Button>
                       </Box>
                     ) : b.end_time ? (
