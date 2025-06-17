@@ -48,47 +48,55 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndDate, setEditedEndDate] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<{ start_date: string; start_time: string; end_date: string; end_time: string }[]>([]);
 
+  // attendanceIdがあるかどうかで分岐
   useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        let res;
-        if (attendanceId) {
-          res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_attendance_for_user?attendance_id=${attendanceId}`, {
+    if (attendanceId) {
+      // クエリがある場合のみデータ取得
+      const fetchAttendance = async () => {
+        try {
+          const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_attendance_for_user?attendance_id=${attendanceId}`, {
             method: "GET",
             mode: "cors",
             credentials: "include",
           });
-        } else {
-          res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_latest_attendances_for_user`, {
-            method: "GET",
-            mode: "cors",
-            credentials: "include",
-          });
-        }
-        const data: Attendance = await res.json();
-        setAttendance(data);
-        const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
-        setBreakMinutes(breakSum);
-        setNetWorkingMinutes(netWorking);
+          const data: Attendance = await res.json();
+          setAttendance(data);
+          const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
+          setBreakMinutes(breakSum);
+          setNetWorkingMinutes(netWorking);
 
-        setEditedStartTime(formatTimeForInput(data.start_time));
-        setEditedEndTime(formatTimeForInput(data.end_time || ""));
-        setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
-        setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
-        setEditedBreaks(
-          data.attendance_breaks.map((b) => ({
-            start_date: b.start_time ? b.start_time.split("T")[0] : "",
-            start_time: formatTimeForInput(b.start_time),
-            end_date: b.end_time ? b.end_time.split("T")[0] : "",
-            end_time: formatTimeForInput(b.end_time || ""),
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-      }
-    };
-    fetchAttendance();
-  }, []);
+          setEditedStartTime(formatTimeForInput(data.start_time));
+          setEditedEndTime(formatTimeForInput(data.end_time || ""));
+          setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+          setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
+          setEditedBreaks(
+            data.attendance_breaks.map((b) => ({
+              start_date: b.start_time ? b.start_time.split("T")[0] : "",
+              start_time: formatTimeForInput(b.start_time),
+              end_date: b.end_time ? b.end_time.split("T")[0] : "",
+              end_time: formatTimeForInput(b.end_time || ""),
+            }))
+          );
+        } catch (err) {
+          console.error("Error fetching attendance:", err);
+        }
+      };
+      fetchAttendance();
+    } else {
+      // クエリがなければ初期化のみ（最新データ取得しない）
+      setAttendance({
+        attendance_id: 0,
+        start_time: "",
+        end_time: "",
+        attendance_breaks: [],
+      });
+      setEditedStartTime("");
+      setEditedEndTime("");
+      setEditedStartDate("");
+      setEditedEndDate("");
+      setEditedBreaks([]);
+    }
+  }, [attendanceId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -107,13 +115,12 @@ const AttendanceRegistrationForDaily = () => {
   }, [attendance]);
 
   const handleStartWork = () => {
-    if (!attendance.end_time) {
-      alert("The previous work end time is not registered. Please register the start time first.");
+    if (attendance.start_time) {
+      alert("Start time has already been set.");
       return;
     }
     postAction("start_work");
   };
-
   const handleFinishWork = () => {
     if (attendance.end_time) {
       alert("End time has already been set.");
@@ -128,8 +135,16 @@ const AttendanceRegistrationForDaily = () => {
   };
 
   const handleStartBreak = () => {
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
+    if (attendance.end_time) {
+      const now = new Date();
+      const end = new Date(attendance.end_time);
+      if (now > end) {
+        alert("You cannot start a break after the attendance end time.");
+        return;
+      }
+    }
 
+    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
     if (unfinishedBreak) {
       alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
       return;
@@ -139,6 +154,15 @@ const AttendanceRegistrationForDaily = () => {
   };
 
   const handleFinishBreak = () => {
+    if (attendance.end_time) {
+      const now = new Date();
+      const end = new Date(attendance.end_time);
+      if (now > end) {
+        alert("You cannot finish a break after the attendance end time.");
+        return;
+      }
+    }
+
     const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
     if (!unfinishedBreak) {
       alert("There is no ongoing break to finish.");
@@ -181,10 +205,8 @@ const AttendanceRegistrationForDaily = () => {
     }
   };
 
-  // 保存ボタン押下時の処理を追加
   const handleSave = async () => {
     try {
-      // バリデーションを外部関数で実施
       const validationError = validateAttendanceInput(
         editedStartDate,
         editedStartTime,
@@ -198,7 +220,6 @@ const AttendanceRegistrationForDaily = () => {
         return;
       }
 
-      // ...ここから下は既存の保存処理そのまま...
       const getCurrentDateTimeString = () => {
         const now = new Date();
         const yyyy = now.getFullYear();
@@ -263,6 +284,24 @@ const AttendanceRegistrationForDaily = () => {
     }
   };
 
+  const handleAddBreak = () => {
+    setEditedBreaks([
+      ...editedBreaks,
+      {
+        start_date: "",
+        start_time: "",
+        end_date: "",
+        end_time: "",
+      },
+    ]);
+  };
+
+  const handleRemoveBreak = (idx: number) => {
+    const updated = [...editedBreaks];
+    updated.splice(idx, 1);
+    setEditedBreaks(updated);
+  };
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
@@ -271,29 +310,31 @@ const AttendanceRegistrationForDaily = () => {
       </Section>
 
       <Section>
-        {/* ボタン群 */}
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Button fullWidth variant="contained" onClick={handleStartWork}>
-              Start Work
-            </Button>
+        {/* ボタン群：attendanceIdがない場合のみ表示 */}
+        {!attendanceId && (
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3}>
+              <Button fullWidth variant="contained" onClick={handleStartWork}>
+                Start Work
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button fullWidth variant="contained" onClick={handleStartBreak}>
+                Start Break
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button fullWidth variant="contained" onClick={handleFinishBreak}>
+                Finish Break
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button fullWidth variant="contained" onClick={handleFinishWork}>
+                Finish Work
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button fullWidth variant="contained" onClick={handleStartBreak}>
-              Start Break
-            </Button>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button fullWidth variant="contained" onClick={handleFinishBreak}>
-              Finish Break
-            </Button>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button fullWidth variant="contained" onClick={handleFinishWork}>
-              Finish Work
-            </Button>
-          </Grid>
-        </Grid>
+        )}
       </Section>
 
       <Section>
@@ -375,12 +416,14 @@ const AttendanceRegistrationForDaily = () => {
                     </Box>
                   ) : attendance.end_time ? (
                     formatTimeHHMM(attendance.end_time)
-                  ) : (
+                  ) : attendance.start_time ? (
                     "Still Working"
+                  ) : (
+                    ""
                   )}
                 </TableCell>
               </TableRow>
-              {attendance.attendance_breaks.map((b, idx) => (
+              {editedBreaks.map((b, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{`Break ${idx + 1}`}</TableCell>
                   <TableCell align="right">
@@ -389,7 +432,7 @@ const AttendanceRegistrationForDaily = () => {
                         <TextField
                           size="small"
                           type="date"
-                          value={editedBreaks[idx]?.start_date || ""}
+                          value={b.start_date || ""}
                           onChange={e => {
                             const updated = [...editedBreaks];
                             updated[idx].start_date = e.target.value;
@@ -400,7 +443,7 @@ const AttendanceRegistrationForDaily = () => {
                         <TextField
                           size="small"
                           type="time"
-                          value={editedBreaks[idx]?.start_time || ""}
+                          value={b.start_time || ""}
                           onChange={e => {
                             const updated = [...editedBreaks];
                             updated[idx].start_time = e.target.value;
@@ -421,7 +464,7 @@ const AttendanceRegistrationForDaily = () => {
                         <TextField
                           size="small"
                           type="date"
-                          value={editedBreaks[idx]?.end_date || ""}
+                          value={b.end_date || ""}
                           onChange={e => {
                             const updated = [...editedBreaks];
                             updated[idx].end_date = e.target.value;
@@ -432,7 +475,7 @@ const AttendanceRegistrationForDaily = () => {
                         <TextField
                           size="small"
                           type="time"
-                          value={editedBreaks[idx]?.end_time || ""}
+                          value={b.end_time || ""}
                           onChange={e => {
                             const updated = [...editedBreaks];
                             updated[idx].end_time = e.target.value;
@@ -441,6 +484,14 @@ const AttendanceRegistrationForDaily = () => {
                           inputProps={{ step: 60 }}
                           sx={{ minWidth: 80, flex: 1 }}
                         />
+                        <Button
+                          color="error"
+                          size="small"
+                          sx={{ ml: 1, minWidth: 40 }}
+                          onClick={() => handleRemoveBreak(idx)}
+                        >
+                          DELETE
+                        </Button>
                       </Box>
                     ) : b.end_time ? (
                       formatTimeHHMM(b.end_time)
@@ -460,6 +511,21 @@ const AttendanceRegistrationForDaily = () => {
                 <TableCell colSpan={2} />
                 <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutes)}</TableCell>
               </TableRow>
+              {/* 追加ボタン */}
+              {editMode && (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={handleAddBreak}
+                      sx={{ mt: 1 }}
+                    >
+                      ADD BREAK
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

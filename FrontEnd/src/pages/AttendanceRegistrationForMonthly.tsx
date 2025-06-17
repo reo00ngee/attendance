@@ -111,7 +111,16 @@ const AttendanceRegistrationForMonthly = () => {
             Total Working Days: {totalWorkingDays}d
           </Typography>
         </Box>
-
+<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+  <Button
+    variant="contained"
+    component="a"
+    href="/attendance_registration_for_daily"
+    sx={{ minWidth: 180 }}
+  >
+    REGISTER
+  </Button>
+</Box>
       </Section>
 
       {/* テーブル */}
@@ -153,8 +162,8 @@ const AttendanceRegistrationForMonthly = () => {
                         fontSize: "1rem",
                         px: 2,
                       }}
-            component="a"
-            href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
+                      component="a"
+                      href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
                     >
                       Modify
                     </Button>

@@ -32,6 +32,7 @@ export function formatTimeForInput(time: string): string {
 
 // Formats a date string into "MM/DD ddd" format
 export const formatDate = (startTime: string): string => {
+  if (!startTime) return "";
   const date = new Date(startTime);
   const month = date.getMonth() + 1; // 0-indexed
   const day = date.getDate();
