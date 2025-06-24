@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\SubmissionStatus;
 
 /**
  * Class Attendance
@@ -43,7 +44,7 @@ class Attendance extends Model
 		'start_time' => 'datetime',
 		'end_time' => 'datetime',
 		'is_holiday' => 'bool',
-		'submission_status' => 'int',
+		'submission_status' => SubmissionStatus::class,
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'

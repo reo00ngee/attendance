@@ -25,6 +25,7 @@ class UpdateAttendanceRequest extends FormRequest
             'attendance_id' => 'required|integer|exists:attendance,id',
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
+            'comment' => 'nullable|string|max:2000',
             'attendance_breaks' => 'nullable|array',
             'attendance_breaks.*.start_time' => 'required|date',
             'attendance_breaks.*.end_time' => 'nullable|date|after_or_equal:attendance_breaks.*.start_time',

@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceBreak;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Enums\SubmissionStatus;
 
 class AttendanceRepository
 {
@@ -14,7 +15,7 @@ class AttendanceRepository
         $attendance = new Attendance();
         $attendance->start_time = now();
         $attendance->user_id = $user_id;
-        $attendance->submission_status = 0;
+        $attendance->submission_status = SubmissionStatus::CREATED;
         $attendance->save();
     }
 
@@ -65,6 +66,7 @@ class AttendanceRepository
 
             $attendance->start_time = $validated['start_time'];
             $attendance->end_time = $validated['end_time'];
+            $attendance->comment = $validated['comment'];
             $attendance->save();
 
             $attendance->attendanceBreaks()->delete();
@@ -113,5 +115,11 @@ class AttendanceRepository
             ->whereMonth('start_time', $month)
             ->orderBy('start_time', 'desc')
             ->get();
+    }
+
+    public function submitAttendance($attendance)
+    {
+        $attendance->submission_status = SubmissionStatus::SUBMITTED;
+        $attendance->save();
     }
 }

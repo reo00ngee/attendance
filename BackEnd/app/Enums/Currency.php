@@ -2,36 +2,32 @@
 
 namespace App\Enums;
 
-class Currency
+enum Currency: int
 {
-    const USD = 1;
-    const EUR = 2;
+    case USD = 1;
+    case EUR = 2;
 
-    public static function getCurrencySymbol($value)
+    public function code(): string
     {
-        switch ($value) {
-            case self::USD:
-                return '$';
-                break;
-            case self::EUR:
-                return '€';
-                break;
-            default:
-                return null;
-        }
+        return match($this) {
+            self::USD => 'USD',
+            self::EUR => 'EUR',
+        };
     }
 
-    public static function getCurrency($value)
+    public function symbol(): string
     {
-        switch ($value) {
-            case self::USD:
-                return 'USD';
-                break;
-            case self::EUR:
-                return 'EUR';
-                break;
-            default:
-                return null;
-        }
+        return match($this) {
+            self::USD => '$',
+            self::EUR => '€',
+        };
+    }
+
+    public function description(): string
+    {
+        return match($this) {
+            self::USD => 'United States Dollar',
+            self::EUR => 'Euro',
+        };
     }
 }

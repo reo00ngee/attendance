@@ -40,6 +40,8 @@ const AttendanceRegistrationForDaily = () => {
     attendance_id: 0,
     start_time: "",
     end_time: "",
+    comment: "",
+    submission_status: 0,
     attendance_breaks: [],
   });
   const [editMode, setEditMode] = useState(false);
@@ -48,6 +50,7 @@ const AttendanceRegistrationForDaily = () => {
   const [editedStartDate, setEditedStartDate] = useState("");
   const [editedEndDate, setEditedEndDate] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<{ start_date: string; start_time: string; end_date: string; end_time: string }[]>([]);
+  const [editedComment, setEditedComment] = useState("");
 
   // attendanceIdがあるかどうかで分岐
   useEffect(() => {
@@ -78,6 +81,7 @@ const AttendanceRegistrationForDaily = () => {
               end_time: formatTimeForInput(b.end_time || ""),
             }))
           );
+          setEditedComment(data.comment || "");
         } catch (err) {
           console.error("Error fetching attendance:", err);
         }
@@ -89,6 +93,8 @@ const AttendanceRegistrationForDaily = () => {
         attendance_id: 0,
         start_time: "",
         end_time: "",
+        comment: "",
+        submission_status: 0,
         attendance_breaks: [],
       });
       setEditedStartTime("");
@@ -96,6 +102,7 @@ const AttendanceRegistrationForDaily = () => {
       setEditedStartDate("");
       setEditedEndDate("");
       setEditedBreaks([]);
+      setEditedComment("");
     }
   }, [attendanceId]);
 
@@ -250,6 +257,7 @@ const AttendanceRegistrationForDaily = () => {
         start_time: updatedStartTime,
         end_time: updatedEndTime,
         attendance_breaks: updatedBreaks,
+        comment: editedComment,
       };
 
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/update_attendance`, {
@@ -264,6 +272,7 @@ const AttendanceRegistrationForDaily = () => {
 
       const data: Attendance = await res.json();
       setAttendance(data);
+      setEditedComment(data.comment || "");
       const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
       setBreakMinutes(breakSum);
       setNetWorkingMinutes(netWorking);
@@ -531,6 +540,30 @@ const AttendanceRegistrationForDaily = () => {
           </Table>
         </TableContainer>
       </Section>
+
+      {/* コメント欄 */}
+      <Section>
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Comment
+          </Typography>
+          {editMode ? (
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              value={editedComment}
+              onChange={e => setEditedComment(e.target.value)}
+              variant="outlined"
+              placeholder="Enter your comment"
+            />
+          ) : (
+            <Box sx={{ minHeight: 48, p: 1, bgcolor: "#fafafa", borderRadius: 1, border: "1px solid #eee" }}>
+              {attendance.comment || <span style={{ color: "#bbb" }}>No comment</span>}
+            </Box>
+          )}
+        </Box>
+      </Section >
     </Box>
   );
 };

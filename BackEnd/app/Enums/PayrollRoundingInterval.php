@@ -2,26 +2,27 @@
 
 namespace App\Enums;
 
-class PayrollRoundingInterval
+enum PayrollRoundingInterval: int
 {
-    const ONE_MINUTE = 1;
-    const FIVE_MINUTES = 5;
-    const FIFTEEN_MINUTES = 15;
+    case ONE_MINUTE = 1;
+    case FIVE_MINUTES = 5;
+    case FIFTEEN_MINUTES = 15;
 
-    public static function getRoundingInterval($value)
+    public function label(): string
     {
-        switch ($value) {
-            case self::ONE_MINUTE:
-                return '1 min';
-                break;
-            case self::FIVE_MINUTES:
-                return '5 mins';
-                break;
-            case self::FIFTEEN_MINUTES:
-                return '15 mins';
-                break;
-            default:
-                return null;
-        }
+        return match($this) {
+            self::ONE_MINUTE => '1 min',
+            self::FIVE_MINUTES => '5 mins',
+            self::FIFTEEN_MINUTES => '15 mins',
+        };
+    }
+
+    public function description(): string
+    {
+        return match($this) {
+            self::ONE_MINUTE => 'Rounding to the nearest 1-minute interval for payroll calculation.',
+            self::FIVE_MINUTES => 'Rounding to the nearest 5-minute interval for payroll calculation.',
+            self::FIFTEEN_MINUTES => 'Rounding to the nearest 15-minute interval for payroll calculation.',
+        };
     }
 }

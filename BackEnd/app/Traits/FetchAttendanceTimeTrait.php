@@ -20,11 +20,9 @@ trait FetchAttendanceTimeTrait
         $latestAttendance = $this->attendanceRepository->getLatestAttendancesForUser($user_id);
 
         if ($latestAttendance) {
-            // 最後の出席時間と終了時間をフォーマット
             $startTime = $latestAttendance->start_time === null ? '' : $latestAttendance->start_time->format('Y-m-d\TH:i:s');
             $endTime = $latestAttendance->end_time === null ? '' : $latestAttendance->end_time->format('Y-m-d\TH:i:s');
 
-            // attendanceBreaks（休憩）をフォーマットして追加
             $attendanceBreaks = $latestAttendance->attendanceBreaks->map(function ($break) {
                 return [
                     'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',
@@ -36,6 +34,8 @@ trait FetchAttendanceTimeTrait
                 'attendance_id' => $latestAttendance->id,
                 'start_time' => $startTime,
                 'end_time' => $endTime,
+                'comment' => $latestAttendance->comment,
+                'submission_status' => $latestAttendance->submission_status,
                 'attendance_breaks' => $attendanceBreaks,  // attendanceBreaks を追加
             ]);
         } else {
@@ -56,6 +56,8 @@ trait FetchAttendanceTimeTrait
             'attendance_id' => $attendance->id,
             'start_time' => $attendance->start_time ? $attendance->start_time->format('Y-m-d\TH:i:s') : '',
             'end_time' => $attendance->end_time ? $attendance->end_time->format('Y-m-d\TH:i:s') : '',
+            'comment'           => $attendance->comment,
+            'submission_status' => $attendance->submission_status,
             'attendance_breaks' => $attendance->attendanceBreaks->map(function ($break) {
                 return [
                     'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',

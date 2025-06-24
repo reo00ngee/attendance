@@ -30,6 +30,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/get_latest_attendances_for_user', [AttendanceController::class, 'getLatestAttendancesForUser']);
     Route::get('/get_attendance_for_user', [AttendanceController::class, 'getAttendanceForUser']);
     Route::get('/get_all_attendances_for_user', [AttendanceController::class, 'getAllAttendancesForUser']);
+    Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances']);
 });
 
 

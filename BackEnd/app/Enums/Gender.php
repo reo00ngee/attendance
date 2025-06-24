@@ -2,22 +2,24 @@
 
 namespace App\Enums;
 
-class Gender
+enum Gender: int
 {
-    const MALE = 1;
-    const FEMALE = 2;
+    case MALE = 1;
+    case FEMALE = 2;
 
-    public static function getGender($value)
+    public function label(): string
     {
-        switch ($value) {
-            case self::MALE:
-                return 'Male';
-                break;
-            case self::FEMALE:
-                return 'Female';
-                break;
-            default:
-                return null;
-        }
+        return match($this) {
+            self::MALE => 'Male',
+            self::FEMALE => 'Female',
+        };
+    }
+
+    public function description(): string
+    {
+        return match($this) {
+            self::MALE => 'Identifies as male.',
+            self::FEMALE => 'Identifies as female.',
+        };
     }
 }

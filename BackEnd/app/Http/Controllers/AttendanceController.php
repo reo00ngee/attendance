@@ -76,6 +76,15 @@ class AttendanceController extends Controller
         $month = $request->query('month');
         return $this->attendanceService->getAllAttendancesForUser($user_id, $year, $month);
     }
+
+    public function submitAttendances(Request $request)
+    {
+        $user_id = Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->attendanceService->submitAttendances($user_id, $year, $month);
+    }
+
     /**
      * Display a listing of the resource.
      */

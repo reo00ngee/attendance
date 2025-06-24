@@ -2,22 +2,24 @@
 
 namespace App\Enums;
 
-class SubmissionType
+enum SubmissionType: int
 {
-    const ATTENDANCE = 0;
-    const EXPENSE = 1;
+    case ATTENDANCE = 0;
+    case EXPENSE = 1;
 
-    public static function getSubmissionTypen($value)
+    public function label(): string
     {
-        switch ($value) {
-            case self::ATTENDANCE:
-                return 'Attendance';
-                break;
-            case self::EXPENSE:
-                return 'Expense';
-                break;
-            default:
-                return null;
-        }
+        return match($this) {
+            self::ATTENDANCE => 'Attendance',
+            self::EXPENSE => 'Expense',
+        };
+    }
+
+    public function description(): string
+    {
+        return match($this) {
+            self::ATTENDANCE => 'Submission type for attendance records.',
+            self::EXPENSE => 'Submission type for expense reimbursements.',
+        };
     }
 }

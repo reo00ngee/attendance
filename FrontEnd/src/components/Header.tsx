@@ -40,7 +40,17 @@ const Header = () => {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component="a"
+          href="/attendance_registration_for_monthly"
+          sx={{
+            flexGrow: 1,
+            textDecoration: 'none',
+            color: 'inherit',
+            cursor: 'pointer',
+          }}
+        >
           Attendance Management Tool
         </Typography>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 2 }}>

@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Box,
+  Alert
 } from "@mui/material";
 import Section from "../components/Section";
 import { format } from "date-fns";
@@ -36,6 +37,7 @@ const AttendanceRegistrationForMonthly = () => {
   const [netWorkingMinutesArray, setNetWorkingMinutesArray] = useState<number[]>([]);
   const [totalWorkingMinutes, setTotalWorkingMinutes] = useState<number>(0);
   const [totalWorkingDays, setTotalWorkingDays] = useState<number>(0);
+  const [unsubmittedExists, setUnsubmittedExists] = useState(false);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -55,9 +57,43 @@ const AttendanceRegistrationForMonthly = () => {
     }
   };
 
-  const handleModify = (attendanceId: number) => {
-    // Implement the logic to modify the attendance record
-    console.log("Modify attendance with ID:", attendanceId);
+  const handleSubmit = async () => {
+    if (unsubmittedExists === false) {
+      alert("All attendances have already been submitted.");
+      return;
+    }
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_attendances?year=${year}&month=${month}`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data: Attendance[] = await res.json();
+      setAttendances(data);
+      setUnsubmittedExists(data.some(att => att.submission_status === 0));
+
+
+      const breaks: number[] = [];
+      const netWorks: number[] = [];
+
+      data.forEach((att) => {
+        const [b, n] = calculateBreakMinutesAndNetWorkingMinutes(att);
+        breaks.push(b);
+        netWorks.push(n);
+      });
+
+      setBreakMinutesArray(breaks);
+      setNetWorkingMinutesArray(netWorks);
+
+      setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
+      setTotalWorkingDays(data.filter(att => att.start_time).length);
+    } catch (err) {
+      console.error("Error saving attendance:", err);
+    }
+
   };
 
   useEffect(() => {
@@ -70,6 +106,7 @@ const AttendanceRegistrationForMonthly = () => {
         });
         const data: Attendance[] = await res.json();
         setAttendances(data);
+        setUnsubmittedExists(data.some(att => att.submission_status === 0));
 
         const breaks: number[] = [];
         const netWorks: number[] = [];
@@ -101,6 +138,15 @@ const AttendanceRegistrationForMonthly = () => {
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
       </Section>
 
+      {/* 未提出アラート */}
+      {unsubmittedExists && (
+        <Section>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            There are attendances that have not been submitted.
+          </Alert>
+        </Section>
+      )}
+
       {/* サマリー・操作ボタン */}
       <Section>
         <Box sx={{ display: "flex", alignItems: "center", gap: 4, mb: 2 }}>
@@ -111,16 +157,23 @@ const AttendanceRegistrationForMonthly = () => {
             Total Working Days: {totalWorkingDays}d
           </Typography>
         </Box>
-<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-  <Button
-    variant="contained"
-    component="a"
-    href="/attendance_registration_for_daily"
-    sx={{ minWidth: 180 }}
-  >
-    REGISTER
-  </Button>
-</Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button
+            variant="contained"
+            component="a"
+            href="/attendance_registration_for_daily"
+            sx={{ minWidth: 180 }}
+          >
+            REGISTER
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            sx={{ minWidth: 180 }}
+          >
+            SUBMIT
+          </Button>
+        </Box>
       </Section>
 
       {/* テーブル */}
