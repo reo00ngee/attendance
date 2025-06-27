@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class UserRepository
+{
+  public function storeUser(array $data, array $roles = [])
+  {
+    try {
+      return DB::transaction(function () use ($data, $roles) {
+        $user = User::create($data);
+
+        $user_id = $user->id;
+        $current_roles = DB::table('user_role')
+          ->where('user_id', $user_id)
+          ->pluck('role')
+          ->toArray();
+
+        $roles_to_add = array_diff($roles, $current_roles);
+        $roles_to_remove = array_diff($current_roles, $roles);
+
+        foreach ($roles_to_add as $role) {
+          DB::table('user_role')->insert([
+            'user_id' => $user_id,
+            'role' => $role,
+            'created_at' => now(),
+            'updated_at' => now()
+          ]);
+        }
+
+        if (!empty($roles_to_remove)) {
+          DB::table('user_role')
+            ->where('user_id', $user_id)
+            ->whereIn('role', $roles_to_remove)
+            ->delete();
+        }
+
+        return $user;
+      });
+    } catch (\Exception $e) {
+      Log::error('Failed to create user: ' . $e->getMessage());
+      return null;
+    }
+  }
+}

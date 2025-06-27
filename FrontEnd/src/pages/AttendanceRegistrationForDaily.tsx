@@ -18,14 +18,13 @@ import {
 } from "@mui/material";
 import { useSearchParams } from 'react-router-dom';
 import Section from "../components/Section";
-import { Attendance } from "../types/Attendance";
+import { Attendance, EditedBreaks } from "../types/Attendance";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { validateAttendanceInput } from "../utils/attendanceValidation";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const AttendanceRegistrationForDaily = () => {
-  const pageTitle = "Attendance Registration For Daily";
   const tableHeaders = [
     "",
     "Start Time",
@@ -34,6 +33,9 @@ const AttendanceRegistrationForDaily = () => {
   ]
   const [searchParams] = useSearchParams();
   const attendanceId = searchParams.get("attendance_id");
+  const pageTitle = attendanceId
+    ? "Attendance Modification For Daily"
+    : "Attendance Registration For Daily";
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
@@ -49,10 +51,16 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndTime, setEditedEndTime] = useState("");
   const [editedStartDate, setEditedStartDate] = useState("");
   const [editedEndDate, setEditedEndDate] = useState("");
-  const [editedBreaks, setEditedBreaks] = useState<{ start_date: string; start_time: string; end_date: string; end_time: string }[]>([]);
+  const [editedBreaks, setEditedBreaks] = useState<EditedBreaks[]>([]);
   const [editedComment, setEditedComment] = useState("");
 
-  // attendanceIdがあるかどうかで分岐
+  const calculate = () => {
+    const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
+    setBreakMinutes(breakSum);
+    setNetWorkingMinutes(netWorking);
+  }
+
+  // 初期データ取得
   useEffect(() => {
     if (attendanceId) {
       // クエリがある場合のみデータ取得
@@ -65,10 +73,8 @@ const AttendanceRegistrationForDaily = () => {
           });
           const data: Attendance = await res.json();
           setAttendance(data);
-          const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
-          setBreakMinutes(breakSum);
-          setNetWorkingMinutes(netWorking);
-
+          setEditMode(true);
+          calculate();
           setEditedStartTime(formatTimeForInput(data.start_time));
           setEditedEndTime(formatTimeForInput(data.end_time || ""));
           setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
@@ -87,39 +93,19 @@ const AttendanceRegistrationForDaily = () => {
         }
       };
       fetchAttendance();
-    } else {
-      // クエリがなければ初期化のみ（最新データ取得しない）
-      setAttendance({
-        attendance_id: 0,
-        start_time: "",
-        end_time: "",
-        comment: "",
-        submission_status: 0,
-        attendance_breaks: [],
-      });
-      setEditedStartTime("");
-      setEditedEndTime("");
-      setEditedStartDate("");
-      setEditedEndDate("");
-      setEditedBreaks([]);
-      setEditedComment("");
-    }
+    } 
   }, [attendanceId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
-      setBreakMinutes(breakSum);
-      setNetWorkingMinutes(netWorking);
+      calculate();
     }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [attendance]);
 
   useEffect(() => {
-    const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
-    setBreakMinutes(breakSum);
-    setNetWorkingMinutes(netWorking);
+    calculate();
   }, [attendance]);
 
   const handleStartWork = () => {
@@ -193,9 +179,7 @@ const AttendanceRegistrationForDaily = () => {
       });
       const data = await res.json();
       setAttendance(data);
-      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
-      setBreakMinutes(breakSum);
-      setNetWorkingMinutes(netWorking);
+      calculate();
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
@@ -273,9 +257,7 @@ const AttendanceRegistrationForDaily = () => {
       const data: Attendance = await res.json();
       setAttendance(data);
       setEditedComment(data.comment || "");
-      const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(data);
-      setBreakMinutes(breakSum);
-      setNetWorkingMinutes(netWorking);
+      calculate();
       setEditedStartTime(formatTimeForInput(data.start_time));
       setEditedEndTime(formatTimeForInput(data.end_time || ""));
       setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");

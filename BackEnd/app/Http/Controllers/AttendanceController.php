@@ -17,6 +17,7 @@ class AttendanceController extends Controller
     public function __construct(AttendanceService $attendanceService)
     {
         $this->attendanceService = $attendanceService;
+        $this->middleware('auth');
     }
 
     public function startWork(Request $request)

@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { UseLogin } from '../queryClient'
 import TextField from '@mui/material/TextField';
-import { Box, Button, Container } from '@mui/material'
+import { Box, Button, Container, IconButton, InputAdornment } from '@mui/material'
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 
 const Login: React.FC = () => {
@@ -9,6 +11,7 @@ const Login: React.FC = () => {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -45,12 +48,26 @@ const Login: React.FC = () => {
             <TextField
               id="password"
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               onChange={e => setPassword(e.target.value)}
               fullWidth
               margin="normal"
               autoComplete="current-password"
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((show) => !show)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Box
               sx={{

@@ -31,7 +31,10 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/get_attendance_for_user', [AttendanceController::class, 'getAttendanceForUser']);
     Route::get('/get_all_attendances_for_user', [AttendanceController::class, 'getAllAttendancesForUser']);
     Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances']);
+    Route::get('/get_hourly_wage_group_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupByCompanyId']);
+    Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser']);
 });
 
 
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';
