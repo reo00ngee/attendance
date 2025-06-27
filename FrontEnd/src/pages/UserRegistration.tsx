@@ -92,7 +92,7 @@ const UserRegistration = () => {
             setWageGroup(data.hourly_wage_group_id || "");
             setSelectedRoles(data.roles || []);
             setMessage(null);
-            setError(null);
+            // setError(null);
           } else {
             setError("Failed to fetch user info.");
           }
@@ -192,7 +192,10 @@ const UserRegistration = () => {
         }
       } else {
         const data = await res.json();
-        setError(data.message || "Operation failed.");
+  const errorMessages = Object.values(data.errors)
+    .flat()
+    .join("\n");
+  setError(errorMessages || "An error occurred while processing your request.");
       }
     } catch (err) {
       console.error("Error during user operation:", err);
@@ -209,17 +212,18 @@ const UserRegistration = () => {
       </Section>
       <Section>
         <Paper sx={{ p: 4, maxWidth: 500, mx: "auto" }}>
-          {message && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {message}
-            </Alert>
-          )}
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit}>
+
+          <form onSubmit={handleSubmit} noValidate>
+            {message && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                {message}
+              </Alert>
+            )}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
             <TextField
               label="First Name"
               fullWidth

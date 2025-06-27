@@ -39,6 +39,12 @@ export function validateUserRegistration({
   ) {
     return "First name, last name, email, password, hourly wage group, and at least one role are required.";
   }
+  if (firstName.length > 255) {
+    return "First name must be 255 characters or less.";
+  }
+  if (lastName.length > 255) {
+    return "Last name must be 255 characters or less.";
+  }
   if (password.length < 6) {
     return "Password must be at least 6 characters.";
   }

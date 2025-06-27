@@ -15,6 +15,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Alert,
 } from "@mui/material";
 import { useSearchParams } from 'react-router-dom';
 import Section from "../components/Section";
@@ -53,6 +54,7 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndDate, setEditedEndDate] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<EditedBreaks[]>([]);
   const [editedComment, setEditedComment] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const calculate = () => {
     const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
@@ -93,7 +95,7 @@ const AttendanceRegistrationForDaily = () => {
         }
       };
       fetchAttendance();
-    } 
+    }
   }, [attendanceId]);
 
   useEffect(() => {
@@ -208,7 +210,7 @@ const AttendanceRegistrationForDaily = () => {
         attendance
       );
       if (validationError) {
-        alert(validationError);
+        setError(validationError); // アラートではなく画面描画用にセット
         return;
       }
 
@@ -272,7 +274,7 @@ const AttendanceRegistrationForDaily = () => {
       );
       setEditMode(false);
     } catch (err) {
-      console.error("Error saving attendance:", err);
+      setError("An error occurred while processing your request.");
     }
   };
 
@@ -349,6 +351,11 @@ const AttendanceRegistrationForDaily = () => {
           </Button>
         </Box>
         {/* テーブル */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
