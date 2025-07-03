@@ -38,4 +38,32 @@ class UserService
       return response()->json(['error' => 'Failed to create user'], 500);
     }
   }
+
+  public function getUsersForManagement($user)
+  {
+    $company_id = $user->company_id;
+    if (!$company_id) {
+      return response()->json(['error' => 'Company ID not found'], 400);
+    }
+    $users = $this->userRepository->getUsersForManagement($company_id);
+    if ($users->isEmpty()) {
+      return response()->json(['message' => 'No users found'], 404);
+    }
+    return response()->json($users->map(function ($user) {
+      return [
+        'user_id' => $user->id,
+        'first_name' => $user->first_name,
+        'last_name' => $user->last_name,
+        'email' => $user->email,
+        'phone_number' => $user->phone_number,
+        'gender' => $user->gender,
+        'birth_date' => $user->birth_date,
+        'address' => $user->address,
+        'hire_date' => $user->hire_date,
+        'retire_date' => $user->retire_date,
+        'hourly_wage_group_id' => $user->hourly_wage_group_id,
+        'roles' => $user->roles
+      ];
+    }));
+  }
 }

@@ -46,4 +46,18 @@ class UserRepository
       return null;
     }
   }
+
+  public function getUsersForManagement($company_id)
+  {
+    $users = User::where('company_id', $company_id)->get();
+
+    foreach ($users as $user) {
+        $user->roles = DB::table('user_role')
+            ->where('user_id', $user->id)
+            ->pluck('role')
+            ->toArray();
+    }
+
+    return $users;
+}
 }

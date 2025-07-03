@@ -1,4 +1,14 @@
-export type User = {
-  email: string
-  password: string
+export interface User {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  gender?: number | null;
+  birth_date?: string | null;
+  address?: string | null;
+  hire_date?: string | null;
+  retire_date?: string | null;
+  hourly_wage_group_id: number | null;
+  roles: number[];
 }

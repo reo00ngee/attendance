@@ -11,10 +11,11 @@ import {
   TableHead,
   TableRow,
   Box,
-  Alert
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import Section from "../components/Section";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
@@ -38,6 +39,9 @@ const AttendanceRegistrationForMonthly = () => {
   const [totalWorkingMinutes, setTotalWorkingMinutes] = useState<number>(0);
   const [totalWorkingDays, setTotalWorkingDays] = useState<number>(0);
   const [unsubmittedExists, setUnsubmittedExists] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState<string | null>(null);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -62,6 +66,8 @@ const AttendanceRegistrationForMonthly = () => {
       alert("All attendances have already been submitted.");
       return;
     }
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_attendances?year=${year}&month=${month}`, {
         method: "POST",
@@ -91,12 +97,14 @@ const AttendanceRegistrationForMonthly = () => {
       setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
       setTotalWorkingDays(data.filter(att => att.start_time).length);
     } catch (err) {
-      console.error("Error saving attendance:", err);
+      setError("Something went wrong while fetching the data. Please try again later.");
     }
-
+    setLoading(false);
   };
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     const fetchAttendances = async () => {
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_attendances_for_user?year=${year}&month=${month}`, {
@@ -124,8 +132,9 @@ const AttendanceRegistrationForMonthly = () => {
         setTotalWorkingDays(data.filter(att => att.start_time).length);
 
       } catch (err) {
-        console.error("Error saving attendance:", err);
+        setError("Something went wrong while fetching the data. Please try again later.");
       }
+      setLoading(false);
     };
 
     fetchAttendances();
@@ -137,6 +146,24 @@ const AttendanceRegistrationForMonthly = () => {
       <Section>
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
       </Section>
+
+      {/* エラーがある場合は常に表示 */}
+      {error && (
+        <Section>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        </Section>
+      )}
+
+      {/* loading時はローディング表示 */}
+      {loading && (
+        <Section>
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+            <CircularProgress />
+          </Box>
+        </Section>
+      )}
 
       {/* 未提出アラート */}
       {unsubmittedExists && (

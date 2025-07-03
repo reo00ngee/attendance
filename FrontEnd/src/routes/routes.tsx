@@ -13,6 +13,7 @@ import AttendanceRegistrationForDaily from '../pages/AttendanceRegistrationForDa
 import AttendanceRegistrationForMonthly from '../pages/AttendanceRegistrationForMonthly'
 import AttendanceManagement from '../pages/AttendanceManagement'
 import UserRegistration from '../pages/UserRegistration'
+import UserManagement from '../pages/UserManagement'
 
 /**
  * ログイン済みのみアクセス可能
@@ -56,6 +57,10 @@ export const router = createBrowserRouter([
             }, {
                 path: 'user_registration',
                 element: <UserRegistration />,
+                loader: guardLoader
+            },{
+                path: 'user_management',
+                element: <UserManagement />,
                 loader: guardLoader
             },{
                 path: '*',
