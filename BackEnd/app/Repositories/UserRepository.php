@@ -52,12 +52,25 @@ class UserRepository
     $users = User::where('company_id', $company_id)->get();
 
     foreach ($users as $user) {
-        $user->roles = DB::table('user_role')
-            ->where('user_id', $user->id)
-            ->pluck('role')
-            ->toArray();
+      $user->roles = DB::table('user_role')
+        ->where('user_id', $user->id)
+        ->pluck('role')
+        ->toArray();
     }
 
     return $users;
-}
+  }
+
+  public function getUser($user_id)
+  {
+    $user = User::find($user_id);
+    if (!$user) {
+      return null;
+    }
+    $user->roles = DB::table('user_role')
+      ->where('user_id', $user->id)
+      ->pluck('role')
+      ->toArray();
+    return $user;
+  }
 }

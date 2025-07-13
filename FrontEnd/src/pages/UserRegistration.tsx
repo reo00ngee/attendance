@@ -94,10 +94,10 @@ const UserRegistration = () => {
             setMessage(null);
             // setError(null);
           } else {
-            setError("Failed to fetch user info.");
+            setError("Failed to fetch user info. Please try again later.");
           }
         } catch {
-          setError("Failed to fetch user info.");
+          setError("Failed to fetch user info. Please try again later.");
         }
       };
       fetchUser();
@@ -207,7 +207,7 @@ const UserRegistration = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Section>
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>
-          {userId ? "Modify User" : pageTitle}
+          {pageTitle}
         </Typography>
       </Section>
       <Section>

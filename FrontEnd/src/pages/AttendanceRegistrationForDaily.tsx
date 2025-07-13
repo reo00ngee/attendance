@@ -91,7 +91,7 @@ const AttendanceRegistrationForDaily = () => {
           );
           setEditedComment(data.comment || "");
         } catch (err) {
-          console.error("Error fetching attendance:", err);
+          setError("Failed to fetch attendance data. Please try again later.");
         }
       };
       fetchAttendance();

@@ -34,7 +34,9 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/get_hourly_wage_group_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupByCompanyId']);
     Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser']);
     Route::get('/get_users_for_management', [\App\Http\Controllers\UserController::class, 'getUsersForManagement']);
+    Route::get('/get_user', [\App\Http\Controllers\UserController::class, 'getUser']);
 });
+
 
 
 

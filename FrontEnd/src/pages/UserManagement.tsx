@@ -12,6 +12,9 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  TextField,
+  MenuItem,
+  Button
 } from "@mui/material";
 import Section from "../components/Section";
 import { roles } from "../constants/roles";
@@ -24,10 +27,16 @@ const UserManagement = () => {
     "name",
     "email",
     "role",
+    ""
   ];
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // フィルター用state
+  const [nameFilter, setNameFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState<number | "">("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -58,11 +67,58 @@ const UserManagement = () => {
       .filter(Boolean)
       .join(", ");
 
+  // フィルター処理
+  const filteredUsers = users.filter((user) => {
+    const fullName = `${user.last_name} ${user.first_name}`.toLowerCase();
+    const nameMatch = fullName.includes(nameFilter.toLowerCase());
+    const emailMatch = user.email.toLowerCase().includes(emailFilter.toLowerCase());
+    const roleMatch =
+      roleFilter === ""
+        ? true
+        : user.roles.includes(Number(roleFilter));
+    return nameMatch && emailMatch && roleMatch;
+  });
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
       <Section>
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
+      </Section>
+
+      {/* フィルターUI */}
+      <Section>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <TextField
+            label="Search by Name"
+            value={nameFilter}
+            onChange={(e) => setNameFilter(e.target.value)}
+            size="small"
+            sx={{ width: 200 }}
+          />
+          <TextField
+            label="Search by Email"
+            value={emailFilter}
+            onChange={(e) => setEmailFilter(e.target.value)}
+            size="small"
+            sx={{ width: 200 }}
+          />
+          <TextField
+            label="Filter by Role"
+            select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value === "" ? "" : Number(e.target.value))}
+            size="small"
+            sx={{ width: 200 }}
+          >
+            <MenuItem value="">All Roles</MenuItem>
+            {roles.map((role) => (
+              <MenuItem key={role.value} value={role.value}>
+                {role.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
       </Section>
 
       <Section>
@@ -88,7 +144,7 @@ const UserManagement = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <TableRow key={user.user_id}>
                       <TableCell align="right">
                         {user.last_name} {user.first_name}
@@ -106,6 +162,22 @@ const UserManagement = () => {
                             />
                           );
                         })}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            minWidth: 120,
+                            height: 40,
+                            fontSize: "1rem",
+                            px: 2,
+                          }}
+                          component="a"
+                          href={`/user_registration?user_id=${user.user_id}`}
+                        >
+                          Modify
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

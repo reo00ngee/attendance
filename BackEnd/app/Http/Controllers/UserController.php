@@ -31,4 +31,10 @@ class UserController extends Controller
         $user = Auth::user();
         return $this->userService->getUsersForManagement($user);
     }
+
+    public function getUser(Request $request)
+    {
+        $user_id = $request->query('user_id');
+        return $this->userService->getUser($user_id);
+    }
 }
