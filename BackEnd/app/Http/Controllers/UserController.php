@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,12 @@ class UserController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
         $this->userService->storeUser($user, $validated);
+    }
+
+    public function updateUser(UpdateUserRequest $request)
+    {
+        $validated = $request->validated();
+        $this->userService->updateUser($validated);
     }
 
     public function getUsersForManagement(Request $request)

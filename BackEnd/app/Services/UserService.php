@@ -39,6 +39,30 @@ class UserService
     }
   }
 
+  public function updateUser($validated)
+  {
+    $user_id = $validated['user_id'];
+    $data = [
+      'first_name' => $validated['first_name'],
+      'last_name' => $validated['last_name'],
+      'email' => $validated['email'],
+      'password' => bcrypt($validated['password']),
+      'phone_number' => $validated['phone_number'] ?? null,
+      'gender' => $validated['gender'] ?? null,
+      'birth_date' => $validated['birth_date'] ?? null,
+      'address' => $validated['address'] ?? null,
+      'hire_date' => $validated['hire_date'] ?? null,
+      'retire_date' => $validated['retire_date'] ?? null,
+      'hourly_wage_group_id' => $validated['hourly_wage_group_id'],
+    ]; 
+    $user = $this->userRepository->updateUser($user_id, $data, $validated['roles']);
+    if ($user) {
+      return response()->json(['message' => 'User updated successfully'], 200);
+    } else {
+      return response()->json(['error' => 'Failed to update user'], 500);
+    }
+  }
+
   public function getUsersForManagement($user)
   {
     $company_id = $user->company_id;

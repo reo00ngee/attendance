@@ -47,6 +47,44 @@ class UserRepository
     }
   }
 
+  public function updateUser($user_id, array $data, array $roles = [])
+  {
+    try {
+      return DB::transaction(function () use ($user_id, $data, $roles) {
+        $user = User::findOrFail($user_id);
+        $user->update($data);
+
+        $current_roles = DB::table('user_role')
+          ->where('user_id', $user_id)
+          ->pluck('role')
+          ->toArray();
+
+        $roles_to_add = array_diff($roles, $current_roles);
+        $roles_to_remove = array_diff($current_roles, $roles);
+
+        foreach ($roles_to_add as $role) {
+          DB::table('user_role')->insert([
+            'user_id' => $user_id,
+            'role' => $role,
+            'updated_at' => now()
+          ]);
+        }
+
+        if (!empty($roles_to_remove)) {
+          DB::table('user_role')
+            ->where('user_id', $user_id)
+            ->whereIn('role', $roles_to_remove)
+            ->delete();
+        }
+
+        return $user;
+      });
+    } catch (\Exception $e) {
+      Log::error('Failed to update user: ' . $e->getMessage());
+      return null;
+    }
+  }
+
   public function getUsersForManagement($company_id)
   {
     $users = User::where('company_id', $company_id)->get();

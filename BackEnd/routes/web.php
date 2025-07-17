@@ -33,6 +33,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances']);
     Route::get('/get_hourly_wage_group_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupByCompanyId']);
     Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser']);
+    Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser']);
     Route::get('/get_users_for_management', [\App\Http\Controllers\UserController::class, 'getUsersForManagement']);
     Route::get('/get_user', [\App\Http\Controllers\UserController::class, 'getUser']);
 });
