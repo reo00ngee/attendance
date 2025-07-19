@@ -3,7 +3,7 @@ import type { User } from '../types/User'
 import { exit } from 'process'
 
 export const getUser = async () => {
-  const { data } = await axios.get<User>(`${process.env.REACT_APP_BASE_URL}api/user`, { withCredentials: true });
+  const { data } = await axios.get<User>(`${process.env.REACT_APP_BASE_URL}api/get_user_for_login`, { withCredentials: true });
   localStorage.setItem('user', JSON.stringify(data));
   return data;
 };

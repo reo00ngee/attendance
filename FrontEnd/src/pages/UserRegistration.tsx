@@ -13,13 +13,14 @@ import {
 import Section from "../components/Section";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Navigate } from "react-router-dom";
 import { genders } from "../constants/genders";
 import { roles } from "../constants/roles";
 import { HourlyWageGroup } from "../types/HourlyWageGroup";
 import { SelectChangeEvent } from "@mui/material";
 import { log } from "console";
 import { validateUserRegistration } from "../utils/userValidation";
+import { hasRole } from '../utils/auth';
 
 const UserRegistration = () => {
   const [searchParams] = useSearchParams();
@@ -203,6 +204,10 @@ const UserRegistration = () => {
     }
   };
 
+  if (!hasRole(3)) {
+    return <Navigate to="/attendance_registration_for_monthly" />;
+  }
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Section>
@@ -355,6 +360,7 @@ const UserRegistration = () => {
               sx={{ mb: 2 }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -369,7 +375,6 @@ const UserRegistration = () => {
                   </InputAdornment>
                 ),
               }}
-              required={!userId}
               placeholder={
                 userId ? "Leave blank to keep current password" : ""
               }
@@ -381,6 +386,7 @@ const UserRegistration = () => {
               sx={{ mb: 2 }}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
+              required
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -395,7 +401,6 @@ const UserRegistration = () => {
                   </InputAdornment>
                 ),
               }}
-              required={!userId}
               placeholder={
                 userId ? "Leave blank to keep current password" : ""
               }

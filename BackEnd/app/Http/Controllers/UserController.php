@@ -20,6 +20,16 @@ class UserController extends Controller
 
     }
 
+    public function getUserForLogin(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        $user_id = $user->id;
+        return $this->userService->getUser($user_id);
+    }
+
     public function storeUser(StoreUserRequest $request)
     {
         $user = Auth::user();

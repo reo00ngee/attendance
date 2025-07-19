@@ -19,6 +19,8 @@ import {
 import Section from "../components/Section";
 import { roles } from "../constants/roles";
 import { User } from "../types/User";
+import { hasRole } from "../utils/auth";
+import { Navigate } from "react-router-dom";
 
 
 const UserManagement = () => {
@@ -78,6 +80,10 @@ const UserManagement = () => {
         : user.roles.includes(Number(roleFilter));
     return nameMatch && emailMatch && roleMatch;
   });
+
+  if (!hasRole(3)) {
+    return <Navigate to="/attendance_registration_for_monthly" />;
+  }
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>

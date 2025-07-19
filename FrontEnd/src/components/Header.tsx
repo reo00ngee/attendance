@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -17,18 +17,17 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-
-const pageLinks = [
-  { label: "User Management", path: "/user_management" },
-  { label: "User Registration", path: "/user_registration" },
-  { label: "Attendance Monthly", path: "/attendance_registration_for_monthly" },
-  { label: "Attendance Daily", path: "/attendance_registration_for_daily" },
-];
+import { makePageLinks } from "../utils/pageLink";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [pageLinks, setPageLinks] = useState<{ label: string; path: string }[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setPageLinks(makePageLinks());
+  }, [localStorage.getItem("user")]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -401,5 +402,10 @@ class User extends Authenticatable
 	public function users_where_updated_by()
 	{
 		return $this->hasMany(User::class, 'updated_by');
+	}
+
+	public function getRoleIdsAttribute()
+	{
+    return $this->user_roles->pluck('role');
 	}
 }

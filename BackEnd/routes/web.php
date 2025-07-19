@@ -22,18 +22,19 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/user', function (Request $request) {
         return request()->user();
     });
-    Route::post('/start_work', [AttendanceController::class, 'startWork']);
-    Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
-    Route::post('/start_break', [AttendanceController::class, 'startBreak']);
-    Route::post('/finish_break', [AttendanceController::class, 'finishBreak']);
-    Route::post('/update_attendance', [AttendanceController::class, 'updateAttendance']);
+    Route::get('/get_user_for_login', [\App\Http\Controllers\UserController::class, 'getUserForLogin']);
+    Route::post('/start_work', [AttendanceController::class, 'startWork'])->middleware('role:0');
+    Route::post('/finish_work', [AttendanceController::class, 'finishWork'])->middleware('role:0');
+    Route::post('/start_break', [AttendanceController::class, 'startBreak'])->middleware('role:0');
+    Route::post('/finish_break', [AttendanceController::class, 'finishBreak'])->middleware('role:0');
+    Route::post('/update_attendance', [AttendanceController::class, 'updateAttendance'])->middleware('role:0');
     Route::get('/get_latest_attendances_for_user', [AttendanceController::class, 'getLatestAttendancesForUser']);
     Route::get('/get_attendance_for_user', [AttendanceController::class, 'getAttendanceForUser']);
     Route::get('/get_all_attendances_for_user', [AttendanceController::class, 'getAllAttendancesForUser']);
-    Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances']);
+    Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances'])->middleware('role:0');
     Route::get('/get_hourly_wage_group_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupByCompanyId']);
-    Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser']);
-    Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser']);
+    Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser'])->middleware('role:3');
+    Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser'])->middleware('role:3');
     Route::get('/get_users_for_management', [\App\Http\Controllers\UserController::class, 'getUsersForManagement']);
     Route::get('/get_user', [\App\Http\Controllers\UserController::class, 'getUser']);
 });
