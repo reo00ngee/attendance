@@ -87,9 +87,10 @@ const UserRegistration = () => {
             setEmail(data.email || "");
             setPhone(data.phone || "");
             setGender(data.gender || "");
-            setBirthDate(data.birth_date || "");
+            setBirthDate(data.birth_date ? data.birth_date.split("T")[0] : "");
             setAddress(data.address || "");
-            setHireDate(data.hire_date || "");
+            setHireDate(data.hire_date ? data.hire_date.split("T")[0] : "");
+            setRetireDate(data.retire_date ? data.retire_date.split("T")[0] : "");
             setWageGroup(data.hourly_wage_group_id || "");
             setSelectedRoles(data.roles || []);
             setMessage(null);
