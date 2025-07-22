@@ -26,6 +26,7 @@ class HourlyWageGroupService
         'hourly_wage_group_id' => $hourly_wage_group->id,
         'name' => $hourly_wage_group->name,
         'hourly_wage' => $hourly_wage_group->hourly_wage,
+        'comment' => $hourly_wage_group->comment,
       ];
     });
   }

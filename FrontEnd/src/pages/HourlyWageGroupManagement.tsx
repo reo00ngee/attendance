@@ -24,6 +24,12 @@ import { Navigate } from "react-router-dom";
 
 const HourlyWageGroupManagement = () => {
   const pageTitle = "Hourly Wage Group Management";
+  const tableHeaders = [
+    "Name",
+    "Hourly Wage",
+    "Comment",
+    ""
+  ];
   const [hourlyWageGroups, setHourlyWageGroups] = useState<HourlyWageGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,10 +122,11 @@ const HourlyWageGroupManagement = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell align="left">Name</TableCell>
-                    <TableCell align="right">Hourly Wage</TableCell>
-                    <TableCell align="right">Comment</TableCell>
-                    <TableCell align="right"></TableCell>
+                    {tableHeaders.map((header, index) => (
+                      <TableCell key={index} align="right">
+                        {header}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>

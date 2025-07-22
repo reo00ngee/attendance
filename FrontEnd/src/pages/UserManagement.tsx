@@ -26,9 +26,9 @@ import { Navigate } from "react-router-dom";
 const UserManagement = () => {
   const pageTitle = "User Management";
   const tableHeaders = [
-    "name",
-    "email",
-    "role",
+    "Name",
+    "Email",
+    "Role",
     ""
   ];
   const [users, setUsers] = useState<User[]>([]);
