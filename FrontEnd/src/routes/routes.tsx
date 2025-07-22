@@ -14,6 +14,8 @@ import AttendanceRegistrationForMonthly from '../pages/AttendanceRegistrationFor
 import AttendanceManagement from '../pages/AttendanceManagement'
 import UserRegistration from '../pages/UserRegistration'
 import UserManagement from '../pages/UserManagement'
+import HourlyWageGroupManagement from '../pages/HourlyWageGroupManagement'
+import HourlyWageGroupRegistration from '../pages/HourlyWageGroupRegistration'
 
 /**
  * ログイン済みのみアクセス可能
@@ -50,7 +52,7 @@ export const router = createBrowserRouter([
                 path: 'attendance_registration_for_monthly',
                 element: <AttendanceRegistrationForMonthly />,
                 loader: guardLoader
-            },{
+            }, {
                 path: 'attendance_management',
                 element: <AttendanceManagement />,
                 loader: guardLoader
@@ -58,11 +60,19 @@ export const router = createBrowserRouter([
                 path: 'user_registration',
                 element: <UserRegistration />,
                 loader: guardLoader
-            },{
+            }, {
                 path: 'user_management',
                 element: <UserManagement />,
                 loader: guardLoader
-            },{
+            }, {
+                path: 'hourly_wage_group_management',
+                element: <HourlyWageGroupManagement />,
+                loader: guardLoader
+            }, {
+                path: 'hourly_wage_group_registration',
+                element: <HourlyWageGroupRegistration />,
+                loader: guardLoader
+            }, {
                 path: '*',
                 element: <NotFound />
             }

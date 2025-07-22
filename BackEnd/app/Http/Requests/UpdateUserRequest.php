@@ -25,7 +25,7 @@ class UpdateUserRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
-    {//ルールが正しくない、メールのバリデーションを直す
+    {
         return [
             'user_id' => 'required|integer|exists:users,id',
             'first_name' => 'required|string|max:255',

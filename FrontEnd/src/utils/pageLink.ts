@@ -11,7 +11,9 @@ export const makePageLinks = () => {
   if (userRoles.includes(3)) {
     links.push(
       { label: "User Management", path: "/user_management" },
-      { label: "User Registration", path: "/user_registration" }
+      { label: "User Registration", path: "/user_registration" },
+      { label: "Hourly Wage Group Management", path: "/hourly_wage_group_management" },
+      { label: "Hourly Wage Group Registration", path: "/hourly_wage_group_registration" }
     );
   }
 

@@ -51,7 +51,7 @@ const UserRegistration = () => {
     const fetchWageGroups = async () => {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/get_hourly_wage_group_by_company_id`,
+          `${process.env.REACT_APP_BASE_URL}api/get_hourly_wage_groups_by_company_id`,
           {
             credentials: "include",
           }
@@ -176,7 +176,7 @@ const UserRegistration = () => {
 
       if (res.ok) {
         setMessage(
-          userId ? "User updated successfully!" : "Registration successful!"
+          userId ? "User updated successfully!" : "User created successfully!"
         );
         if (!userId) {
           setFirstName("");
@@ -194,10 +194,10 @@ const UserRegistration = () => {
         }
       } else {
         const data = await res.json();
-  const errorMessages = Object.values(data.errors)
-    .flat()
-    .join("\n");
-  setError(errorMessages || "An error occurred while processing your request.");
+        const errorMessages = Object.values(data.errors)
+          .flat()
+          .join("\n");
+        setError(errorMessages || "An error occurred while processing your request.");
       }
     } catch (err) {
       console.error("Error during user operation:", err);
@@ -216,6 +216,20 @@ const UserRegistration = () => {
           {pageTitle}
         </Typography>
       </Section>
+
+      <Section>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button
+            variant="contained"
+            component="a"
+            href="/user_management"
+            sx={{ minWidth: 180 }}
+          >
+            USER MANAGEMENT
+          </Button>
+        </Box>
+      </Section>
+
       <Section>
         <Paper sx={{ p: 4, maxWidth: 500, mx: "auto" }}>
 

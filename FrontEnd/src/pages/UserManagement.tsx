@@ -125,6 +125,16 @@ const UserManagement = () => {
             ))}
           </TextField>
         </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button
+            variant="contained"
+            component="a"
+            href="/user_registration"
+            sx={{ minWidth: 180 }}
+          >
+            REGISTER
+          </Button>
+        </Box>
       </Section>
 
       <Section>

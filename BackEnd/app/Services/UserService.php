@@ -20,7 +20,7 @@ public function getUserForLogin($user)
     if (!$user) {
       return response()->json(['error' => 'User not authenticated'], 401);
     }
-    $userData = [
+    $userData = response()->json([
       'user_id' => $user->id,
       'first_name' => $user->first_name,
       'last_name' => $user->last_name,
@@ -33,7 +33,7 @@ public function getUserForLogin($user)
       'retire_date' => $user->retire_date,
       'hourly_wage_group_id' => $user->hourly_wage_group_id,
       'roles' => $user->roles,
-    ];
+    ]);
     return $userData;
   }
 

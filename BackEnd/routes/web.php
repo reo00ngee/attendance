@@ -32,11 +32,14 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/get_attendance_for_user', [AttendanceController::class, 'getAttendanceForUser']);
     Route::get('/get_all_attendances_for_user', [AttendanceController::class, 'getAllAttendancesForUser']);
     Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances'])->middleware('role:0');
-    Route::get('/get_hourly_wage_group_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupByCompanyId']);
     Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser'])->middleware('role:3');
     Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser'])->middleware('role:3');
     Route::get('/get_users_for_management', [\App\Http\Controllers\UserController::class, 'getUsersForManagement']);
     Route::get('/get_user', [\App\Http\Controllers\UserController::class, 'getUser']);
+    Route::get('/get_hourly_wage_groups_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupsByCompanyId']);
+    Route::get('/get_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroup']);
+    Route::post('/store_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'storeHourlyWageGroup'])->middleware('role:3');
+    Route::post('/update_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'updateHourlyWageGroup'])->middleware('role:3');
 });
 
 
