@@ -27,7 +27,7 @@ public function getUserForLogin($user)
       'email' => $user->email,
       'phone_number' => $user->phone_number,
       'gender' => $user->gender,
-      'birth_date' => $user->birth_date,    
+      'birth_date' => $user->birth_date,
       'address' => $user->address,
       'hire_date' => $user->hire_date,
       'retire_date' => $user->retire_date,
@@ -134,4 +134,11 @@ public function getUserForLogin($user)
         'roles' => $user->roles
     ]);
   }
+
+  public function getUsersWithAttendances($company_id, $year, $month)
+  {
+      $users = $this->userRepository->getUsersWithAttendances($company_id, $year, $month);
+      return response()->json($users);
+  }
+
 }

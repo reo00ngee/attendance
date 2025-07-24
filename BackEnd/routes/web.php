@@ -36,6 +36,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser'])->middleware('role:3');
     Route::get('/get_users_for_management', [\App\Http\Controllers\UserController::class, 'getUsersForManagement']);
     Route::get('/get_user', [\App\Http\Controllers\UserController::class, 'getUser']);
+    Route::get('/get_users_with_attendances', [\App\Http\Controllers\UserController::class, 'getUsersWithAttendances']);
     Route::get('/get_hourly_wage_groups_by_company_id', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroupsByCompanyId']);
     Route::get('/get_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'getHourlyWageGroup']);
     Route::post('/store_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'storeHourlyWageGroup'])->middleware('role:3');

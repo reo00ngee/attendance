@@ -1,5 +1,8 @@
+import { Attendance } from "../types/Attendance";
+
 export interface User {
   user_id: number;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -11,4 +14,5 @@ export interface User {
   retire_date?: string | null;
   hourly_wage_group_id: number | null;
   roles: number[];
+  attendances: Attendance[];
 }

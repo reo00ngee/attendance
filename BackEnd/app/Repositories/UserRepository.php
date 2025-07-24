@@ -3,6 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Models\Attendance;
+use App\Models\AttendanceBreak;
+use App\Enums\SubmissionStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -111,4 +114,17 @@ class UserRepository
       ->toArray();
     return $user;
   }
+
+  public function getUsersWithAttendances($company_id, $year, $month)
+  {
+    return User::where('company_id', $company_id)
+        ->with(['attendances' => function ($query) use ($year, $month) {
+            $query->whereYear('start_time', $year)
+                  ->whereMonth('start_time', $month)
+                  ->where('submission_status', SubmissionStatus::SUBMITTED)
+                  ->orderBy('start_time', 'desc')
+                  ->with('attendanceBreaks');
+        }])
+        ->get();
+}
 }

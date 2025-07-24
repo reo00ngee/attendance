@@ -174,7 +174,8 @@ class User extends Authenticatable
 
 	public function attendances()
 	{
-		return $this->hasMany(Attendance::class);
+		return $this->hasMany(Attendance::class
+, 'user_id'); // 外部キーを明示
 	}
 
 	public function attendances_breaks_where_created_by()

@@ -19,6 +19,7 @@ import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
+import { handlePrevMonth, handleNextMonth } from "../utils/month";
 
 const AttendanceRegistrationForMonthly = () => {
   const pageTitle = "Attendance Registration For Monthly";
@@ -42,24 +43,6 @@ const AttendanceRegistrationForMonthly = () => {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
-
-  const handlePrevMonth = () => {
-    if (month === 1) {
-      setMonth(12);
-      setYear(year - 1);
-    } else {
-      setMonth(month - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (month === 12) {
-      setMonth(1);
-      setYear(year + 1);
-    } else {
-      setMonth(month + 1);
-    }
-  };
 
   const handleSubmit = async () => {
     if (unsubmittedExists === false) {
@@ -206,11 +189,11 @@ const AttendanceRegistrationForMonthly = () => {
       {/* テーブル */}
       <Section>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Button onClick={handlePrevMonth} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
+          <Button onClick={() => handlePrevMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
           <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
             {format(new Date(year, month - 1), "MMMM yyyy")}
           </span>
-          <Button onClick={handleNextMonth} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
+          <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
         <TableContainer component={Paper}>
           <Table>

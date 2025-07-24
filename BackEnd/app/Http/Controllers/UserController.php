@@ -17,7 +17,6 @@ class UserController extends Controller
     {
         $this->userService = $userService;
         $this->middleware('auth');
-
     }
 
     public function getUserForLogin(Request $request)
@@ -53,5 +52,14 @@ class UserController extends Controller
     {
         $user_id = $request->query('user_id');
         return $this->userService->getUser($user_id);
+    }
+
+    public function getUsersWithAttendances(Request $request)
+    {
+        $user = Auth::user();
+        $company_id = $user->company_id;
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->userService->getUsersWithAttendances($company_id, $year, $month);
     }
 }
