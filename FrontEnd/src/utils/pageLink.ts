@@ -5,6 +5,7 @@ export const makePageLinks = () => {
   const links = [
     { label: "Attendance Registration for Daily", path: "/attendance_registration_for_daily" },
     { label: "Attendance Registration for Monthly", path: "/attendance_registration_for_monthly" },
+    { label: "Expense Registration", path: "/expense_registration" },
   ];
 
   if (userRoles.includes(2)) {
