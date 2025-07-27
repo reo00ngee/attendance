@@ -12,12 +12,17 @@ import {
   TableRow,
   Box,
   Alert,
-  CircularProgress
+  CircularProgress,
+  TextField,
+  MenuItem,
+  Switch,
+  FormControlLabel
 } from "@mui/material";
+import { Add as AddIcon } from "@mui/icons-material";
 import Section from "../components/Section";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { ExpenseOrDeduction } from "../types/Expense";
-import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
+import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
 
@@ -27,17 +32,21 @@ const ExpenseRegistration = () => {
     "Expense Name",
     "Amount",
     "Date",
-    "Comment",
-    ""
+    "Comment"
   ];
+
   const [expenses, setExpenses] = useState<ExpenseOrDeduction[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [unsubmittedExists, setUnsubmittedExists] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
+
+  // Edit Mode関連
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedExpenses, setEditedExpenses] = useState<ExpenseOrDeduction[]>([]);
+  const [newExpenses, setNewExpenses] = useState<Partial<ExpenseOrDeduction>[]>([]);
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -52,13 +61,14 @@ const ExpenseRegistration = () => {
           const data: ExpenseOrDeduction[] = await res.json();
           setExpenses(data);
           setTotalAmount(calculateTotalAmount(data));
+          setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
         } else {
-          setExpenses([]); // 安全にリセット
+          setExpenses([]);
           setTotalAmount(0);
           setError("Failed to retrieve the expense list.");
         }
       } catch {
-        setExpenses([]); // 安全にリセット
+        setExpenses([]);
         setTotalAmount(0);
         setError("Something went wrong while fetching the data. Please try again later.");
       }
@@ -66,7 +76,85 @@ const ExpenseRegistration = () => {
     };
 
     fetchExpenses();
-  }, [year, month]); // year, monthのみ依存
+  }, [year, month]);
+
+  // Edit Modeの切り替え
+  const handleToggleEditMode = () => {
+    if (isEditMode) {
+      // Edit Mode OFF: リセット
+      setEditedExpenses([]);
+      setNewExpenses([]);
+    } else {
+      // Edit Mode ON: 現在のデータをコピー
+      setEditedExpenses([...expenses]);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  // 既存expenseの更新
+  const updateExpense = (index: number, field: keyof ExpenseOrDeduction, value: any) => {
+    const updated = [...editedExpenses];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditedExpenses(updated);
+  };
+
+  // 新しいexpenseの追加
+  const addNewExpense = () => {
+    const newExpense: Partial<ExpenseOrDeduction> = {
+      name: "",
+      amount: 0,
+      date: format(new Date(), "yyyy-MM-dd"),
+      comment: "",
+      expense_or_deduction: 0,
+      submission_status: 0
+    };
+    setNewExpenses([...newExpenses, newExpense]);
+  };
+
+  // 新しいexpenseの更新
+  const updateNewExpense = (index: number, field: string, value: any) => {
+    const updated = [...newExpenses];
+    updated[index] = { ...updated[index], [field]: value };
+    setNewExpenses(updated);
+  };
+
+  // 一括保存
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/batch_update_expenses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          updated: editedExpenses,
+          created: newExpenses.filter(expense => expense.name && expense.amount),
+          year,
+          month
+        }),
+      });
+      
+      if (res.ok) {
+        // データ再取得
+        const fetchRes = await fetch(
+          `${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
+          { credentials: "include" }
+        );
+        if (fetchRes.ok) {
+          const data: ExpenseOrDeduction[] = await fetchRes.json(); // ←fetchResから取得
+          setExpenses(data);
+          setTotalAmount(calculateTotalAmount(data));
+          setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        }
+        setIsEditMode(false);
+        setEditedExpenses([]);
+        setNewExpenses([]);
+      } else {
+        setError("Failed to save changes.");
+      }
+    } catch {
+      setError("Failed to save changes.");
+    }
+  };
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -75,7 +163,7 @@ const ExpenseRegistration = () => {
         <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
       </Section>
 
-      {/* エラーがある場合は常に表示 */}
+      {/* エラー表示 */}
       {error && (
         <Section>
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -84,7 +172,7 @@ const ExpenseRegistration = () => {
         </Section>
       )}
 
-      {/* loading時はローディング表示 */}
+      {/* ローディング表示 */}
       {loading && (
         <Section>
           <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
@@ -109,22 +197,35 @@ const ExpenseRegistration = () => {
             Total Expense Amount: {totalAmount}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
-            variant="contained"
-            component="a"
-            href="/attendance_registration_for_daily"
-            sx={{ minWidth: 180 }}
-          >
-            REGISTER
-          </Button>
-          <Button
-            variant="contained"
-            // onClick={handleSubmit}
-            sx={{ minWidth: 180 }}
-          >
-            SUBMIT
-          </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, alignItems: 'center' }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isEditMode}
+                onChange={handleToggleEditMode}
+                color="primary"
+              />
+            }
+            label="MODIFY"
+          />
+          {isEditMode && (
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              sx={{ minWidth: 180 }}
+            >
+              SAVE
+            </Button>
+          )}
+          {!isEditMode && (
+            <Button
+              variant="contained"
+              // onClick={handleSubmit}
+              sx={{ minWidth: 180 }}
+            >
+              SUBMIT
+            </Button>
+          )}
         </Box>
       </Section>
 
@@ -137,45 +238,143 @@ const ExpenseRegistration = () => {
           </span>
           <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {tableHeaders.map((header, index) => (
-                  <TableCell key={index} align="right">
-                    {header}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {expenses.map((expense, i) => (
-                <TableRow key={i}>
-                  <TableCell align="right">{expense.name}</TableCell>
-                  <TableCell align="right">{expense.amount}</TableCell>
-                  <TableCell align="right">{formatDate(expense.date)}</TableCell>
-                  <TableCell align="right">{expense.comment} </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      sx={{
-                        minWidth: 120,
-                        height: 40,
-                        fontSize: "1rem",
-                        px: 2,
-                      }}
-                      component="a"
-                      // href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
-                    >
-                      Modify
-                    </Button>
-                  </TableCell>
+        
+        {!loading && !error && expenses.length === 0 && !isEditMode ? (
+          <Paper sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="body1" color="text.secondary">
+              No expenses found for {format(new Date(year, month - 1), "MMMM yyyy")}
+            </Typography>
+          </Paper>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {tableHeaders.map((header, index) => (
+                    <TableCell key={index} align="right">
+                      {header}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {/* 既存のexpenses */}
+                {(isEditMode ? editedExpenses : expenses).map((expense, i) => (
+                  <TableRow key={expense.expense_id || i}>
+                    <TableCell align="right">
+                      {isEditMode ? (
+                        <TextField
+                          value={expense.name}
+                          onChange={(e) => updateExpense(i, 'name', e.target.value)}
+                          size="small"
+                          fullWidth
+                        />
+                      ) : (
+                        expense.name
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {isEditMode ? (
+                        <TextField
+                          type="number"
+                          value={expense.amount}
+                          onChange={(e) => updateExpense(i, 'amount', Number(e.target.value))}
+                          size="small"
+                          fullWidth
+                        />
+                      ) : (
+                        expense.amount
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {isEditMode ? (
+                        <TextField
+                          type="date"
+                          value={format(new Date(expense.date), "yyyy-MM-dd")}
+                          onChange={(e) => updateExpense(i, 'date', e.target.value)}
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      ) : (
+                        formatDate(expense.date)
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {isEditMode ? (
+                        <TextField
+                          value={expense.comment || ""}
+                          onChange={(e) => updateExpense(i, 'comment', e.target.value)}
+                          size="small"
+                          fullWidth
+                        />
+                      ) : (
+                        expense.comment
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* 新しいexpenses */}
+                {isEditMode && newExpenses.map((expense, i) => (
+                  <TableRow key={`new-${i}`}>
+                    <TableCell align="right">
+                      <TextField
+                        value={expense.name || ""}
+                        onChange={(e) => updateNewExpense(i, 'name', e.target.value)}
+                        placeholder="Expense name"
+                        size="small"
+                        fullWidth
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        type="number"
+                        value={expense.amount || 0}
+                        onChange={(e) => updateNewExpense(i, 'amount', Number(e.target.value))}
+                        size="small"
+                        fullWidth
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        type="date"
+                        value={expense.date || format(new Date(), "yyyy-MM-dd")}
+                        onChange={(e) => updateNewExpense(i, 'date', e.target.value)}
+                        size="small"
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        value={expense.comment || ""}
+                        onChange={(e) => updateNewExpense(i, 'comment', e.target.value)}
+                        placeholder="Comment"
+                        size="small"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        {/* ADD EXPENSE ボタン */}
+        {isEditMode && (
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="outlined"
+              onClick={addNewExpense}
+              startIcon={<AddIcon />}
+              sx={{ minWidth: 200 }}
+            >
+              ADD EXPENSE
+            </Button>
+          </Box>
+        )}
       </Section>
     </Box>
   );

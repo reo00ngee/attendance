@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateExpensesAndDeductionRequest;
 use App\Models\ExpensesAndDeduction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ExpensesAndDeductionService;
+use App\Http\Requests\BatchUpdateExpensesRequest;
 
 class ExpensesAndDeductionController extends Controller
 {
@@ -22,6 +24,21 @@ class ExpensesAndDeductionController extends Controller
         $month = $request->query('month');
         return $this->expensesAndDeductionService->getAllExpensesForUser($user, $year, $month);
     }
+
+    public function batchUpdateExpenses(BatchUpdateExpensesRequest $request)
+    {
+        $user = Auth::user();
+        $validated = $request->validated();
+        
+        return $this->expensesAndDeductionService->batchUpdateExpenses(
+            $user, 
+            $validated['updated'] ?? [], 
+            $validated['created'] ?? [],
+            $validated['year'],
+            $validated['month']
+        );
+    }
+
     /**
      * Display a listing of the resource.
      */
