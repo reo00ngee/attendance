@@ -1,4 +1,5 @@
 export interface ExpenseOrDeduction {
+  id: number;
   expense_id: number;
   user_id: number;
   expense_or_deduction: number;

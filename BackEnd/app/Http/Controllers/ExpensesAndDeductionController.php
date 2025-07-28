@@ -34,6 +34,7 @@ class ExpensesAndDeductionController extends Controller
             $user, 
             $validated['updated'] ?? [], 
             $validated['created'] ?? [],
+            $validated['deleted'] ?? [],
             $validated['year'],
             $validated['month']
         );

@@ -35,10 +35,10 @@ class ExpensesAndDeductionService
     });
   }
 
-  public function batchUpdateExpenses(User $user, array $updated, array $created, int $year, int $month)
+  public function batchUpdateExpenses(User $user, array $updated, array $created, array $deleted, int $year, int $month)
   {
     try {
-      return DB::transaction(function () use ($user, $updated, $created, $year, $month) {
+      return DB::transaction(function () use ($user, $updated, $created, $deleted, $year, $month) {
 
         // 既存データの更新
         foreach ($updated as $expenseData) {
@@ -57,6 +57,11 @@ class ExpensesAndDeductionService
           $expenseData['updated_by'] = $user->id;
 
           $this->expensesAndDeductionRepository->createExpense($expenseData);
+        }
+
+        // 削除データの処理
+        foreach ($deleted as $deleted_id) {
+          $this->expensesAndDeductionRepository->deleteExpense($deleted_id, $user->id);
         }
 
         // 更新後のデータを取得

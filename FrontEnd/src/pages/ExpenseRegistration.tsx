@@ -16,9 +16,10 @@ import {
   TextField,
   MenuItem,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  IconButton
 } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import Section from "../components/Section";
 import { format } from "date-fns";
 import { ExpenseOrDeduction } from "../types/Expense";
@@ -32,7 +33,8 @@ const ExpenseRegistration = () => {
     "Expense Name",
     "Amount",
     "Date",
-    "Comment"
+    "Comment",
+    "Actions" // 削除ボタン用のカラム追加
   ];
 
   const [expenses, setExpenses] = useState<ExpenseOrDeduction[]>([]);
@@ -47,6 +49,7 @@ const ExpenseRegistration = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedExpenses, setEditedExpenses] = useState<ExpenseOrDeduction[]>([]);
   const [newExpenses, setNewExpenses] = useState<Partial<ExpenseOrDeduction>[]>([]);
+  const [deletedExpenseIds, setDeletedExpenseIds] = useState<number[]>([]); // 削除対象のID配列
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -84,6 +87,7 @@ const ExpenseRegistration = () => {
       // Edit Mode OFF: リセット
       setEditedExpenses([]);
       setNewExpenses([]);
+      setDeletedExpenseIds([]);
     } else {
       // Edit Mode ON: 現在のデータをコピー
       setEditedExpenses([...expenses]);
@@ -96,6 +100,17 @@ const ExpenseRegistration = () => {
     const updated = [...editedExpenses];
     updated[index] = { ...updated[index], [field]: value };
     setEditedExpenses(updated);
+  };
+
+  // 既存expenseの削除マーク
+  const markExpenseForDeletion = (expenseId: number) => {
+    if (deletedExpenseIds.includes(expenseId)) {
+      // 既に削除対象の場合は解除
+      setDeletedExpenseIds(deletedExpenseIds.filter(id => id !== expenseId));
+    } else {
+      // 削除対象に追加
+      setDeletedExpenseIds([...deletedExpenseIds, expenseId]);
+    }
   };
 
   // 新しいexpenseの追加
@@ -118,6 +133,11 @@ const ExpenseRegistration = () => {
     setNewExpenses(updated);
   };
 
+  // 新しいexpenseの削除
+  const removeNewExpense = (index: number) => {
+    setNewExpenses(newExpenses.filter((_, i) => i !== index));
+  };
+
   // 一括保存
   const handleSave = async () => {
     try {
@@ -126,8 +146,9 @@ const ExpenseRegistration = () => {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          updated: editedExpenses,
+          updated: editedExpenses.filter(expense => !deletedExpenseIds.includes(expense.id)),
           created: newExpenses.filter(expense => expense.name && expense.amount),
+          deleted: deletedExpenseIds, // 削除対象のID配列
           year,
           month
         }),
@@ -140,7 +161,7 @@ const ExpenseRegistration = () => {
           { credentials: "include" }
         );
         if (fetchRes.ok) {
-          const data: ExpenseOrDeduction[] = await fetchRes.json(); // ←fetchResから取得
+          const data: ExpenseOrDeduction[] = await fetchRes.json();
           setExpenses(data);
           setTotalAmount(calculateTotalAmount(data));
           setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
@@ -148,6 +169,7 @@ const ExpenseRegistration = () => {
         setIsEditMode(false);
         setEditedExpenses([]);
         setNewExpenses([]);
+        setDeletedExpenseIds([]);
       } else {
         setError("Failed to save changes.");
       }
@@ -259,61 +281,81 @@ const ExpenseRegistration = () => {
               </TableHead>
               <TableBody>
                 {/* 既存のexpenses */}
-                {(isEditMode ? editedExpenses : expenses).map((expense, i) => (
-                  <TableRow key={expense.expense_id || i}>
-                    <TableCell align="right">
-                      {isEditMode ? (
-                        <TextField
-                          value={expense.name}
-                          onChange={(e) => updateExpense(i, 'name', e.target.value)}
-                          size="small"
-                          fullWidth
-                        />
-                      ) : (
-                        expense.name
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      {isEditMode ? (
-                        <TextField
-                          type="number"
-                          value={expense.amount}
-                          onChange={(e) => updateExpense(i, 'amount', Number(e.target.value))}
-                          size="small"
-                          fullWidth
-                        />
-                      ) : (
-                        expense.amount
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      {isEditMode ? (
-                        <TextField
-                          type="date"
-                          value={format(new Date(expense.date), "yyyy-MM-dd")}
-                          onChange={(e) => updateExpense(i, 'date', e.target.value)}
-                          size="small"
-                          fullWidth
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      ) : (
-                        formatDate(expense.date)
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      {isEditMode ? (
-                        <TextField
-                          value={expense.comment || ""}
-                          onChange={(e) => updateExpense(i, 'comment', e.target.value)}
-                          size="small"
-                          fullWidth
-                        />
-                      ) : (
-                        expense.comment
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {(isEditMode ? editedExpenses : expenses)
+                  .filter(expense => !deletedExpenseIds.includes(expense.id))
+                  .map((expense, i) => {
+                    // 元の配列でのインデックスを取得
+                    const originalIndex = (isEditMode ? editedExpenses : expenses).findIndex(
+                      e => e.id === expense.id
+                    );
+                    
+                    return (
+                      <TableRow key={expense.id || i}>
+                        <TableCell align="right">
+                          {isEditMode ? (
+                            <TextField
+                              value={expense.name}
+                              onChange={(e) => updateExpense(originalIndex, 'name', e.target.value)}
+                              size="small"
+                              fullWidth
+                            />
+                          ) : (
+                            expense.name
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isEditMode ? (
+                            <TextField
+                              type="number"
+                              value={expense.amount}
+                              onChange={(e) => updateExpense(originalIndex, 'amount', Number(e.target.value))}
+                              size="small"
+                              fullWidth
+                            />
+                          ) : (
+                            expense.amount
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isEditMode ? (
+                            <TextField
+                              type="date"
+                              value={format(new Date(expense.date), "yyyy-MM-dd")}
+                              onChange={(e) => updateExpense(originalIndex, 'date', e.target.value)}
+                              size="small"
+                              fullWidth
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          ) : (
+                            formatDate(expense.date)
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isEditMode ? (
+                            <TextField
+                              value={expense.comment || ""}
+                              onChange={(e) => updateExpense(originalIndex, 'comment', e.target.value)}
+                              size="small"
+                              fullWidth
+                            />
+                          ) : (
+                            expense.comment
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isEditMode && (
+                            <IconButton
+                              color="error"
+                              onClick={() => markExpenseForDeletion(expense.id)}
+                              size="small"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
 
                 {/* 新しいexpenses */}
                 {isEditMode && newExpenses.map((expense, i) => (
@@ -354,6 +396,15 @@ const ExpenseRegistration = () => {
                         size="small"
                         fullWidth
                       />
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        color="error"
+                        onClick={() => removeNewExpense(i)}
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
