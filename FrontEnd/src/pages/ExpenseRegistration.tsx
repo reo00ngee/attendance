@@ -17,7 +17,8 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
-  IconButton
+  IconButton,
+  Tooltip // 追加
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import Section from "../components/Section";
@@ -34,7 +35,7 @@ const ExpenseRegistration = () => {
     "Amount",
     "Date",
     "Comment",
-    "Actions" // 削除ボタン用のカラム追加
+    // "Actions" // 削除ボタン用のカラム追加
   ];
 
   const [expenses, setExpenses] = useState<ExpenseOrDeduction[]>([]);
@@ -176,6 +177,12 @@ const ExpenseRegistration = () => {
     } catch {
       setError("Failed to save changes.");
     }
+  };
+
+  // コメント表示用のヘルパー関数
+  const truncateComment = (comment: string | null | undefined, maxLength: number = 50): string => {
+    if (!comment) return "";
+    return comment.length > maxLength ? comment.substring(0, maxLength) + "..." : comment;
   };
 
   return (
@@ -339,7 +346,11 @@ const ExpenseRegistration = () => {
                               fullWidth
                             />
                           ) : (
-                            expense.comment
+                            <Tooltip title={expense.comment || ""} arrow>
+                              <span style={{ cursor: 'pointer' }}>
+                                {truncateComment(expense.comment)}
+                              </span>
+                            </Tooltip>
                           )}
                         </TableCell>
                         <TableCell align="right">
@@ -396,9 +407,7 @@ const ExpenseRegistration = () => {
                         size="small"
                         fullWidth
                       />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
+                                            <IconButton
                         color="error"
                         onClick={() => removeNewExpense(i)}
                         size="small"
