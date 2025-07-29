@@ -76,4 +76,24 @@ class AttendanceService
             return response()->json(['error' => 'Failed to submit attendances: ' . $e->getMessage()], 500);
         }
     }
+
+    public function getSubmittedAttendances($user_id, $year, $month)
+    {
+        $submitted_attendances = $this->attendanceRepository->getSubmittedAttendances($user_id, $year, $month);
+        return $submitted_attendances->map(function ($attendance) {
+            return [
+                'attendance_id'     => $attendance->id,
+                'start_time'        => $attendance->start_time ? $attendance->start_time->format('Y-m-d\TH:i:s') : '',
+                'end_time'          => $attendance->end_time ? $attendance->end_time->format('Y-m-d\TH:i:s') : '',
+                'comment'           => $attendance->comment,
+                'submission_status' => $attendance->submission_status,
+                'attendance_breaks' => $attendance->attendanceBreaks->map(function ($break) {
+                    return [
+                        'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',
+                        'end_time'   => $break->end_time ? $break->end_time->format('Y-m-d\TH:i:s') : '',
+                    ];
+                }),
+            ];
+        });
+    }
 }

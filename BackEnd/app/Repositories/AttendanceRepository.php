@@ -122,4 +122,15 @@ class AttendanceRepository
         $attendance->submission_status = SubmissionStatus::SUBMITTED;
         $attendance->save();
     }
+
+    public function getSubmittedAttendances($user_id, $year, $month)
+    {
+        return Attendance::with('attendanceBreaks')
+            ->where('user_id', $user_id)
+            ->whereYear('start_time', $year)
+            ->whereMonth('start_time', $month)
+            ->where('submission_status', SubmissionStatus::SUBMITTED)
+            ->orderBy('start_time', 'desc')
+            ->get();
+    }
 }

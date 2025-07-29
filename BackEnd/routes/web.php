@@ -32,6 +32,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/get_attendance_for_user', [AttendanceController::class, 'getAttendanceForUser']);
     Route::get('/get_all_attendances_for_user', [AttendanceController::class, 'getAllAttendancesForUser']);
     Route::post('submit_attendances', [AttendanceController::class, 'submitAttendances'])->middleware('role:0');
+    Route::get('/get_submitted_attendances', [AttendanceController::class, 'getSubmittedAttendances']);
     Route::get('/get_all_expenses_for_user', [\App\Http\Controllers\ExpensesAndDeductionController::class, 'getAllExpensesForUser']);
     Route::post('/store_user', [\App\Http\Controllers\UserController::class, 'storeUser'])->middleware('role:3');
     Route::post('/update_user', [\App\Http\Controllers\UserController::class, 'updateUser'])->middleware('role:3');

@@ -39,3 +39,9 @@ export const formatDate = (startTime: string): string => {
   const weekday = date.toLocaleDateString('en-US', { weekday: 'short' }); // 例: "Thu"
   return `${month}/${day} ${weekday}`;
 };
+
+// Truncates a long letter to a specified maximum length, adding "..." if truncated
+export const truncateLongLetter = (longLetter: string | null | undefined, maxLength: number = 50): string => {
+  if (!longLetter) return "";
+  return longLetter.length > maxLength ? longLetter.substring(0, maxLength) + "..." : longLetter;
+};

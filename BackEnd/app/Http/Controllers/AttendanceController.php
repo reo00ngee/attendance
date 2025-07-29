@@ -86,6 +86,15 @@ class AttendanceController extends Controller
         return $this->attendanceService->submitAttendances($user_id, $year, $month);
     }
 
+    public function getSubmittedAttendances(Request $request)
+    {
+        $user_id = $request->query('user_id');
+        $year = $request->query('year');
+        $month = $request->query('month');
+
+        return $this->attendanceService->getSubmittedAttendances($user_id, $year, $month);
+    }
+
     /**
      * Display a listing of the resource.
      */

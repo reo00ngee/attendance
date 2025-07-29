@@ -12,13 +12,14 @@ import {
   TableRow,
   Box,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from "@mui/material";
 import Section from "../components/Section";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
+import { formatTimeHHMM, convertToHoursAndMinutes, formatDate, formatTimeForInput, truncateLongLetter } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
 
@@ -33,7 +34,7 @@ const AttendanceApproval = () => {
     "End Time",
     "Break",
     "Working Hours",
-    ""
+    "Comment"
   ];
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -93,7 +94,7 @@ const AttendanceApproval = () => {
     setError(null);
     const fetchAttendances = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_submitted_attendances?year=${year}&month=${month}`, {
+        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_submitted_attendances?user_id=${userId}&year=${year}&month=${month}`, {
           method: "GET",
           mode: "cors",
           credentials: "include",
@@ -219,20 +220,9 @@ const AttendanceApproval = () => {
                   <TableCell align="right">{convertToHoursAndMinutes(breakMinutesArray[i])} </TableCell>
                   <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutesArray[i])} </TableCell>
                   <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      sx={{
-                        minWidth: 120,
-                        height: 40,
-                        fontSize: "1rem",
-                        px: 2,
-                      }}
-                      component="a"
-                      href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
-                    >
-                      Modify
-                    </Button>
+                    <Tooltip title={attendance.comment || "No comment"} arrow>
+                      <span style={{ cursor: "pointer" }}>{attendance.comment ? truncateLongLetter(attendance.comment, 30) : "No comment"}</span>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}

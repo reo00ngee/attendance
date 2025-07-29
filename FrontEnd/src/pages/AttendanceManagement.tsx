@@ -160,9 +160,9 @@ const AttendanceManagement = () => {
                         px: 2,
                       }}
                       component="a"
-                    // href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
+                    href={`/attendance_approval?user_id=${user.id}&year=${year}&month=${month}`}
                     >
-                      Modify
+                      APPROVAL
                     </Button>
                   </TableCell>
                 </TableRow>

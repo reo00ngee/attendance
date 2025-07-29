@@ -27,6 +27,7 @@ import { ExpenseOrDeduction } from "../types/Expense";
 import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
+import { truncateLongLetter } from "../utils/format";
 
 const ExpenseRegistration = () => {
   const pageTitle = "Expense Registration";
@@ -58,10 +59,10 @@ const ExpenseRegistration = () => {
       setError(null);
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
-          { 
-          method: "GET",
-          mode: "cors",
-          credentials: "include",
+          {
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
           }
         );
         if (res.ok) {
@@ -156,10 +157,10 @@ const ExpenseRegistration = () => {
       });
 
       if (res.ok) {
-          const data: ExpenseOrDeduction[] = await res.json();
-          setExpenses(data);
-          setTotalAmount(calculateTotalAmount(data));
-          setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        const data: ExpenseOrDeduction[] = await res.json();
+        setExpenses(data);
+        setTotalAmount(calculateTotalAmount(data));
+        setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
       }
     } catch {
       setError("Failed to save changes.");
@@ -181,21 +182,15 @@ const ExpenseRegistration = () => {
         credentials: "include",
       });
       if (res.ok) {
-          const data: ExpenseOrDeduction[] = await res.json();
-          setExpenses(data);
-          setTotalAmount(calculateTotalAmount(data));
-          setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        const data: ExpenseOrDeduction[] = await res.json();
+        setExpenses(data);
+        setTotalAmount(calculateTotalAmount(data));
+        setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
       }
     } catch {
       setError("Failed to submit expenses.");
     }
     setLoading(false);
-  };
-
-  // コメント表示用のヘルパー関数
-  const truncateComment = (comment: string | null | undefined, maxLength: number = 50): string => {
-    if (!comment) return "";
-    return comment.length > maxLength ? comment.substring(0, maxLength) + "..." : comment;
   };
 
   return (
@@ -360,8 +355,7 @@ const ExpenseRegistration = () => {
                             />
                           ) : (
                             <Tooltip title={expense.comment || ""} arrow>
-                              <span style={{ cursor: 'pointer' }}>
-                                {truncateComment(expense.comment)}
+                              <span style={{ cursor: 'pointer' }}>                                {truncateLongLetter(expense.comment)}
                               </span>
                             </Tooltip>
                           )}
