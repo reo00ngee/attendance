@@ -46,4 +46,12 @@ class ExpensesAndDeductionRepository
       ->where('user_id', $user_id)
       ->delete();
   }
+
+  public function submitExpense($expense)
+  {
+        $expense->submission_status = SubmissionStatus::SUBMITTED->value;
+        $expense->updated_by = auth()->id();
+        $expense->updated_at = now();
+        return $expense->save();
+  }
 }

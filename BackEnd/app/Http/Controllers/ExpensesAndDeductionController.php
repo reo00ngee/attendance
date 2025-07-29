@@ -19,25 +19,33 @@ class ExpensesAndDeductionController extends Controller
     }
     public function getAllExpensesForUser(Request $request)
     {
-        $user = Auth::user();
+        $user_id = Auth::id();
         $year = $request->query('year');
         $month = $request->query('month');
-        return $this->expensesAndDeductionService->getAllExpensesForUser($user, $year, $month);
+        return $this->expensesAndDeductionService->getAllExpensesForUser($user_id, $year, $month);
     }
 
     public function batchUpdateExpenses(BatchUpdateExpensesRequest $request)
     {
-        $user = Auth::user();
+        $user_id = Auth::id();
         $validated = $request->validated();
         
         return $this->expensesAndDeductionService->batchUpdateExpenses(
-            $user, 
-            $validated['updated'] ?? [], 
+            $user_id,
+            $validated['updated'] ?? [],
             $validated['created'] ?? [],
             $validated['deleted'] ?? [],
             $validated['year'],
             $validated['month']
         );
+    }
+
+    public function submitExpenses(Request $request)
+    {
+        $user_id = Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->expensesAndDeductionService->submitExpenses($user_id, $year, $month);
     }
 
     /**

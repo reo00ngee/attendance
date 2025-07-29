@@ -57,9 +57,12 @@ const ExpenseRegistration = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
-          { credentials: "include" }
+        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
+          { 
+          method: "GET",
+          mode: "cors",
+          credentials: "include",
+          }
         );
         if (res.ok) {
           const data: ExpenseOrDeduction[] = await res.json();
@@ -144,6 +147,7 @@ const ExpenseRegistration = () => {
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/batch_update_expenses`, {
         method: "POST",
+        mode: "cors",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
@@ -154,7 +158,7 @@ const ExpenseRegistration = () => {
           month
         }),
       });
-      
+
       if (res.ok) {
         // データ再取得
         const fetchRes = await fetch(
@@ -177,6 +181,41 @@ const ExpenseRegistration = () => {
     } catch {
       setError("Failed to save changes.");
     }
+  };
+
+  const handleSubmit = async () => {
+    if (unsubmittedExists === false) {
+      alert("All expenses have already been submitted.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_expenses?year=${year}&month=${month}`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (res.ok) {
+        // データ再取得
+        const fetchRes = await fetch(
+          `${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
+          { credentials: "include" }
+        );
+        if (fetchRes.ok) {
+          const data: ExpenseOrDeduction[] = await fetchRes.json();
+          setExpenses(data);
+          setTotalAmount(calculateTotalAmount(data));
+          setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        }
+      } else {
+        setError("Failed to submit expenses.");
+      }
+    } catch {
+      setError("Failed to submit expenses.");
+    }
+    setLoading(false);
   };
 
   // コメント表示用のヘルパー関数
@@ -211,7 +250,7 @@ const ExpenseRegistration = () => {
       )}
 
       {/* 未提出アラート */}
-      {unsubmittedExists && (
+      {unsubmittedExists && expenses.length > 0 && (
         <Section>
           <Alert severity="warning" sx={{ mb: 2 }}>
             There are expenses that have not been submitted.
@@ -249,7 +288,7 @@ const ExpenseRegistration = () => {
           {!isEditMode && (
             <Button
               variant="contained"
-              // onClick={handleSubmit}
+              onClick={handleSubmit}
               sx={{ minWidth: 180 }}
             >
               SUBMIT
@@ -267,7 +306,7 @@ const ExpenseRegistration = () => {
           </span>
           <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
-        
+
         {!loading && !error && expenses.length === 0 && !isEditMode ? (
           <Paper sx={{ p: 4, textAlign: "center" }}>
             <Typography variant="body1" color="text.secondary">
@@ -295,7 +334,7 @@ const ExpenseRegistration = () => {
                     const originalIndex = (isEditMode ? editedExpenses : expenses).findIndex(
                       e => e.id === expense.id
                     );
-                    
+
                     return (
                       <TableRow key={expense.id || i}>
                         <TableCell align="right">
@@ -407,7 +446,7 @@ const ExpenseRegistration = () => {
                         size="small"
                         fullWidth
                       />
-                                            <IconButton
+                      <IconButton
                         color="error"
                         onClick={() => removeNewExpense(i)}
                         size="small"
