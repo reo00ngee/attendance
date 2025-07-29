@@ -12,6 +12,7 @@ import { UseAuthUser } from '../hooks/useAuth'
 import AttendanceRegistrationForDaily from '../pages/AttendanceRegistrationForDaily'
 import AttendanceRegistrationForMonthly from '../pages/AttendanceRegistrationForMonthly'
 import AttendanceManagement from '../pages/AttendanceManagement'
+import AttendanceApproval from '../pages/AttendanceApproval'
 import ExpenseRegistration from '../pages/ExpenseRegistration'
 import UserRegistration from '../pages/UserRegistration'
 import UserManagement from '../pages/UserManagement'
@@ -56,6 +57,10 @@ export const router = createBrowserRouter([
             }, {
                 path: 'attendance_management',
                 element: <AttendanceManagement />,
+                loader: guardLoader
+            }, {
+                path: 'attendance_approval',
+                element: <AttendanceApproval />,
                 loader: guardLoader
             }, {
                 path: 'expense_registration',

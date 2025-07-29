@@ -115,16 +115,17 @@ class UserRepository
     return $user;
   }
 
+  // get users with their submitted attendances for a specific month
   public function getUsersWithAttendances($company_id, $year, $month)
   {
     return User::where('company_id', $company_id)
-        ->with(['attendances' => function ($query) use ($year, $month) {
-            $query->whereYear('start_time', $year)
-                  ->whereMonth('start_time', $month)
-                  ->where('submission_status', SubmissionStatus::SUBMITTED)
-                  ->orderBy('start_time', 'desc')
-                  ->with('attendanceBreaks');
-        }])
-        ->get();
-}
+      ->with(['attendances' => function ($query) use ($year, $month) {
+        $query->whereYear('start_time', $year)
+          ->whereMonth('start_time', $month)
+          ->where('submission_status', SubmissionStatus::SUBMITTED)
+          ->orderBy('start_time', 'desc')
+          ->with('attendanceBreaks');
+      }])
+      ->get();
+  }
 }

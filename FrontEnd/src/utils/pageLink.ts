@@ -11,6 +11,7 @@ export const makePageLinks = () => {
   if (userRoles.includes(2)) {
     links.push(
       { label: "Attendance Management", path: "/attendance_management" },
+      { label: "Attendance Approval", path: "/attendance_approval" }
     );
   }
   if (userRoles.includes(3)) {
