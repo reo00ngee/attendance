@@ -69,10 +69,6 @@ const ExpenseRegistration = () => {
           setExpenses(data);
           setTotalAmount(calculateTotalAmount(data));
           setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
-        } else {
-          setExpenses([]);
-          setTotalAmount(0);
-          setError("Failed to retrieve the expense list.");
         }
       } catch {
         setExpenses([]);
@@ -153,30 +149,17 @@ const ExpenseRegistration = () => {
         body: JSON.stringify({
           updated: editedExpenses.filter(expense => !deletedExpenseIds.includes(expense.id)),
           created: newExpenses.filter(expense => expense.name && expense.amount),
-          deleted: deletedExpenseIds, // 削除対象のID配列
+          deleted: deletedExpenseIds,
           year,
           month
         }),
       });
 
       if (res.ok) {
-        // データ再取得
-        const fetchRes = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
-          { credentials: "include" }
-        );
-        if (fetchRes.ok) {
-          const data: ExpenseOrDeduction[] = await fetchRes.json();
+          const data: ExpenseOrDeduction[] = await res.json();
           setExpenses(data);
           setTotalAmount(calculateTotalAmount(data));
           setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
-        }
-        setIsEditMode(false);
-        setEditedExpenses([]);
-        setNewExpenses([]);
-        setDeletedExpenseIds([]);
-      } else {
-        setError("Failed to save changes.");
       }
     } catch {
       setError("Failed to save changes.");
@@ -198,19 +181,10 @@ const ExpenseRegistration = () => {
         credentials: "include",
       });
       if (res.ok) {
-        // データ再取得
-        const fetchRes = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
-          { credentials: "include" }
-        );
-        if (fetchRes.ok) {
-          const data: ExpenseOrDeduction[] = await fetchRes.json();
+          const data: ExpenseOrDeduction[] = await res.json();
           setExpenses(data);
           setTotalAmount(calculateTotalAmount(data));
           setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
-        }
-      } else {
-        setError("Failed to submit expenses.");
       }
     } catch {
       setError("Failed to submit expenses.");

@@ -19,9 +19,6 @@ class ExpensesAndDeductionService
   public function getAllExpensesForUser($user_id, $year, $month)
   {
     $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $year, $month);
-    if ($expenses->isEmpty()) {
-      return response()->json(['message' => 'No expenses found for the specified period'], 404);
-    }
     return $expenses->map(function ($expense) {
       return [
         'id' => $expense->id,
