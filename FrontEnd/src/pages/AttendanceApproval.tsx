@@ -24,8 +24,8 @@ import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
 
 const AttendanceApproval = () => {
-    const [searchParams] = useSearchParams();
-    const userId = searchParams.get("user_id");
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get("user_id");
   const pageTitle = "Attendance Approval";
   const tableHeaders = [
     "Date",
@@ -99,25 +99,26 @@ const AttendanceApproval = () => {
           mode: "cors",
           credentials: "include",
         });
-        const data: Attendance[] = await res.json();
-        setAttendances(data);
-        setUnsubmittedExists(data.some(att => att.submission_status === 0));
+        if (res.ok) {
+          const data: Attendance[] = await res.json();
+          setAttendances(data);
+          setUnsubmittedExists(data.some(att => att.submission_status === 0));
 
-        const breaks: number[] = [];
-        const netWorks: number[] = [];
+          const breaks: number[] = [];
+          const netWorks: number[] = [];
 
-        data.forEach((att) => {
-          const [b, n] = calculateBreakMinutesAndNetWorkingMinutes(att);
-          breaks.push(b);
-          netWorks.push(n);
-        });
+          data.forEach((att) => {
+            const [b, n] = calculateBreakMinutesAndNetWorkingMinutes(att);
+            breaks.push(b);
+            netWorks.push(n);
+          });
 
-        setBreakMinutesArray(breaks);
-        setNetWorkingMinutesArray(netWorks);
+          setBreakMinutesArray(breaks);
+          setNetWorkingMinutesArray(netWorks);
 
-        setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
-        setTotalWorkingDays(data.filter(att => att.start_time).length);
-
+          setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
+          setTotalWorkingDays(data.filter(att => att.start_time).length);
+        }
       } catch (err) {
         setError("Something went wrong while fetching the data. Please try again later.");
       }

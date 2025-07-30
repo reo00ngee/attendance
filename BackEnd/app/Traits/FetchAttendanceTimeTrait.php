@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Log;
 trait FetchAttendanceTimeTrait
 {
 
-    // private AttendanceRepository $attendanceRepository;
-    // public function __construct(AttendanceRepository $attendanceRepository)
-    // {
-    //     $this->attendanceRepository = $attendanceRepository;
-    // }
-
     public function getLatestAttendancesForUser($user_id): \Illuminate\Http\JsonResponse
     {
         $latestAttendance = $this->attendanceRepository->getLatestAttendancesForUser($user_id);

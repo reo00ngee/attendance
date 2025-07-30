@@ -3,19 +3,26 @@
 namespace App\Services;
 
 use App\Repositories\UserRepository;
+use App\Repositories\CompanyRepository;
+use App\Traits\FetchCompanyDataTrait;
+use App\Traits\PeriodCalculatorTrait;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UserService
 {
+  use FetchCompanyDataTrait;
+  use PeriodCalculatorTrait;
+  private CompanyRepository $companyRepository;
   private UserRepository $userRepository;
-  public function __construct(UserRepository $userRepository)
+  public function __construct(UserRepository $userRepository, CompanyRepository $companyRepository)
   {
+    $this->companyRepository = $companyRepository;
     $this->userRepository = $userRepository;
   }
 
-public function getUserForLogin($user)
+  public function getUserForLogin($user)
   {
     if (!$user) {
       return response()->json(['error' => 'User not authenticated'], 401);
@@ -76,7 +83,7 @@ public function getUserForLogin($user)
       'hire_date' => $validated['hire_date'] ?? null,
       'retire_date' => $validated['retire_date'] ?? null,
       'hourly_wage_group_id' => $validated['hourly_wage_group_id'],
-    ]; 
+    ];
     $user = $this->userRepository->updateUser($user_id, $data, $validated['roles']);
     if ($user) {
       return response()->json(['message' => 'User updated successfully'], 200);
@@ -120,25 +127,26 @@ public function getUserForLogin($user)
       return response()->json(['error' => 'User not found'], 404);
     }
     return response()->json([
-        'user_id' => $user->id,
-        'first_name' => $user->first_name,
-        'last_name' => $user->last_name,
-        'email' => $user->email,
-        'phone_number' => $user->phone_number,
-        'gender' => $user->gender,
-        'birth_date' => $user->birth_date,
-        'address' => $user->address,
-        'hire_date' => $user->hire_date,
-        'retire_date' => $user->retire_date,
-        'hourly_wage_group_id' => $user->hourly_wage_group_id,
-        'roles' => $user->roles
+      'user_id' => $user->id,
+      'first_name' => $user->first_name,
+      'last_name' => $user->last_name,
+      'email' => $user->email,
+      'phone_number' => $user->phone_number,
+      'gender' => $user->gender,
+      'birth_date' => $user->birth_date,
+      'address' => $user->address,
+      'hire_date' => $user->hire_date,
+      'retire_date' => $user->retire_date,
+      'hourly_wage_group_id' => $user->hourly_wage_group_id,
+      'roles' => $user->roles
     ]);
   }
 
   public function getUsersWithAttendances($company_id, $year, $month)
   {
-      $users = $this->userRepository->getUsersWithAttendances($company_id, $year, $month);
-      return response()->json($users);
+    $closing_date = $this->getCompanyClosingDate($company_id);
+    [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+    $users = $this->userRepository->getUsersWithAttendances($company_id, $start, $end);
+    return response()->json($users);
   }
-
 }

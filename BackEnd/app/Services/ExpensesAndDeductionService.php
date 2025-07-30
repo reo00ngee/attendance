@@ -3,22 +3,31 @@
 namespace App\Services;
 
 use App\Repositories\ExpensesAndDeductionRepository;
+use App\Repositories\CompanyRepository;
 use App\Models\User;
+use App\Traits\FetchCompanyDataTrait;
+use App\Traits\PeriodCalculatorTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ExpensesAndDeductionService
 {
+  use FetchCompanyDataTrait;
+  use PeriodCalculatorTrait;
   private ExpensesAndDeductionRepository $expensesAndDeductionRepository;
+  private CompanyRepository $companyRepository;
 
-  public function __construct(ExpensesAndDeductionRepository $expensesAndDeductionRepository)
+  public function __construct(ExpensesAndDeductionRepository $expensesAndDeductionRepository, CompanyRepository $companyRepository)
   {
+    $this->companyRepository = $companyRepository;
     $this->expensesAndDeductionRepository = $expensesAndDeductionRepository;
   }
 
-  public function getAllExpensesForUser($user_id, $year, $month)
+  public function getAllExpensesForUser($company_id, $user_id, $year, $month)
   {
-    $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $year, $month);
+    $closing_date = $this->getCompanyClosingDate($company_id);
+    [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+    $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $start, $end);
     return $expenses->map(function ($expense) {
       return [
         'id' => $expense->id,
@@ -33,10 +42,10 @@ class ExpensesAndDeductionService
     });
   }
 
-  public function batchUpdateExpenses(int $user_id, array $updated, array $created, array $deleted, int $year, int $month)
+  public function batchUpdateExpenses(int $company_id, int $user_id, array $updated, array $created, array $deleted, int $year, int $month)
   {
     try {
-      return DB::transaction(function () use ($user_id, $updated, $created, $deleted, $year, $month) {
+      return DB::transaction(function () use ($company_id, $user_id, $updated, $created, $deleted, $year, $month) {
 
         // 既存データの更新
         foreach ($updated as $expenseData) {
@@ -63,8 +72,7 @@ class ExpensesAndDeductionService
         }
 
         // 更新後のデータを取得
-        return $this->getAllExpensesForUser($user_id, $year, $month);
-
+        return $this->getAllExpensesForUser($company_id, $user_id, $year, $month);
       });
     } catch (\Exception $e) {
       Log::error('Failed to batch update expenses', [
@@ -78,17 +86,19 @@ class ExpensesAndDeductionService
     }
   }
 
-  public function submitExpenses($user_id, $year, $month)
+  public function submitExpenses($company_id, $user_id, $year, $month)
   {
     try {
-      DB::transaction(function () use ($user_id, $year, $month) {
-        $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $year, $month);
+      DB::transaction(function () use ($company_id, $user_id, $year, $month) {
+        $closing_date = $this->getCompanyClosingDate($company_id);
+        [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+        $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $start, $end);
         foreach ($expenses as $expense) {
           $this->expensesAndDeductionRepository->submitExpense($expense);
         }
       });
 
-      return $this->getAllExpensesForUser($user_id, $year, $month);
+      return $this->getAllExpensesForUser($company_id, $user_id, $year, $month);
     } catch (\Exception $e) {
       return response()->json(['error' => 'Failed to submit expenses: ' . $e->getMessage()], 500);
     }

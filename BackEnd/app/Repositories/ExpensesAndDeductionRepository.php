@@ -10,12 +10,11 @@ use App\Enums\ExpenseOrDeduction;
 
 class ExpensesAndDeductionRepository
 {
-  public function getAllExpensesForUser($user_id, $year, $month)
+  public function getAllExpensesForUser($user_id, $start, $end)
   {
     return ExpensesAndDeduction::where('user_id', $user_id)
       ->where('expense_or_deduction', ExpenseOrDeduction::EXPENSE->value)
-      ->whereYear('date', $year)
-      ->whereMonth('date', $month)
+      ->whereBetween('date', [$start, $end])
       ->get();
   }
 

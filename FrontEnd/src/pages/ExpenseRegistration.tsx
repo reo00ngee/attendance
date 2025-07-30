@@ -161,6 +161,7 @@ const ExpenseRegistration = () => {
         setExpenses(data);
         setTotalAmount(calculateTotalAmount(data));
         setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        handleToggleEditMode();
       }
     } catch {
       setError("Failed to save changes.");

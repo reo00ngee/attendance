@@ -3,17 +3,24 @@
 namespace App\Services;
 
 use App\Repositories\AttendanceRepository;
+use App\Repositories\CompanyRepository;
 use App\Traits\FetchAttendanceTimeTrait;
+use App\Traits\FetchCompanyDataTrait;
+use App\Traits\PeriodCalculatorTrait;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceService
 {
     use FetchAttendanceTimeTrait;
+    use FetchCompanyDataTrait;
+    use PeriodCalculatorTrait;
     private AttendanceRepository $attendanceRepository;
-    public function __construct(AttendanceRepository $attendanceRepository)
+    private CompanyRepository $companyRepository;
+    public function __construct(AttendanceRepository $attendanceRepository, CompanyRepository $companyRepository)
     {
         $this->attendanceRepository = $attendanceRepository;
+        $this->companyRepository = $companyRepository;
     }
 
     public function startWork($user_id)
@@ -41,9 +48,11 @@ class AttendanceService
         return $this->attendanceRepository->updateAttendance($user_id, $validated);
     }
 
-    public function getAllAttendancesForUser($user_id, $year, $month)
+    public function getAllAttendancesForUser($company_id, $user_id, $year, $month)
     {
-        $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $year, $month);
+        $closing_date = $this->getCompanyClosingDate($company_id);
+        [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+        $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $start, $end);
         return $attendances->map(function ($attendance) {
             return [
                 'attendance_id'     => $attendance->id,
@@ -61,25 +70,29 @@ class AttendanceService
         });
     }
 
-    public function submitAttendances($user_id, $year, $month)
+    public function submitAttendances($company_id, $user_id, $year, $month)
     {
         try {
-            DB::transaction(function () use ($user_id, $year, $month) {
-                $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $year, $month);
+            DB::transaction(function () use ($company_id, $user_id, $year, $month) {
+                $closing_date = $this->getCompanyClosingDate($company_id);
+                [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+                $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $start, $end);
                 foreach ($attendances as $attendance) {
                     $this->attendanceRepository->submitAttendance($attendance);
                 }
             });
 
-            return $this->getAllAttendancesForUser($user_id, $year, $month);
+            return $this->getAllAttendancesForUser($company_id, $user_id, $year, $month);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to submit attendances: ' . $e->getMessage()], 500);
         }
     }
 
-    public function getSubmittedAttendances($user_id, $year, $month)
+    public function getSubmittedAttendances($company_id, $user_id, $year, $month)
     {
-        $submitted_attendances = $this->attendanceRepository->getSubmittedAttendances($user_id, $year, $month);
+        $closing_date = $this->getCompanyClosingDate($company_id);
+        [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+        $submitted_attendances = $this->attendanceRepository->getSubmittedAttendances($user_id, $start, $end);
         return $submitted_attendances->map(function ($attendance) {
             return [
                 'attendance_id'     => $attendance->id,

@@ -107,28 +107,27 @@ class AttendanceRepository
             ->first();
     }
 
-    public function getAllAttendancesForUser($user_id, $year, $month)
+    public function getAllAttendancesForUser($user_id, $start, $end)
     {
         return Attendance::with('attendanceBreaks')
             ->where('user_id', $user_id)
-            ->whereYear('start_time', $year)
-            ->whereMonth('start_time', $month)
+            ->whereBetween('start_time', [$start, $end])
             ->orderBy('start_time', 'desc')
             ->get();
     }
 
     public function submitAttendance($attendance)
     {
+        Log::info('Submitting attendance for user ID: ' . $attendance);
         $attendance->submission_status = SubmissionStatus::SUBMITTED;
         $attendance->save();
     }
 
-    public function getSubmittedAttendances($user_id, $year, $month)
+    public function getSubmittedAttendances($user_id, $start, $end)
     {
         return Attendance::with('attendanceBreaks')
             ->where('user_id', $user_id)
-            ->whereYear('start_time', $year)
-            ->whereMonth('start_time', $month)
+            ->whereBetween('start_time', [$start, $end])
             ->where('submission_status', SubmissionStatus::SUBMITTED)
             ->orderBy('start_time', 'desc')
             ->get();

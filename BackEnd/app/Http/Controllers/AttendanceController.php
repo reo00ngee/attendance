@@ -72,27 +72,30 @@ class AttendanceController extends Controller
 
     public function getAllAttendancesForUser(Request $request)
     {
+        $company_id = Auth::user()->company_id;
         $user_id = Auth::id();
         $year = $request->query('year');
         $month = $request->query('month');
-        return $this->attendanceService->getAllAttendancesForUser($user_id, $year, $month);
+        return $this->attendanceService->getAllAttendancesForUser($company_id, $user_id, $year, $month);
     }
 
     public function submitAttendances(Request $request)
     {
+        $company_id = Auth::user()->company_id;
         $user_id = Auth::id();
         $year = $request->query('year');
         $month = $request->query('month');
-        return $this->attendanceService->submitAttendances($user_id, $year, $month);
+        return $this->attendanceService->submitAttendances($company_id, $user_id, $year, $month);
     }
 
     public function getSubmittedAttendances(Request $request)
     {
-        $user_id = $request->query('user_id');
+        $company_id = Auth::user()->company_id;
+        $user_id = Auth::id();
         $year = $request->query('year');
         $month = $request->query('month');
 
-        return $this->attendanceService->getSubmittedAttendances($user_id, $year, $month);
+        return $this->attendanceService->getSubmittedAttendances($company_id, $user_id, $year, $month);
     }
 
     /**
