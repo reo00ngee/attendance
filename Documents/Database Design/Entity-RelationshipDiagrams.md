@@ -91,6 +91,7 @@ erDiagram
     id BIGINT PK
     submission_type BIGINT FK
     information_type BIGINT FK
+    comment TEXT
     created_at TIMESTAMP
     created_by BIGINT FK
     updated_at TIMESTAMP
@@ -249,6 +250,7 @@ erDiagram
     id BIGINT PK
     submission_type BIGINT FK
     information_type BIGINT FK
+    comment TEXT
     created_at TIMESTAMP
     created_by BIGINT FK
     updated_at TIMESTAMP
@@ -515,6 +517,7 @@ erDiagram
     id BIGINT PK
     submission_type BIGINT FK
     information_type BIGINT FK
+    comment TEXT
     created_at TIMESTAMP
     created_by BIGINT FK
     updated_at TIMESTAMP
@@ -765,6 +768,7 @@ erDiagram
     id BIGINT PK
     submission_type BIGINT FK
     information_type BIGINT FK
+    comment TEXT
     created_at TIMESTAMP
     created_by BIGINT FK
     updated_at TIMESTAMP

@@ -37,19 +37,19 @@
 
 | Column               | Data Type    | PK  | FK                     | Not NULL | Unique | Default                     | Remarks                                        |
 | -------------------- | ------------ | --- | ---------------------- | -------- | ------ | --------------------------- | ---------------------------------------------- |
-| id                   | BIGINT       | ✔  |                        | ✔       |        |                             | Unique user identifier                         |
-| first_name           | VARCHAR(30)  |     |                        | ✔       |        |                             | User's first name                              |
-| last_name            | VARCHAR(30)  |     |                        | ✔       |        |                             | User's last name                               |
-| email                | VARCHAR(255) |     |                        | ✔       | ✔     |                             | User's email address                           |
-| password             | VARCHAR(255) |     |                        | ✔       |        |                             | User's password                                |
+| id                   | BIGINT       | ✔   |                        | ✔        |        |                             | Unique user identifier                         |
+| first_name           | VARCHAR(30)  |     |                        | ✔        |        |                             | User's first name                              |
+| last_name            | VARCHAR(30)  |     |                        | ✔        |        |                             | User's last name                               |
+| email                | VARCHAR(255) |     |                        | ✔        | ✔      |                             | User's email address                           |
+| password             | VARCHAR(255) |     |                        | ✔        |        |                             | User's password                                |
 | phone_number         | VARCHAR(20)  |     |                        |          |        |                             | User's phone number                            |
 | gender               | BIGINT       |     | Gender(Value)          |          |        |                             | User's gender                                  |
 | birth_date           | DATE         |     |                        |          |        |                             | User's birth date                              |
 | address              | VARCHAR(255) |     |                        |          |        |                             | User's address                                 |
 | hire_date            | DATE         |     |                        |          |        |                             | User's hire date                               |
 | retire_date          | DATE         |     |                        |          |        |                             | User's retire date                             |
-| company_id           | BIGINT       |     | companies(id)          | ✔       |        |                             | Foreign key referencing Company's ID           |
-| hourly_wage_group_id | BIGINT       |     | hourly_wage_groups(id) | ✔       |        |                             | Foreign key referencing Hourly wage group's ID |
+| company_id           | BIGINT       |     | companies(id)          | ✔        |        |                             | Foreign key referencing Company's ID           |
+| hourly_wage_group_id | BIGINT       |     | hourly_wage_groups(id) | ✔        |        |                             | Foreign key referencing Hourly wage group's ID |
 | created_at           | TIMESTAMP    |     |                        |          |        | CURRENT_TIMESTAMP           | Time when the record was created               |
 | created_by           | BIGINT       |     |                        |          |        |                             | User ID of the creator                         |
 | updated_at           | TIMESTAMP    |     |                        |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated          |
@@ -64,9 +64,9 @@
 
 | Column     | Data Type | PK  | FK          | Not NULL | Unique                                | Default                     | Remarks                               |
 | ---------- | --------- | --- | ----------- | -------- | ------------------------------------- | --------------------------- | ------------------------------------- |
-| id         | BIGINT    | ✔  |             | ✔       |                                       |                             | Unique user role identifier           |
-| user_id    | BIGINT    |     | users(id)   | ✔       | (Unique user_id and role combination) |                             | Foreign key to Users                  |
-| role       | BIGINT    |     | Role(Value) | ✔       | (Unique user_id and role combination) |                             | Role (Enum)                           |
+| id         | BIGINT    | ✔   |             | ✔        |                                       |                             | Unique user role identifier           |
+| user_id    | BIGINT    |     | users(id)   | ✔        | (Unique user_id and role combination) |                             | Foreign key to Users                  |
+| role       | BIGINT    |     | Role(Value) | ✔        | (Unique user_id and role combination) |                             | Role (Enum)                           |
 | created_at | TIMESTAMP |     |             |          |                                       | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by | BIGINT    |     | users(id)   |          |                                       |                             | User ID of the creator                |
 | updated_at | TIMESTAMP |     |             |          |                                       | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
@@ -81,10 +81,10 @@
 
 | Column      | Data Type      | PK  | FK            | Not NULL | Unique | Default                     | Remarks                               |
 | ----------- | -------------- | --- | ------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id          | BIGINT         | ✔  |               | ✔       |        |                             | Unique hourly wage group identifier   |
-| company_id  | BIGINT         |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
-| name        | VARCHAR(30)    |     |               | ✔       |        |                             | Name of the hourly wage group         |
-| hourly_wage | DECIMAL(10, 2) |     |               | ✔       |        |                             | Hourly wage for the wage group        |
+| id          | BIGINT         | ✔   |               | ✔        |        |                             | Unique hourly wage group identifier   |
+| company_id  | BIGINT         |     | companies(id) | ✔        |        |                             | Foreign key referencing Company's ID  |
+| name        | VARCHAR(30)    |     |               | ✔        |        |                             | Name of the hourly wage group         |
+| hourly_wage | DECIMAL(10, 2) |     |               | ✔        |        |                             | Hourly wage for the wage group        |
 | comment     | TEXT           |     |               |          |        |                             | Comment                               |
 | created_at  | TIMESTAMP      |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by  | BIGINT         |     | users(id)     |          |        |                             | User ID of the creator                |
@@ -97,10 +97,10 @@
 
 | Column     | Data Type    | PK  | FK                 | Not NULL | Unique | Default                     | Remarks                               |
 | ---------- | ------------ | --- | ------------------ | -------- | ------ | --------------------------- | ------------------------------------- |
-| id         | BIGINT       | ✔  |                    | ✔       |        |                             | Unique Administrator identifier       |
-| email      | VARCHAR(255) |     |                    | ✔       | ✔     |                             | Administrators email address          |
-| password   | VARCHAR(255) |     |                    | ✔       |        |                             | Administrators password               |
-| name       | VARCHAR(30)  |     |                    | ✔       |        |                             | Administrators name                   |
+| id         | BIGINT       | ✔   |                    | ✔        |        |                             | Unique Administrator identifier       |
+| email      | VARCHAR(255) |     |                    | ✔        | ✔      |                             | Administrators email address          |
+| password   | VARCHAR(255) |     |                    | ✔        |        |                             | Administrators password               |
+| name       | VARCHAR(30)  |     |                    | ✔        |        |                             | Administrators name                   |
 | created_at | TIMESTAMP    |     |                    |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by | BIGINT       |     | administrators(id) |          |        |                             | Administrator ID of the creator       |
 | updated_at | TIMESTAMP    |     |                    |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
@@ -115,17 +115,17 @@
 
 | Column                          | Data Type    | PK  | FK                                  | Not NULL | Unique | Default                     | Remarks                                     |
 | ------------------------------- | ------------ | --- | ----------------------------------- | -------- | ------ | --------------------------- | ------------------------------------------- |
-| id                              | BIGINT       | ✔  |                                     | ✔       |        |                             | Unique company identifier                   |
-| name                            | VARCHAR(30)  |     |                                     | ✔       |        |                             | Company's name                              |
-| address                         | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's address                           |
-| phone_number                    | VARCHAR(20)  |     |                                     | ✔       |        |                             | Company's phone number                      |
-| email                           | VARCHAR(255) |     |                                     | ✔       |        |                             | Company's email                             |
-| currency                        | BIGINT       |     | Currency(Value)                     | ✔       |        |                             | Setting for currency                        |
-| closing_date                    | BIGINT       |     | ClosingDate(Value)                  | ✔       |        |                             | Setting for closing date                    |
-| last_closing_date               | DATE         |     |                                     | ✔       |        | CURRENT_DATE                | Last closing date                           |
-| payroll_rounding_interval       | BIGINT       |     | PayrollRoundingInterval(Value)      | ✔       |        |                             | Setting for payroll rounding interval       |
-| prompt_submission_reminder_days | BIGINT       |     | PromptSubmissionReminderDays(Value) | ✔       |        |                             | Setting for prompt submission reminder days |
-| standard_working_hours          | BIGINT       |     |                                     | ✔       |        |                             | Setting for standard working hours          |
+| id                              | BIGINT       | ✔   |                                     | ✔        |        |                             | Unique company identifier                   |
+| name                            | VARCHAR(30)  |     |                                     | ✔        |        |                             | Company's name                              |
+| address                         | VARCHAR(255) |     |                                     | ✔        |        |                             | Company's address                           |
+| phone_number                    | VARCHAR(20)  |     |                                     | ✔        |        |                             | Company's phone number                      |
+| email                           | VARCHAR(255) |     |                                     | ✔        |        |                             | Company's email                             |
+| currency                        | BIGINT       |     | Currency(Value)                     | ✔        |        |                             | Setting for currency                        |
+| closing_date                    | BIGINT       |     | ClosingDate(Value)                  | ✔        |        |                             | Setting for closing date                    |
+| last_closing_date               | DATE         |     |                                     | ✔        |        | CURRENT_DATE                | Last closing date                           |
+| payroll_rounding_interval       | BIGINT       |     | PayrollRoundingInterval(Value)      | ✔        |        |                             | Setting for payroll rounding interval       |
+| prompt_submission_reminder_days | BIGINT       |     | PromptSubmissionReminderDays(Value) | ✔        |        |                             | Setting for prompt submission reminder days |
+| standard_working_hours          | BIGINT       |     |                                     | ✔        |        |                             | Setting for standard working hours          |
 | overtime_pay_multiplier         | DECIMAL(5,2) |     |                                     |          |        |                             | Multiplier for overtime pay                 |
 | night_shift_hours_from          | TIME         |     |                                     |          |        |                             | Night shift starting hour                   |
 | night_shift_hours_to            | TIME         |     |                                     |          |        |                             | Night shift ending hour                     |
@@ -144,9 +144,9 @@
 
 | Column      | Data Type    | PK  | FK            | Not NULL | Unique | Default                     | Remarks                               |
 | ----------- | ------------ | --- | ------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id          | BIGINT       | ✔  |               | ✔       |        |                             | Unique company identifier             |
-| date        | DATE         |     |               | ✔       |        |                             | date                                  |
-| company_id  | BIGINT       |     | companies(id) | ✔       |        |                             | Foreign key referencing Company's ID  |
+| id          | BIGINT       | ✔   |               | ✔        |        |                             | Unique company identifier             |
+| date        | DATE         |     |               | ✔        |        |                             | date                                  |
+| company_id  | BIGINT       |     | companies(id) | ✔        |        |                             | Foreign key referencing Company's ID  |
 | description | VARCHAR(255) |     |               |          |        |                             | Holiday's description                 |
 | created_at  | TIMESTAMP    |     |               |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by  | BIGINT       |     | users(id)     |          |        |                             | User ID of the creator                |
@@ -159,13 +159,13 @@
 
 | Column            | Data Type | PK  | FK                      | Not NULL | Unique | Default                     | Remarks                               |
 | ----------------- | --------- | --- | ----------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id                | BIGINT    | ✔  |                         | ✔       |        |                             | Unique attendance identifier          |
-| user_id           | BIGINT    |     | users(id)               | ✔       |        |                             | Foreign key referencing Users.id      |
-| start_time        | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks in          |
-| end_time          | DATETIME  |     |                         | ✔       |        |                             | Time when the user checks out         |
-| is_holiday        | BOOLEAN   |     |                         | ✔       |        | false                       | Flag indicating if holiday            |
+| id                | BIGINT    | ✔   |                         | ✔        |        |                             | Unique attendance identifier          |
+| user_id           | BIGINT    |     | users(id)               | ✔        |        |                             | Foreign key referencing Users.id      |
+| start_time        | DATETIME  |     |                         | ✔        |        |                             | Time when the user checks in          |
+| end_time          | DATETIME  |     |                         | ✔        |        |                             | Time when the user checks out         |
+| is_holiday        | BOOLEAN   |     |                         | ✔        |        | false                       | Flag indicating if holiday            |
 | comment           | TEXT      |     |                         |          |        |                             | Comment                               |
-| submission_status | BIGINT    |     | SubmissionStatus(Value) | ✔       |        |                             | Submission status                     |
+| submission_status | BIGINT    |     | SubmissionStatus(Value) | ✔        |        |                             | Submission status                     |
 | created_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by        | BIGINT    |     | users(id)               |          |        |                             | User ID of the creator                |
 | updated_at        | TIMESTAMP |     |                         |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
@@ -177,11 +177,11 @@
 
 | Column        | Data Type | PK  | FK             | Not NULL | Unique | Default                     | Remarks                               |
 | ------------- | --------- | --- | -------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id            | BIGINT    | ✔  |                | ✔       |        |                             | Unique break identifier               |
-| user_id       | BIGINT    |     | users(id)      | ✔       |        |                             | Foreign key referencing Users.id      |
-| attendance_id | BIGINT    |     | attendance(id) | ✔       |        |                             | Foreign key referencing Attendance.id |
-| start_time    | DATETIME  |     |                | ✔       |        |                             | Time when the break starts            |
-| end_time      | DATETIME  |     |                | ✔       |        |                             | Time when the break ends              |
+| id            | BIGINT    | ✔   |                | ✔        |        |                             | Unique break identifier               |
+| user_id       | BIGINT    |     | users(id)      | ✔        |        |                             | Foreign key referencing Users.id      |
+| attendance_id | BIGINT    |     | attendance(id) | ✔        |        |                             | Foreign key referencing Attendance.id |
+| start_time    | DATETIME  |     |                | ✔        |        |                             | Time when the break starts            |
+| end_time      | DATETIME  |     |                | ✔        |        |                             | Time when the break ends              |
 | created_at    | TIMESTAMP |     |                |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by    | BIGINT    |     | users(id)      |          |        |                             | User ID of the creator                |
 | updated_at    | TIMESTAMP |     |                |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
@@ -193,13 +193,13 @@
 
 | Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
 | -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id                   | BIGINT         | ✔  |                           | ✔       |        |                             | Unique identifier                     |
-| user_id              | BIGINT         |     | users(id)                 | ✔       |        |                             | Foreign key referencing Users.id      |
-| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
-| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
-| date                 | DATE           |     |                           | ✔       |        |                             | Date of the transaction               |
-| submission_status    | BIGINT         |     | SubmissionStatus(Value)   | ✔       |        |                             | Submission status                     |
+| id                   | BIGINT         | ✔   |                           | ✔        |        |                             | Unique identifier                     |
+| user_id              | BIGINT         |     | users(id)                 | ✔        |        |                             | Foreign key referencing Users.id      |
+| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔        |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔        |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔        |        |                             | Amount of expense or deduction        |
+| date                 | DATE           |     |                           | ✔        |        |                             | Date of the transaction               |
+| submission_status    | BIGINT         |     | SubmissionStatus(Value)   | ✔        |        |                             | Submission status                     |
 | comment              | TEXT           |     |                           |          |        |                             | Comment                               |
 | created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by           | BIGINT         |     | users(id)                 |          |        |                             | User ID of the creator                |
@@ -212,11 +212,11 @@
 
 | Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
 | -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id                   | BIGINT         | ✔  |                           | ✔       |        |                             | Unique identifier                     |
-| company_id           | BIGINT         |     | companies(id)             | ✔       |        |                             | Foreign key referencing Company's ID  |
-| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
-| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
+| id                   | BIGINT         | ✔   |                           | ✔        |        |                             | Unique identifier                     |
+| company_id           | BIGINT         |     | companies(id)             | ✔        |        |                             | Foreign key referencing Company's ID  |
+| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔        |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔        |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔        |        |                             | Amount of expense or deduction        |
 | comment              | TEXT           |     |                           |          |        |                             | Comment                               |
 | created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by           | BIGINT         |     | users(id)                 |          |        |                             | User ID of the creator                |
@@ -229,10 +229,10 @@
 
 | Column     | Data Type      | PK  | FK        | Not NULL | Unique | Default                     | Remarks                               |
 | ---------- | -------------- | --- | --------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id         | BIGINT         | ✔  |           | ✔       |        |                             | Unique identifier                     |
-| user_id    | BIGINT         |     | users(id) | ✔       |        |                             | Foreign key referencing Users.id      |
-| name       | VARCHAR(30)    |     |           | ✔       |        |                             | Name of expense or deduction          |
-| amount     | DECIMAL(10, 2) |     |           | ✔       |        |                             | Amount of expense or deduction        |
+| id         | BIGINT         | ✔   |           | ✔        |        |                             | Unique identifier                     |
+| user_id    | BIGINT         |     | users(id) | ✔        |        |                             | Foreign key referencing Users.id      |
+| name       | VARCHAR(30)    |     |           | ✔        |        |                             | Name of expense or deduction          |
+| amount     | DECIMAL(10, 2) |     |           | ✔        |        |                             | Amount of expense or deduction        |
 | comment    | TEXT           |     |           |          |        |                             | Comment                               |
 | created_at | TIMESTAMP      |     |           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by | BIGINT         |     | users(id) |          |        |                             | User ID of the creator                |
@@ -245,11 +245,11 @@
 
 | Column               | Data Type      | PK  | FK                        | Not NULL | Unique | Default                     | Remarks                               |
 | -------------------- | -------------- | --- | ------------------------- | -------- | ------ | --------------------------- | ------------------------------------- |
-| id                   | BIGINT         | ✔  |                           | ✔       |        |                             | Unique identifier                     |
-| user_id              | BIGINT         |     | users(id)                 | ✔       |        |                             | Foreign key referencing Users.id      |
-| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔       |        |                             | Expense or deduction                  |
-| name                 | VARCHAR(30)    |     |                           | ✔       |        |                             | Name of expense or deduction          |
-| amount               | DECIMAL(10, 2) |     |                           | ✔       |        |                             | Amount of expense or deduction        |
+| id                   | BIGINT         | ✔   |                           | ✔        |        |                             | Unique identifier                     |
+| user_id              | BIGINT         |     | users(id)                 | ✔        |        |                             | Foreign key referencing Users.id      |
+| expense_or_deduction | BIGINT         |     | ExpenseOrDeduction(Value) | ✔        |        |                             | Expense or deduction                  |
+| name                 | VARCHAR(30)    |     |                           | ✔        |        |                             | Name of expense or deduction          |
+| amount               | DECIMAL(10, 2) |     |                           | ✔        |        |                             | Amount of expense or deduction        |
 | comment              | TEXT           |     |                           |          |        |                             | Comment                               |
 | created_at           | TIMESTAMP      |     |                           |          |        | CURRENT_TIMESTAMP           | Time when the record was created      |
 | created_by           | BIGINT         |     | users(id)                 |          |        |                             | User ID of the creator                |
@@ -262,9 +262,10 @@
 
 | Column           | Data Type | PK  | FK                       | Not NULL | Unique | Default                     | Remarks                                        |
 | ---------------- | --------- | --- | ------------------------ | -------- | ------ | --------------------------- | ---------------------------------------------- |
-| id               | BIGINT    | ✔  |                          | ✔       |        |                             | Unique identifier                              |
-| submission_type  | BIGINT    |     | SubmissionStatus(Value)  | ✔       |        |                             | Type of submission associated with information |
-| information_type | BIGINT    |     | InformationStatus(Value) | ✔       |        |                             | Type of information                            |
+| id               | BIGINT    | ✔   |                          | ✔        |        |                             | Unique identifier                              |
+| submission_type  | BIGINT    |     | SubmissionStatus(Value)  | ✔        |        |                             | Type of submission associated with information |
+| information_type | BIGINT    |     | InformationStatus(Value) | ✔        |        |                             | Type of information                            |
+| comment          | TEXT      |     |                          |          |        |                             | Comment                                        |
 | created_at       | TIMESTAMP |     |                          |          |        | CURRENT_TIMESTAMP           | Time when the record was created               |
 | created_by       | BIGINT    |     | users(id)                |          |        |                             | User ID of the creator                         |
 | updated_at       | TIMESTAMP |     |                          |          |        | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated          |
@@ -276,9 +277,9 @@
 
 | Column         | Data Type | PK  | FK              | Not NULL | Unique                                          | Default                     | Remarks                               |
 | -------------- | --------- | --- | --------------- | -------- | ----------------------------------------------- | --------------------------- | ------------------------------------- |
-| id             | BIGINT    | ✔  |                 | ✔       |                                                 |                             | Unique user role identifier           |
-| user_id        | BIGINT    |     | users(id)       | ✔       | (Unique user_id and information_id combination) |                             | Foreign key to Users                  |
-| information_id | BIGINT    |     | information(id) | ✔       | (Unique user_id and information_id combination) |                             | Foreign key to Information            |
+| id             | BIGINT    | ✔   |                 | ✔        |                                                 |                             | Unique user role identifier           |
+| user_id        | BIGINT    |     | users(id)       | ✔        | (Unique user_id and information_id combination) |                             | Foreign key to Users                  |
+| information_id | BIGINT    |     | information(id) | ✔        | (Unique user_id and information_id combination) |                             | Foreign key to Information            |
 | created_at     | TIMESTAMP |     |                 |          |                                                 | CURRENT_TIMESTAMP           | Time when the record was created      |
 | updated_at     | TIMESTAMP |     |                 |          |                                                 | CURRENT_TIMESTAMP ON UPDATE | Time when the record was last updated |
 | deleted_at     | TIMESTAMP |     |                 |          |                                                 | CURRENT_TIMESTAMP ON DELETE | Time when the record was soft deleted |
@@ -290,13 +291,13 @@
 
 | Column          | Data Type    | PK  | FK                      | Not NULL | Unique | Default                     | Remarks                                               |
 | --------------- | ------------ | --- | ----------------------- | -------- | ------ | --------------------------- | ----------------------------------------------------- |
-| id              | BIGINT       | ✔  |                         | ✔       |        |                             | Unique identifier                                     |
-| user_id         | BIGINT       |     | users(id)               | ✔       |        |                             | Foreign key referencing Users.id                      |
-| title           | VARCHAR(255) |     |                         | ✔       |        |                             | Title of the information                              |
+| id              | BIGINT       | ✔   |                         | ✔        |        |                             | Unique identifier                                     |
+| user_id         | BIGINT       |     | users(id)               | ✔        |        |                             | Foreign key referencing Users.id                      |
+| title           | VARCHAR(255) |     |                         | ✔        |        |                             | Title of the information                              |
 | content         | TEXT         |     |                         |          |        |                             | Content or details of the information                 |
 | published_at    | DATETIME     |     |                         |          |        |                             | Date and time when the information was published      |
 | expires_at      | DATETIME     |     |                         |          |        |                             | Date and time when the information expires            |
-| is_active       | BOOLEAN      |     |                         | ✔       |        |                             | Indicates whether the information is currently active |
+| is_active       | BOOLEAN      |     |                         | ✔        |        |                             | Indicates whether the information is currently active |
 | submission_type | BIGINT       |     | SubmissionStatus(Value) |          |        |                             | Type of submission associated with information        |
 | created_at      | TIMESTAMP    |     |                         |          |        | CURRENT_TIMESTAMP           | Time when the record was created                      |
 | created_by      | BIGINT       |     | users(id)               |          |        |                             | User ID of the creator                                |
@@ -309,10 +310,10 @@
 
 | Column     | Data Type | PK  | FK        | Not NULL | Unique | Default                     | Remarks                                  |
 | ---------- | --------- | --- | --------- | -------- | ------ | --------------------------- | ---------------------------------------- |
-| id         | BIGINT    | ✔  |           | ✔       |        |                             | Unique identifier                        |
-| user_id    | BIGINT    |     | users(id) | ✔       |        |                             | ID of the associated user                |
-| month      | DATE      |     |           | ✔       |        |                             | Month for which the results are recorded |
-| content    | JSON      |     |           | ✔       |        |                             | JSON format storing payslip contents     |
+| id         | BIGINT    | ✔   |           | ✔        |        |                             | Unique identifier                        |
+| user_id    | BIGINT    |     | users(id) | ✔        |        |                             | ID of the associated user                |
+| month      | DATE      |     |           | ✔        |        |                             | Month for which the results are recorded |
+| content    | JSON      |     |           | ✔        |        |                             | JSON format storing payslip contents     |
 | created_at | TIMESTAMP |     |           |          |        | CURRENT_TIMESTAMP           | Time of creation                         |
 | created_by | BIGINT    |     | users(id) |          |        |                             | User ID of the creator                   |
 | updated_at | TIMESTAMP |     |           |          |        | CURRENT_TIMESTAMP ON UPDATE | Time of last update                      |
@@ -340,18 +341,18 @@
 
 | Element      | Value | Description  |
 | ------------ | ----- | ------------ |
-| 15th         | 15    | 15th      |
+| 15th         | 15    | 15th         |
 | 20th         | 20    | 20th         |
 | 25th         | 25    | 25th         |
 | end of month | 30    | end of month |
 
 ## PayrollRoundingInterval
 
-| Element | Value | Description                    |
-| ------- | ----- | ------------------------------ |
-| 1 min   | 1     | 1 min                          |
-| 5 mins  | 5     | 5 mins                         |
-| 15 mins | 15    | 15 mins                        |
+| Element | Value | Description |
+| ------- | ----- | ----------- |
+| 1 min   | 1     | 1 min       |
+| 5 mins  | 5     | 5 mins      |
+| 15 mins | 15    | 15 mins     |
 
 ## PromptSubmissionReminderDays
 
