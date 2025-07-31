@@ -64,7 +64,7 @@ const AttendanceRegistrationForMonthly = () => {
 
         const data: Attendance[] = await res.json();
         setAttendances(data);
-        setUnsubmittedExists(data.some(att => att.submission_status === 0));
+        setUnsubmittedExists(data.some(att => att.submission_status === 0 || att.submission_status === 2));
 
 
         const breaks: number[] = [];
@@ -101,7 +101,7 @@ const AttendanceRegistrationForMonthly = () => {
         if (res.ok) {
           const data: Attendance[] = await res.json();
           setAttendances(data);
-          setUnsubmittedExists(data.some(att => att.submission_status === 0));
+          setUnsubmittedExists(data.some(att => att.submission_status === 0 || att.submission_status === 2));
 
           const breaks: number[] = [];
           const netWorks: number[] = [];

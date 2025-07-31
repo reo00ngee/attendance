@@ -8,12 +8,16 @@ export const makePageLinks = () => {
     { label: "Expense Registration", path: "/expense_registration" },
   ];
 
-  if (userRoles.includes(2)) {
+  // Attendance Management
+  if (userRoles.includes(1)) {
     links.push(
       { label: "Attendance Management", path: "/attendance_management" },
-      { label: "Attendance Approval", path: "/attendance_approval" }
     );
   }
+  // Finance Management
+  if (userRoles.includes(2)) {
+  }
+  // User Management
   if (userRoles.includes(3)) {
     links.push(
       { label: "User Management", path: "/user_management" },
@@ -21,6 +25,9 @@ export const makePageLinks = () => {
       { label: "Hourly Wage Group Management", path: "/hourly_wage_group_management" },
       { label: "Hourly Wage Group Registration", path: "/hourly_wage_group_registration" }
     );
+  }
+  // Setting Management
+  if (userRoles.includes(4)) {
   }
 
   return links;

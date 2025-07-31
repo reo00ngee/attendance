@@ -67,6 +67,7 @@ class AttendanceRepository
             $attendance->start_time = $validated['start_time'];
             $attendance->end_time = $validated['end_time'];
             $attendance->comment = $validated['comment'];
+            $attendance->submission_status = SubmissionStatus::CREATED;
             $attendance->save();
 
             $attendance->attendanceBreaks()->delete();
@@ -118,18 +119,33 @@ class AttendanceRepository
 
     public function submitAttendance($attendance)
     {
-        Log::info('Submitting attendance for user ID: ' . $attendance);
         $attendance->submission_status = SubmissionStatus::SUBMITTED;
         $attendance->save();
     }
 
-    public function getSubmittedAttendances($user_id, $start, $end)
+    public function getSubmittedAndApprovedAttendances($user_id, $start, $end)
     {
         return Attendance::with('attendanceBreaks')
             ->where('user_id', $user_id)
             ->whereBetween('start_time', [$start, $end])
-            ->where('submission_status', SubmissionStatus::SUBMITTED)
+            ->whereIn('submission_status', [
+                SubmissionStatus::SUBMITTED,
+                SubmissionStatus::APPROVED
+            ])
             ->orderBy('start_time', 'desc')
             ->get();
     }
+
+    public function approveAttendance($attendance)
+    {
+        $attendance->submission_status = SubmissionStatus::APPROVED;
+        $attendance->save();
+    }
+
+    public function rejectAttendance($attendance)
+    {
+        $attendance->submission_status = SubmissionStatus::REJECTED;
+        $attendance->save();
+    }
+
 }

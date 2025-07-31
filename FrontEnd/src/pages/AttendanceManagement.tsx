@@ -15,13 +15,14 @@ import {
   CircularProgress
 } from "@mui/material";
 import Section from "../components/Section";
+import { Navigate } from 'react-router-dom';
 import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { User } from "../types/User";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
-
+import { hasRole } from "../utils/auth";
 
 
 const AttendanceManagement = () => {
@@ -86,6 +87,10 @@ const AttendanceManagement = () => {
     };
     fetchAttendanceData();
   }, [year, month]);
+
+  if (!hasRole(1)) {
+    return <Navigate to="/attendance_registration_for_monthly" />;
+  }
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -160,7 +165,7 @@ const AttendanceManagement = () => {
                         px: 2,
                       }}
                       component="a"
-                    href={`/attendance_approval?user_id=${user.id}&year=${year}&month=${month}`}
+                      href={`/attendance_approval?user_id=${user.id}&year=${year}&month=${month}`}
                     >
                       APPROVAL
                     </Button>

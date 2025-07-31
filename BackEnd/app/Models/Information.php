@@ -10,6 +10,9 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\SubmissionType;
+use App\Enums\InformationType;
+
 
 /**
  * Class Information
@@ -34,8 +37,8 @@ class Information extends Model
 	protected $table = 'information';
 
 	protected $casts = [
-		'submission_type' => 'int',
-		'information_type' => 'int',
+		'submission_type' => SubmissionType::class,
+		'information_type' => InformationType::class,
 		'created_by' => 'int',
 		'updated_by' => 'int',
 		'deleted_by' => 'int'
@@ -44,6 +47,7 @@ class Information extends Model
 	protected $fillable = [
 		'submission_type',
 		'information_type',
+		'comment',
 		'created_by',
 		'updated_by',
 		'deleted_by'

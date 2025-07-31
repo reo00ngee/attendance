@@ -9,6 +9,8 @@ use App\Services\AttendanceService;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\UpdateAttendanceRequest;
+use App\Http\Requests\ApproveAttendancesRequest;
+use App\Http\Requests\RejectAttendancesRequest;
 
 class AttendanceController extends Controller
 {
@@ -88,14 +90,41 @@ class AttendanceController extends Controller
         return $this->attendanceService->submitAttendances($company_id, $user_id, $year, $month);
     }
 
-    public function getSubmittedAttendances(Request $request)
+    public function getSubmittedAndApprovedAttendances(Request $request)
     {
         $company_id = Auth::user()->company_id;
-        $user_id = Auth::id();
+        $user_id = $request->query('user_id') ?: Auth::id();
         $year = $request->query('year');
         $month = $request->query('month');
 
-        return $this->attendanceService->getSubmittedAttendances($company_id, $user_id, $year, $month);
+        return $this->attendanceService->getSubmittedAndApprovedAttendances($company_id, $user_id, $year, $month);
+    }
+
+    public function approveAttendances(ApproveAttendancesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+
+        return $this->attendanceService->approveAttendances(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month']
+        );
+    }
+
+    public function rejectAttendances(RejectAttendancesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+
+        return $this->attendanceService->rejectAttendances(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month'],
+            $validated['rejection_reason']
+        );
     }
 
     /**
