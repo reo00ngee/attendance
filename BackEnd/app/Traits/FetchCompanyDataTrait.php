@@ -27,4 +27,13 @@ trait FetchCompanyDataTrait
         }
         return null;
     }
+
+        public function getCompanyLastClosingDate($company_id)
+    {
+        $company = $this->getCompany($company_id);
+        if ($company) {
+            return $company->last_closing_date;
+        }
+        return null;
+    }
 }

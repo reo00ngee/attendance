@@ -7,27 +7,74 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Box from "@mui/material/Box";
 import Button from '@mui/material/Button';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import { getUserName } from "../utils/user";
-import { UseLogout } from '../queryClient';
-import { useNavigate } from "react-router-dom";
-import Drawer from '@mui/material/Drawer';
+import Badge from '@mui/material/Badge';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import Drawer from '@mui/material/Drawer';
+import Divider from '@mui/material/Divider';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { getUserName } from "../utils/user";
+import { UseLogout } from '../queryClient';
+import { useNavigate } from "react-router-dom";
 import { makePageLinks } from "../utils/pageLink";
+import { Information } from "../types/Information";
+import {
+  getSubmissionTypeLabel,
+  getInformationTypeMessage,
+} from "../utils/informationUtils";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [informationAnchorEl, setInformationAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [pageLinks, setPageLinks] = useState<{ label: string; path: string }[]>([]);
+
+  // Information関連のstate
+  const [informations, setInformations] = useState<Information[]>([]);
+
   const navigate = useNavigate();
+  const logout = UseLogout();
 
   useEffect(() => {
     setPageLinks(makePageLinks());
   }, [localStorage.getItem("user")]);
+
+  // Information取得のuseEffect
+  useEffect(() => {
+    const fetchInformations = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_informations`, {
+          method: "GET",
+          mode: "cors",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setInformations(data || []);
+          console.log(informations);
+        } else {
+          console.error("Failed to fetch information");
+        }
+      } catch (error) {
+        console.error("Error fetching information:", error);
+      }
+    };
+
+    fetchInformations();
+
+    // 5分おきにinformationを再取得
+    const interval = setInterval(fetchInformations, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -37,6 +84,14 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  const handleInformationOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setInformationAnchorEl(event.currentTarget);
+  };
+
+  const handleInformationClose = () => {
+    setInformationAnchorEl(null);
+  };
+
   const handleDrawerOpen = () => {
     setDrawerOpen(true);
   };
@@ -44,8 +99,6 @@ const Header = () => {
   const handleDrawerClose = () => {
     setDrawerOpen(false);
   };
-
-  const logout = UseLogout();
 
   return (
     <AppBar position="static">
@@ -60,6 +113,7 @@ const Header = () => {
         >
           <MenuIcon />
         </IconButton>
+
         <Drawer
           anchor="left"
           open={drawerOpen}
@@ -95,6 +149,7 @@ const Header = () => {
             </List>
           </Box>
         </Drawer>
+
         <Typography
           variant="h6"
           component="a"
@@ -108,17 +163,22 @@ const Header = () => {
         >
           Attendance Management Tool
         </Typography>
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 2 }}>
-          {pageLinks.map((page) => (
-            <Button
-              key={page.label}
-              sx={{ color: 'white', marginLeft: 2 }}
-              onClick={() => navigate(page.path)}
-            >
-              {page.label}
-            </Button>
-          ))}
-        </Box>
+
+        {/* Information アイコン */}
+        <IconButton
+          size="large"
+          color="inherit"
+          onClick={handleInformationOpen}
+          sx={{ marginRight: 1 }}
+        >
+          <Badge
+            variant={informations.length > 0 ? "dot" : undefined}
+            color="error"
+          >
+            <NotificationsIcon />
+          </Badge>
+        </IconButton>
+
         <Button
           color="inherit"
           startIcon={<AccountCircle />}
@@ -127,6 +187,8 @@ const Header = () => {
         >
           Account
         </Button>
+
+        {/* Account Menu */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -148,6 +210,62 @@ const Header = () => {
           >
             Logout
           </MenuItem>
+        </Menu>
+
+        {/* Information Menu */}
+        <Menu
+          anchorEl={informationAnchorEl}
+          open={Boolean(informationAnchorEl)}
+          onClose={handleInformationClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          PaperProps={{
+            sx: {
+              minWidth: 350,
+              maxWidth: 400,
+              maxHeight: 400,
+              overflow: 'auto'
+            }
+          }}
+        >
+          {informations.length === 0 ? (
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                No information
+              </Typography>
+            </MenuItem>
+          ) : (
+            informations.map((info, index) => (
+              <Box key={info.information_id}>
+                <MenuItem
+                  sx={{
+                    whiteSpace: 'normal',
+                    display: 'block',
+                    py: 1.5
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    {getSubmissionTypeLabel(info.submission_type)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    {getInformationTypeMessage(info.information_type)}
+                    {info.information_type === 1 && info.user_name && (
+                      <span>{info.user_name} .</span>
+                    )}
+                  </Typography>
+                  {info.comment && (
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      Rejected Reason: {info.comment}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(info.created_at).toLocaleString()}
+                  </Typography>
+                </MenuItem>
+                {index < informations.length - 1 && <Divider />}
+              </Box>
+            ))
+          )}
         </Menu>
       </Toolbar>
     </AppBar>

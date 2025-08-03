@@ -15,7 +15,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { genders } from "../constants/genders";
-import { roles } from "../constants/roles";
+import { ROLES } from "../constants/roles";
 import { HourlyWageGroup } from "../types/HourlyWageGroup";
 import { SelectChangeEvent } from "@mui/material";
 import { log } from "console";
@@ -362,7 +362,7 @@ const UserRegistration = () => {
               sx={{ mb: 2 }}
               required
             >
-              {roles.map((role) => (
+              {ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
                   {role.label}
                 </MenuItem>

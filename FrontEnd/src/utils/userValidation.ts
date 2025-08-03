@@ -1,4 +1,4 @@
-import { roles } from "../constants/roles";
+import { ROLES } from "../constants/roles";
 import { genders } from "../constants/genders";
 
 export function validateUserRegistration({
@@ -58,7 +58,7 @@ export function validateUserRegistration({
   if (gender && !genderValues.includes(Number(gender))) {
     return "Invalid gender selected.";
   }
-  const roleValues = roles.map((r) => r.value);
+  const roleValues = ROLES.map((r) => r.value);
   if (!selectedRoles.every((r) => roleValues.includes(r))) {
     return "Invalid role selected.";
   }

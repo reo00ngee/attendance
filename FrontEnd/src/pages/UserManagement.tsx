@@ -17,7 +17,7 @@ import {
   Button
 } from "@mui/material";
 import Section from "../components/Section";
-import { roles } from "../constants/roles";
+import { ROLES } from "../constants/roles";
 import { User } from "../types/User";
 import { hasRole } from "../utils/auth";
 import { Navigate } from "react-router-dom";
@@ -65,7 +65,7 @@ const UserManagement = () => {
 
   const getRoleLabels = (roleIds: number[]) =>
     roleIds
-      .map((id) => roles.find((r) => r.value === id)?.label)
+      .map((id) => ROLES.find((r) => r.value === id)?.label)
       .filter(Boolean)
       .join(", ");
 
@@ -118,7 +118,7 @@ const UserManagement = () => {
             sx={{ width: 200 }}
           >
             <MenuItem value="">All Roles</MenuItem>
-            {roles.map((role) => (
+            {ROLES.map((role) => (
               <MenuItem key={role.value} value={role.value}>
                 {role.label}
               </MenuItem>
@@ -168,7 +168,7 @@ const UserManagement = () => {
                       <TableCell align="right">{user.email}</TableCell>
                       <TableCell align="left">
                         {user.roles.map((roleId) => {
-                          const role = roles.find((r) => r.value === roleId);
+                          const role = ROLES.find((r) => r.value === roleId);
                           return (
                             <Chip
                               key={roleId}

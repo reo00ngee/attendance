@@ -47,6 +47,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/update_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'updateHourlyWageGroup'])->middleware('role:3');
     Route::post('/batch_update_expenses', [\App\Http\Controllers\ExpensesAndDeductionController::class, 'batchUpdateExpenses'])->middleware('role:0');
     Route::post('/submit_expenses', [\App\Http\Controllers\ExpensesAndDeductionController::class, 'submitExpenses'])->middleware('role:0');
+    Route::get('/get_informations', [\App\Http\Controllers\InformationController::class, 'getInformations']);
 });
 
 

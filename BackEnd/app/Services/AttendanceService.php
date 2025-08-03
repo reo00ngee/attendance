@@ -23,8 +23,11 @@ class AttendanceService
     private AttendanceRepository $attendanceRepository;
     private CompanyRepository $companyRepository;
     private InformationRepository $informationRepository;
-    public function __construct(AttendanceRepository $attendanceRepository, CompanyRepository $companyRepository, InformationRepository $informationRepository)
-    {
+    public function __construct(
+        AttendanceRepository $attendanceRepository,
+        CompanyRepository $companyRepository,
+        InformationRepository $informationRepository
+    ) {
         $this->attendanceRepository = $attendanceRepository;
         $this->companyRepository = $companyRepository;
         $this->informationRepository = $informationRepository;
@@ -89,6 +92,7 @@ class AttendanceService
                 }
             });
 
+            $this->informationRepository->deleteInformations($user_id);
             $this->informationRepository->createInformation(
                 $user_id,
                 SubmissionType::ATTENDANCE->value,
@@ -135,6 +139,7 @@ class AttendanceService
                 }
             });
 
+            $this->informationRepository->deleteInformations($user_id);
             $this->informationRepository->createInformation(
                 $user_id,
                 SubmissionType::ATTENDANCE->value,
@@ -158,6 +163,7 @@ class AttendanceService
                     $this->attendanceRepository->rejectAttendance($attendance);
                 }
 
+                $this->informationRepository->deleteInformations($user_id);
                 $this->informationRepository->createInformation(
                     $user_id,
                     SubmissionType::ATTENDANCE->value,
