@@ -17,6 +17,10 @@ import {
   Button
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import { HourlyWageGroup } from "@/types/HourlyWageGroup";
 import { hasRole } from "../utils/auth";
 import { Navigate } from "react-router-dom";
@@ -30,9 +34,10 @@ const HourlyWageGroupManagement = () => {
     "Comment",
     ""
   ];
+  const { notification, showNotification, clearNotification } = useNotification();
+  const [noHourlyWageGroups, setNoHourlyWageGroups] = useState(false);
   const [hourlyWageGroups, setHourlyWageGroups] = useState<HourlyWageGroup[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // hourly_wageフィルター（最小値・最大値）
   const [minWage, setMinWage] = useState<string>("");
@@ -41,7 +46,7 @@ const HourlyWageGroupManagement = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       setLoading(true);
-      setError(null);
+      clearNotification();
       try {
         const res = await fetch(
           `${process.env.REACT_APP_BASE_URL}api/get_hourly_wage_groups_by_company_id`,
@@ -50,13 +55,15 @@ const HourlyWageGroupManagement = () => {
         if (res.ok) {
           const data = await res.json();
           setHourlyWageGroups(data);
+          setNoHourlyWageGroups(data.length === 0);
         } else {
-          setError("Failed to retrieve the hourly wage group list.");
+          showNotification("Failed to retrieve the hourly wage group list.", 'error');
         }
       } catch {
-        setError("Something went wrong while fetching the data. Please try again later.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchGroups();
   }, []);
@@ -75,9 +82,22 @@ const HourlyWageGroupManagement = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+      {/* タイトル */}
+      <PageTitle title={pageTitle} />
+
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {noHourlyWageGroups && (
+        <Section>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            There are no hourly wage groups to display.
+          </Alert>
+        </Section>
+      )}
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       {/* hourly_wage範囲フィルター */}
       <Section>
@@ -111,53 +131,46 @@ const HourlyWageGroupManagement = () => {
         </Box>
       </Section>
 
+      {/* テーブル */}
       <Section>
-        <Paper sx={{ p: 2 }}>
-          {loading ? (
-            <CircularProgress />
-          ) : error ? (
-            <Alert severity="error">{error}</Alert>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    {tableHeaders.map((header, index) => (
-                      <TableCell key={index} align="right">
-                        {header}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredHourlyWageGroups.map((group) => (
-                    <TableRow key={group.hourly_wage_group_id}>
-                      <TableCell align="left">{group.name}</TableCell>
-                      <TableCell align="right">{group.hourly_wage}</TableCell>
-                      <TableCell align="right">{group.comment}</TableCell>
-                      <TableCell align="right">
-                        <Button
-                          variant="contained"
-                          size="small"
-                          sx={{
-                            minWidth: 120,
-                            height: 40,
-                            fontSize: "1rem",
-                            px: 2,
-                          }}
-                          component="a"
-                          href={`/hourly_wage_group_registration?hourly_wage_group_id=${group.hourly_wage_group_id}`}
-                        >
-                          Modify
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Paper>
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {tableHeaders.map((header, index) => (
+                  <TableCell key={index} align="right">
+                    {header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredHourlyWageGroups.map((group) => (
+                <TableRow key={group.hourly_wage_group_id}>
+                  <TableCell align="left">{group.name}</TableCell>
+                  <TableCell align="right">{group.hourly_wage}</TableCell>
+                  <TableCell align="right">{group.comment}</TableCell>
+                  <TableCell align="right">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        minWidth: 120,
+                        height: 40,
+                        fontSize: "1rem",
+                        px: 2,
+                      }}
+                      component="a"
+                      href={`/hourly_wage_group_registration?hourly_wage_group_id=${group.hourly_wage_group_id}`}
+                    >
+                      Modify
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Section>
     </Box>
   );

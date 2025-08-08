@@ -11,6 +11,10 @@ import {
   MenuItem,
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useSearchParams, Navigate } from "react-router-dom";
@@ -26,7 +30,7 @@ const UserRegistration = () => {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get("user_id");
   const pageTitle = userId ? "User Modification" : "User Registration";
-
+  const { notification, showNotification, clearNotification } = useNotification();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -41,14 +45,15 @@ const UserRegistration = () => {
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [wageGroups, setWageGroups] = useState<HourlyWageGroup[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
 
   // 労働時間帯取得
   useEffect(() => {
     const fetchWageGroups = async () => {
+      setLoading(true);
+      clearNotification();
       try {
         const res = await fetch(
           `${process.env.REACT_APP_BASE_URL}api/get_hourly_wage_groups_by_company_id`,
@@ -59,9 +64,13 @@ const UserRegistration = () => {
         if (res.ok) {
           const data = await res.json();
           setWageGroups(data);
+        } else {
+          showNotification("Failed to retrieve the hourly wage group list.", 'error');
         }
       } catch (err) {
-        setError("Failed to fetch wage groups.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
       }
     };
     fetchWageGroups();
@@ -71,6 +80,8 @@ const UserRegistration = () => {
   useEffect(() => {
     if (userId) {
       const fetchUser = async () => {
+        setLoading(true);
+        clearNotification();
         try {
           const res = await fetch(
             `${process.env.REACT_APP_BASE_URL}api/get_user?user_id=${userId}`,
@@ -93,23 +104,24 @@ const UserRegistration = () => {
             setRetireDate(data.retire_date ? data.retire_date.split("T")[0] : "");
             setWageGroup(data.hourly_wage_group_id || "");
             setSelectedRoles(data.roles || []);
-            setMessage(null);
-            // setError(null);
           } else {
-            setError("Failed to fetch user info. Please try again later.");
+            showNotification("Failed to fetch user info. Please try again later.", 'error');
           }
         } catch {
-          setError("Failed to fetch user info. Please try again later.");
+          showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+        } finally {
+          setLoading(false);
         }
       };
       fetchUser();
     }
+    setLoading(false);
   }, [userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
-    setError(null);
+    setLoading(true);
+    clearNotification();
 
     const validationError = validateUserRegistration({
       firstName,
@@ -127,7 +139,7 @@ const UserRegistration = () => {
     });
 
     if (validationError) {
-      setError(validationError);
+      showNotification(validationError, 'warning');
       return;
     }
 
@@ -155,7 +167,7 @@ const UserRegistration = () => {
         body.user_id = userId;
         if (password) {
           if (password !== confirm) {
-            setError("Passwords do not match.");
+            showNotification("Passwords do not match.", 'warning');
             return;
           }
           body.password = password;
@@ -175,8 +187,8 @@ const UserRegistration = () => {
       });
 
       if (res.ok) {
-        setMessage(
-          userId ? "User updated successfully!" : "User created successfully!"
+        showNotification(
+          userId ? "User updated successfully!" : "User created successfully!", 'success'
         );
         if (!userId) {
           setFirstName("");
@@ -197,11 +209,12 @@ const UserRegistration = () => {
         const errorMessages = Object.values(data.errors)
           .flat()
           .join("\n");
-        setError(errorMessages || "An error occurred while processing your request.");
+        showNotification(errorMessages || "An error occurred while processing your request.", 'error');
       }
     } catch (err) {
-      console.error("Error during user operation:", err);
-      setError("An error occurred while processing your request.");
+      showNotification("An error occurred while processing your request.", 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -211,11 +224,14 @@ const UserRegistration = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>
-          {pageTitle}
-        </Typography>
-      </Section>
+      {/* タイトル */}
+      <PageTitle title={pageTitle} />
+
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       <Section>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
@@ -231,19 +247,16 @@ const UserRegistration = () => {
       </Section>
 
       <Section>
-        <Paper sx={{ p: 4, maxWidth: 500, mx: "auto" }}>
-
+        <Paper
+          sx={{
+            p: 4,
+            maxWidth: 500,
+            mx: "auto",
+            opacity: loading ? 0.6 : 1,
+            pointerEvents: loading ? "none" : "auto",
+          }}
+        >
           <form onSubmit={handleSubmit} noValidate>
-            {message && (
-              <Alert severity="success" sx={{ mb: 2 }}>
-                {message}
-              </Alert>
-            )}
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
             <TextField
               label="First Name"
               fullWidth

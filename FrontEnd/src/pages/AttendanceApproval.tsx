@@ -21,6 +21,8 @@ import {
   TextField
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
@@ -28,6 +30,8 @@ import { formatTimeHHMM, convertToHoursAndMinutes, formatDate, formatTimeForInpu
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import { hasRole } from '../utils/auth';
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 
 
 const AttendanceApproval = () => {
@@ -57,14 +61,11 @@ const AttendanceApproval = () => {
   const [rejectMessage, setRejectMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
+  const { notification, showNotification, clearNotification } = useNotification();
 
   const handleApprove = async () => {
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
 
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/approve_attendances?user_id=${userId}&year=${year}&month=${month}`, {
@@ -77,7 +78,7 @@ const AttendanceApproval = () => {
       });
 
       if (res.ok) {
-        setMessage("Attendance approved successfully");
+        showNotification("Attendance approved successfully", 'success');
         const data: Attendance[] = await res.json();
         setAttendances(data);
         setNoAttendance(data.length === 0);
@@ -99,10 +100,10 @@ const AttendanceApproval = () => {
         setTotalWorkingDays(data.filter(att => att.start_time).length);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to approve attendance");
+        showNotification(errorData.message || "Failed to approve attendance", 'error');
       }
     } catch (err) {
-      setError("Something went wrong while approving the attendance.");
+      showNotification("Something went wrong while approving the attendance.", 'error');
     } finally {
       setLoading(false);
     }
@@ -119,8 +120,7 @@ const AttendanceApproval = () => {
     }
 
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/reject_attendances?user_id=${userId}&year=${year}&month=${month}&rejection_reason=${encodeURIComponent(rejectMessage)}`,
         {
@@ -133,7 +133,7 @@ const AttendanceApproval = () => {
         });
 
       if (res.ok) {
-        setMessage("Attendance rejected successfully");
+        showNotification("Attendance rejected successfully", 'success');
         setRejectDialogOpen(false);
         setRejectMessage("");
         const data: Attendance[] = await res.json();
@@ -157,10 +157,10 @@ const AttendanceApproval = () => {
         setTotalWorkingDays(data.filter(att => att.start_time).length);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to reject attendance");
+        showNotification(errorData.message || "Failed to reject attendance", 'error');
       }
     } catch (err) {
-      setError("Something went wrong while rejecting the attendance.");
+      showNotification("Something went wrong while rejecting the attendance.", 'error');
     } finally {
       setLoading(false);
     }
@@ -173,8 +173,7 @@ const AttendanceApproval = () => {
 
   useEffect(() => {
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     const fetchAttendances = async () => {
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_submitted_and_approved_attendances?user_id=${userId}&year=${year}&month=${month}`, {
@@ -204,7 +203,7 @@ const AttendanceApproval = () => {
           setTotalWorkingDays(data.filter(att => att.start_time).length);
         }
       } catch (err) {
-        setError("Something went wrong while fetching the data. Please try again later.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
       }
       setLoading(false);
     };
@@ -223,19 +222,12 @@ const AttendanceApproval = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+      <PageTitle title={pageTitle} />
 
-      {/* メッセージがある場合は常に表示 */}
-      {message && (
-        <Section>
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
-        </Section>
-      )}
-
+      {/* 統一されたアラート表示 */}
+      <NotificationAlert notification={notification} />
+      
+      {/* 状態に応じた追加メッセージ */}
       {allApproved && (
         <Section>
           <Alert severity="success" sx={{ mb: 2 }}>
@@ -244,25 +236,6 @@ const AttendanceApproval = () => {
         </Section>
       )}
 
-      {/* エラーがある場合は常に表示 */}
-      {error && (
-        <Section>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        </Section>
-      )}
-
-      {/* loading時はローディング表示 */}
-      {loading && (
-        <Section>
-          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-            <CircularProgress />
-          </Box>
-        </Section>
-      )}
-
-      {/* 未提出アラート */}
       {noAttendance && (
         <Section>
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -270,6 +243,9 @@ const AttendanceApproval = () => {
           </Alert>
         </Section>
       )}
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       {/* サマリー・操作ボタン */}
       <Section>
@@ -324,7 +300,7 @@ const AttendanceApproval = () => {
           </span>
           <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>
               <TableRow>

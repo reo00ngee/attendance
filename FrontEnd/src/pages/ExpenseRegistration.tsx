@@ -22,6 +22,10 @@ import {
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import { format } from "date-fns";
 import { ExpenseOrDeduction } from "../types/Expense";
 import { formatDate } from "../utils/format";
@@ -42,10 +46,12 @@ const ExpenseRegistration = () => {
   const [expenses, setExpenses] = useState<ExpenseOrDeduction[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [noExpense, setNoExpense] = useState(false);
+
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [unsubmittedExists, setUnsubmittedExists] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { notification, showNotification, clearNotification } = useNotification();
 
   // Edit Mode関連
   const [isEditMode, setIsEditMode] = useState(false);
@@ -56,7 +62,7 @@ const ExpenseRegistration = () => {
   useEffect(() => {
     const fetchExpenses = async () => {
       setLoading(true);
-      setError(null);
+      clearNotification();
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
           {
@@ -68,15 +74,19 @@ const ExpenseRegistration = () => {
         if (res.ok) {
           const data: ExpenseOrDeduction[] = await res.json();
           setExpenses(data);
+          setNoExpense(data.length === 0);
           setTotalAmount(calculateTotalAmount(data));
           setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+        } else {
+          showNotification("Failed to fetch expense data", 'error');
         }
       } catch {
         setExpenses([]);
         setTotalAmount(0);
-        setError("Something went wrong while fetching the data. Please try again later.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchExpenses();
@@ -141,6 +151,8 @@ const ExpenseRegistration = () => {
 
   // 一括保存
   const handleSave = async () => {
+    setLoading(true);
+    clearNotification();
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/batch_update_expenses`, {
         method: "POST",
@@ -159,22 +171,27 @@ const ExpenseRegistration = () => {
       if (res.ok) {
         const data: ExpenseOrDeduction[] = await res.json();
         setExpenses(data);
+        setNoExpense(data.length === 0);
         setTotalAmount(calculateTotalAmount(data));
         setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
         handleToggleEditMode();
+      } else {
+        showNotification("Failed to save changes", 'error');
       }
     } catch {
-      setError("Failed to save changes.");
+      showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
     if (unsubmittedExists === false) {
-      alert("All expenses have already been submitted.");
+      showNotification("All expenses have already been submitted.", 'warning');
       return;
     }
     setLoading(true);
-    setError(null);
+    clearNotification();
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_expenses?year=${year}&month=${month}`, {
         method: "POST",
@@ -185,11 +202,15 @@ const ExpenseRegistration = () => {
       if (res.ok) {
         const data: ExpenseOrDeduction[] = await res.json();
         setExpenses(data);
+        setNoExpense(data.length === 0);
         setTotalAmount(calculateTotalAmount(data));
         setUnsubmittedExists(data.some(expense => expense.submission_status === 0));
+      } else {
+        showNotification("Failed to submit expenses", 'error');
       }
     } catch {
-      setError("Failed to submit expenses.");
+      showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+
     }
     setLoading(false);
   };
@@ -197,27 +218,11 @@ const ExpenseRegistration = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+<PageTitle title={pageTitle} />
 
-      {/* エラー表示 */}
-      {error && (
-        <Section>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        </Section>
-      )}
 
-      {/* ローディング表示 */}
-      {loading && (
-        <Section>
-          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-            <CircularProgress />
-          </Box>
-        </Section>
-      )}
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
 
       {/* 未提出アラート */}
       {unsubmittedExists && expenses.length > 0 && (
@@ -227,6 +232,17 @@ const ExpenseRegistration = () => {
           </Alert>
         </Section>
       )}
+
+      {noExpense && (
+        <Section>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            There are no expenses to display.
+          </Alert>
+        </Section>
+      )}
+
+      {/* ローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       {/* サマリー・操作ボタン */}
       <Section>
@@ -259,6 +275,7 @@ const ExpenseRegistration = () => {
             <Button
               variant="contained"
               onClick={handleSubmit}
+              disabled={!unsubmittedExists || loading || noExpense}
               sx={{ minWidth: 180 }}
             >
               SUBMIT
@@ -277,158 +294,151 @@ const ExpenseRegistration = () => {
           <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
 
-        {!loading && !error && expenses.length === 0 && !isEditMode ? (
-          <Paper sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="body1" color="text.secondary">
-              No expenses found for {format(new Date(year, month - 1), "MMMM yyyy")}
-            </Typography>
-          </Paper>
-        ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {tableHeaders.map((header, index) => (
-                    <TableCell key={index} align="right">
-                      {header}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* 既存のexpenses */}
-                {(isEditMode ? editedExpenses : expenses)
-                  .filter(expense => !deletedExpenseIds.includes(expense.id))
-                  .map((expense, i) => {
-                    // 元の配列でのインデックスを取得
-                    const originalIndex = (isEditMode ? editedExpenses : expenses).findIndex(
-                      e => e.id === expense.id
-                    );
-
-                    return (
-                      <TableRow key={expense.id || i}>
-                        <TableCell align="right">
-                          {isEditMode ? (
-                            <TextField
-                              value={expense.name}
-                              onChange={(e) => updateExpense(originalIndex, 'name', e.target.value)}
-                              size="small"
-                              fullWidth
-                            />
-                          ) : (
-                            expense.name
-                          )}
-                        </TableCell>
-                        <TableCell align="right">
-                          {isEditMode ? (
-                            <TextField
-                              type="number"
-                              value={expense.amount}
-                              onChange={(e) => updateExpense(originalIndex, 'amount', Number(e.target.value))}
-                              size="small"
-                              fullWidth
-                            />
-                          ) : (
-                            expense.amount
-                          )}
-                        </TableCell>
-                        <TableCell align="right">
-                          {isEditMode ? (
-                            <TextField
-                              type="date"
-                              value={format(new Date(expense.date), "yyyy-MM-dd")}
-                              onChange={(e) => updateExpense(originalIndex, 'date', e.target.value)}
-                              size="small"
-                              fullWidth
-                              InputLabelProps={{ shrink: true }}
-                            />
-                          ) : (
-                            formatDate(expense.date)
-                          )}
-                        </TableCell>
-                        <TableCell align="right">
-                          {isEditMode ? (
-                            <TextField
-                              value={expense.comment || ""}
-                              onChange={(e) => updateExpense(originalIndex, 'comment', e.target.value)}
-                              size="small"
-                              fullWidth
-                            />
-                          ) : (
-                            <Tooltip title={expense.comment || ""} arrow>
-                              <span style={{ cursor: 'pointer' }}>                                {truncateLongLetter(expense.comment)}
-                              </span>
-                            </Tooltip>
-                          )}
-                        </TableCell>
-                        <TableCell align="right">
-                          {isEditMode && (
-                            <IconButton
-                              color="error"
-                              onClick={() => markExpenseForDeletion(expense.id)}
-                              size="small"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-
-                {/* 新しいexpenses */}
-                {isEditMode && newExpenses.map((expense, i) => (
-                  <TableRow key={`new-${i}`}>
-                    <TableCell align="right">
-                      <TextField
-                        value={expense.name || ""}
-                        onChange={(e) => updateNewExpense(i, 'name', e.target.value)}
-                        placeholder="Expense name"
-                        size="small"
-                        fullWidth
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <TextField
-                        type="number"
-                        value={expense.amount || 0}
-                        onChange={(e) => updateNewExpense(i, 'amount', Number(e.target.value))}
-                        size="small"
-                        fullWidth
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <TextField
-                        type="date"
-                        value={expense.date || format(new Date(), "yyyy-MM-dd")}
-                        onChange={(e) => updateNewExpense(i, 'date', e.target.value)}
-                        size="small"
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <TextField
-                        value={expense.comment || ""}
-                        onChange={(e) => updateNewExpense(i, 'comment', e.target.value)}
-                        placeholder="Comment"
-                        size="small"
-                        fullWidth
-                      />
-                      <IconButton
-                        color="error"
-                        onClick={() => removeNewExpense(i)}
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {tableHeaders.map((header, index) => (
+                  <TableCell key={index} align="right">
+                    {header}
+                  </TableCell>
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {/* 既存のexpenses */}
+              {(isEditMode ? editedExpenses : expenses)
+                .filter(expense => !deletedExpenseIds.includes(expense.id))
+                .map((expense, i) => {
+                  // 元の配列でのインデックスを取得
+                  const originalIndex = (isEditMode ? editedExpenses : expenses).findIndex(
+                    e => e.id === expense.id
+                  );
+
+                  return (
+                    <TableRow key={expense.id || i}>
+                      <TableCell align="right">
+                        {isEditMode ? (
+                          <TextField
+                            value={expense.name}
+                            onChange={(e) => updateExpense(originalIndex, 'name', e.target.value)}
+                            size="small"
+                            fullWidth
+                          />
+                        ) : (
+                          expense.name
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {isEditMode ? (
+                          <TextField
+                            type="number"
+                            value={expense.amount}
+                            onChange={(e) => updateExpense(originalIndex, 'amount', Number(e.target.value))}
+                            size="small"
+                            fullWidth
+                          />
+                        ) : (
+                          expense.amount
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {isEditMode ? (
+                          <TextField
+                            type="date"
+                            value={format(new Date(expense.date), "yyyy-MM-dd")}
+                            onChange={(e) => updateExpense(originalIndex, 'date', e.target.value)}
+                            size="small"
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                          />
+                        ) : (
+                          formatDate(expense.date)
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {isEditMode ? (
+                          <TextField
+                            value={expense.comment || ""}
+                            onChange={(e) => updateExpense(originalIndex, 'comment', e.target.value)}
+                            size="small"
+                            fullWidth
+                          />
+                        ) : (
+                          <Tooltip title={expense.comment || ""} arrow>
+                            <span style={{ cursor: 'pointer' }}>                                {truncateLongLetter(expense.comment)}
+                            </span>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {isEditMode && (
+                          <IconButton
+                            color="error"
+                            onClick={() => markExpenseForDeletion(expense.id)}
+                            size="small"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+
+              {/* 新しいexpenses */}
+              {isEditMode && newExpenses.map((expense, i) => (
+                <TableRow key={`new-${i}`}>
+                  <TableCell align="right">
+                    <TextField
+                      value={expense.name || ""}
+                      onChange={(e) => updateNewExpense(i, 'name', e.target.value)}
+                      placeholder="Expense name"
+                      size="small"
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <TextField
+                      type="number"
+                      value={expense.amount || 0}
+                      onChange={(e) => updateNewExpense(i, 'amount', Number(e.target.value))}
+                      size="small"
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <TextField
+                      type="date"
+                      value={expense.date || format(new Date(), "yyyy-MM-dd")}
+                      onChange={(e) => updateNewExpense(i, 'date', e.target.value)}
+                      size="small"
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <TextField
+                      value={expense.comment || ""}
+                      onChange={(e) => updateNewExpense(i, 'comment', e.target.value)}
+                      placeholder="Comment"
+                      size="small"
+                      fullWidth
+                    />
+                    <IconButton
+                      color="error"
+                      onClick={() => removeNewExpense(i)}
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
 
         {/* ADD EXPENSE ボタン */}
         {isEditMode && (

@@ -16,9 +16,14 @@ import {
   TableRow,
   TextField,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useSearchParams } from 'react-router-dom';
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import { Attendance, EditedBreaks } from "../types/Attendance";
 import { formatTimeForInput, formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
@@ -37,6 +42,10 @@ const AttendanceRegistrationForDaily = () => {
   const pageTitle = attendanceId
     ? "Attendance Modification For Daily"
     : "Attendance Registration For Daily";
+
+  // NotificationAlertの追加
+  const { notification, showNotification, clearNotification } = useNotification();
+
   const [breakMinutes, setBreakMinutes] = useState<number>(0);
   const [netWorkingMinutes, setNetWorkingMinutes] = useState<number>(0);
   const [attendance, setAttendance] = useState<Attendance>({
@@ -54,7 +63,10 @@ const AttendanceRegistrationForDaily = () => {
   const [editedEndDate, setEditedEndDate] = useState("");
   const [editedBreaks, setEditedBreaks] = useState<EditedBreaks[]>([]);
   const [editedComment, setEditedComment] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(!!attendanceId); // attendanceIdがある場合のみtrue
+
+  // errorをローカル用として残す（バリデーションエラー用）
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const calculate = () => {
     const [breakSum, netWorking] = calculateBreakMinutesAndNetWorkingMinutes(attendance);
@@ -65,36 +77,47 @@ const AttendanceRegistrationForDaily = () => {
   // 初期データ取得
   useEffect(() => {
     if (attendanceId) {
-      // クエリがある場合のみデータ取得
       const fetchAttendance = async () => {
+        setLoading(true);
+        clearNotification();
         try {
           const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_attendance_for_user?attendance_id=${attendanceId}`, {
             method: "GET",
             mode: "cors",
             credentials: "include",
           });
-          const data: Attendance = await res.json();
-          setAttendance(data);
-          setEditMode(true);
-          calculate();
-          setEditedStartTime(formatTimeForInput(data.start_time));
-          setEditedEndTime(formatTimeForInput(data.end_time || ""));
-          setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
-          setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
-          setEditedBreaks(
-            data.attendance_breaks.map((b) => ({
-              start_date: b.start_time ? b.start_time.split("T")[0] : "",
-              start_time: formatTimeForInput(b.start_time),
-              end_date: b.end_time ? b.end_time.split("T")[0] : "",
-              end_time: formatTimeForInput(b.end_time || ""),
-            }))
-          );
-          setEditedComment(data.comment || "");
+
+          if (res.ok) {
+            const data: Attendance = await res.json();
+            setAttendance(data);
+            setEditMode(true);
+            calculate();
+            setEditedStartTime(formatTimeForInput(data.start_time));
+            setEditedEndTime(formatTimeForInput(data.end_time || ""));
+            setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+            setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
+            setEditedBreaks(
+              data.attendance_breaks.map((b) => ({
+                start_date: b.start_time ? b.start_time.split("T")[0] : "",
+                start_time: formatTimeForInput(b.start_time),
+                end_date: b.end_time ? b.end_time.split("T")[0] : "",
+                end_time: formatTimeForInput(b.end_time || ""),
+              }))
+            );
+            setEditedComment(data.comment || "");
+          } else {
+            showNotification("Failed to fetch attendance data", 'error');
+          }
         } catch (err) {
-          setError("Failed to fetch attendance data. Please try again later.");
+          showNotification("Failed to fetch attendance data. Please try again later.", 'error');
+        } finally {
+          setLoading(false); // 必ずloadingを終了
         }
       };
       fetchAttendance();
+    } else {
+      // attendanceIdがない場合は即座にloadingを終了
+      setLoading(false);
     }
   }, [attendanceId]);
 
@@ -110,64 +133,130 @@ const AttendanceRegistrationForDaily = () => {
     calculate();
   }, [attendance]);
 
+  // ボタンの無効化判定関数
+  const isStartWorkDisabled = () => {
+    return !!attendance.start_time || loading;
+  };
+
+  const isStartBreakDisabled = () => {
+    // start_timeがない場合は無効
+    if (!attendance.start_time) return true;
+    
+    if (attendance.end_time?.trim()) {
+      const now = new Date();
+      const end = new Date(attendance.end_time);
+      if (now > end) return true;
+    }
+
+    const unfinishedBreak = attendance.attendance_breaks.find(
+      b => !b.end_time?.trim()
+    );
+    return !!unfinishedBreak || loading;
+  };
+
+  const isFinishBreakDisabled = () => {
+    // start_timeがない場合は無効
+    if (!attendance.start_time) return true;
+    
+    if (attendance.end_time?.trim()) {
+      const now = new Date();
+      const end = new Date(attendance.end_time);
+      if (now > end) return true;
+    }
+
+    const unfinishedBreak = attendance.attendance_breaks.find(
+      b => !b.end_time?.trim()
+    );
+    return !unfinishedBreak || loading; // 進行中の休憩がない場合は無効
+  };
+
+  const isFinishWorkDisabled = () => {
+    // start_timeがない場合は無効
+    if (!attendance.start_time) return true;
+    if (attendance.end_time?.trim()) return true;
+
+    const unfinishedBreak = attendance.attendance_breaks.find(
+      b => !b.end_time?.trim()
+    );
+    return !!unfinishedBreak || loading;
+  };
+
+  // 簡素化されたhandler関数
   const handleStartWork = () => {
-    if (attendance.start_time) {
-      alert("Start time has already been set.");
+    if (isStartWorkDisabled()) {
+      if (attendance.start_time) {
+        showNotification("Start time has already been set.", 'warning');
+      } else {
+        showNotification("Please start work first.", 'warning');
+      }
       return;
     }
     postAction("start_work");
   };
   const handleFinishWork = () => {
-    if (attendance.end_time) {
-      alert("End time has already been set.");
-      return;
-    }
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
-    if (unfinishedBreak) {
-      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
+    if (isFinishWorkDisabled()) {
+      if (!attendance.start_time) {
+        showNotification("Please start work first.", 'warning');
+      } else if (attendance.end_time) {
+        showNotification("End time has already been set.", 'warning');
+      } else {
+        showNotification("You have an ongoing break that hasn't ended yet. Please end it before finishing work.", 'warning');
+      }
       return;
     }
     postAction("finish_work");
   };
 
   const handleStartBreak = () => {
-    if (attendance.end_time) {
-      const now = new Date();
-      const end = new Date(attendance.end_time);
-      if (now > end) {
-        alert("You cannot start a break after the attendance end time.");
+    if (isStartBreakDisabled()) {
+      if (!attendance.start_time) {
+        showNotification("Please start work first.", 'warning');
+        return;
+      }
+      
+      if (attendance.end_time?.trim()) {
+        const now = new Date();
+        const end = new Date(attendance.end_time);
+        if (now > end) {
+          showNotification("You cannot start a break after the attendance end time.", 'warning');
+          return;
+        }
+      }
+
+      const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time?.trim());
+      if (unfinishedBreak) {
+        showNotification("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.", 'warning');
         return;
       }
     }
-
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
-    if (unfinishedBreak) {
-      alert("You have an ongoing break that hasn't ended yet. Please end it before starting a new break.");
-      return;
-    }
-
     postAction("start_break");
   };
 
   const handleFinishBreak = () => {
-    if (attendance.end_time) {
-      const now = new Date();
-      const end = new Date(attendance.end_time);
-      if (now > end) {
-        alert("You cannot finish a break after the attendance end time.");
+    if (isFinishBreakDisabled()) {
+      if (!attendance.start_time) {
+        showNotification("Please start work first.", 'warning');
         return;
       }
-    }
-
-    const unfinishedBreak = attendance.attendance_breaks.find(b => !b.end_time || b.end_time.trim() === "");
-    if (!unfinishedBreak) {
-      alert("There is no ongoing break to finish.");
-      return;
+      
+      if (attendance.end_time?.trim()) {
+        const now = new Date();
+        const end = new Date(attendance.end_time);
+        if (now > end) {
+          showNotification("You cannot finish a break after the attendance end time.", 'warning');
+          return;
+        }
+      } else {
+        showNotification("There is no ongoing break to finish.", 'warning');
+        return;
+      }
     }
     postAction("finish_break");
   };
 
   const postAction = async (endpoint: string) => {
+    clearNotification();
+    setLoading(true);
     try {
       let url = `${process.env.REACT_APP_BASE_URL}api/${endpoint}`;
 
@@ -179,27 +268,49 @@ const AttendanceRegistrationForDaily = () => {
         mode: "cors",
         credentials: "include",
       });
-      const data = await res.json();
-      setAttendance(data);
-      calculate();
-      setEditedStartTime(formatTimeForInput(data.start_time));
-      setEditedEndTime(formatTimeForInput(data.end_time || ""));
-      setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
-      setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
-      setEditedBreaks(
-        data.attendance_breaks.map((b: { start_time: any; end_time: any }) => ({
-          start_date: b.start_time ? b.start_time.split("T")[0] : "",
-          start_time: formatTimeForInput(b.start_time),
-          end_date: b.end_time ? b.end_time.split("T")[0] : "",
-          end_time: formatTimeForInput(b.end_time || ""),
-        }))
-      );
+
+      if (res.ok) {
+        const data = await res.json();
+        setAttendance(data);
+        calculate();
+        setEditedStartTime(formatTimeForInput(data.start_time));
+        setEditedEndTime(formatTimeForInput(data.end_time || ""));
+        setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+        setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
+        setEditedBreaks(
+          data.attendance_breaks.map((b: { start_time: any; end_time: any }) => ({
+            start_date: b.start_time ? b.start_time.split("T")[0] : "",
+            start_time: formatTimeForInput(b.start_time),
+            end_date: b.end_time ? b.end_time.split("T")[0] : "",
+            end_time: formatTimeForInput(b.end_time || ""),
+          }))
+        );
+
+        // 成功メッセージを表示
+        const actionMessages = {
+          start_work: "Work started successfully",
+          finish_work: "Work finished successfully",
+          start_break: "Break started successfully",
+          finish_break: "Break finished successfully"
+        };
+        showNotification(actionMessages[endpoint as keyof typeof actionMessages], 'success');
+      } else {
+        const errorData = await res.json();
+        showNotification(errorData.message || `Failed to ${endpoint.replace('_', ' ')}`, 'error');
+      }
     } catch (err) {
       console.error(`Error during ${endpoint}:`, err);
+      showNotification(`Error during ${endpoint.replace('_', ' ')}`, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    clearNotification();
+    setLoading(true);
+    setValidationError(null); // バリデーションエラーをクリア
+
     try {
       const validationError = validateAttendanceInput(
         editedStartDate,
@@ -210,7 +321,7 @@ const AttendanceRegistrationForDaily = () => {
         attendance
       );
       if (validationError) {
-        setError(validationError); // アラートではなく画面描画用にセット
+        setValidationError(validationError); // バリデーションエラーは従来通り
         return;
       }
 
@@ -256,25 +367,33 @@ const AttendanceRegistrationForDaily = () => {
         body: JSON.stringify(body),
       });
 
-      const data: Attendance = await res.json();
-      setAttendance(data);
-      setEditedComment(data.comment || "");
-      calculate();
-      setEditedStartTime(formatTimeForInput(data.start_time));
-      setEditedEndTime(formatTimeForInput(data.end_time || ""));
-      setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
-      setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
-      setEditedBreaks(
-        data.attendance_breaks.map((b) => ({
-          start_date: b.start_time ? b.start_time.split("T")[0] : "",
-          start_time: formatTimeForInput(b.start_time),
-          end_date: b.end_time ? b.end_time.split("T")[0] : "",
-          end_time: formatTimeForInput(b.end_time || ""),
-        }))
-      );
-      setEditMode(false);
+      if (res.ok) {
+        const data: Attendance = await res.json();
+        setAttendance(data);
+        setEditedComment(data.comment || "");
+        calculate();
+        setEditedStartTime(formatTimeForInput(data.start_time));
+        setEditedEndTime(formatTimeForInput(data.end_time || ""));
+        setEditedStartDate(data.start_time ? data.start_time.split("T")[0] : "");
+        setEditedEndDate(data.end_time ? data.end_time.split("T")[0] : "");
+        setEditedBreaks(
+          data.attendance_breaks.map((b) => ({
+            start_date: b.start_time ? b.start_time.split("T")[0] : "",
+            start_time: formatTimeForInput(b.start_time),
+            end_date: b.end_time ? b.end_time.split("T")[0] : "",
+            end_time: formatTimeForInput(b.end_time || ""),
+          }))
+        );
+        setEditMode(false);
+        showNotification("Attendance updated successfully", 'success');
+      } else {
+        const errorData = await res.json();
+        showNotification(errorData.message || "Failed to update attendance", 'error');
+      }
     } catch (err) {
-      setError("An error occurred while processing your request.");
+      showNotification("An error occurred while processing your request.", 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -299,46 +418,91 @@ const AttendanceRegistrationForDaily = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+<PageTitle title={pageTitle} />
 
-      <Section>
-        {/* ボタン群：attendanceIdがない場合のみ表示 */}
-        {!attendanceId && (
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {/* バリデーションエラー */}
+      {validationError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {validationError}
+        </Alert>
+      )}
+
+      {/* ローディング表示 */}
+      <LoadingSpinner loading={loading} />
+
+      {/* ボタン群：attendanceIdがない場合のみ表示 */}
+      {!attendanceId && (
+        <Section>
           <Grid container spacing={2}>
             <Grid item xs={6} sm={3}>
-              <Button fullWidth variant="contained" onClick={handleStartWork}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleStartWork}
+                disabled={isStartWorkDisabled()}
+              >
                 Start Work
               </Button>
             </Grid>
             <Grid item xs={6} sm={3}>
-              <Button fullWidth variant="contained" onClick={handleStartBreak}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleStartBreak}
+                disabled={isStartBreakDisabled()}
+              >
                 Start Break
               </Button>
             </Grid>
             <Grid item xs={6} sm={3}>
-              <Button fullWidth variant="contained" onClick={handleFinishBreak}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleFinishBreak}
+                disabled={isFinishBreakDisabled()}
+              >
                 Finish Break
               </Button>
             </Grid>
             <Grid item xs={6} sm={3}>
-              <Button fullWidth variant="contained" onClick={handleFinishWork}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleFinishWork}
+                disabled={isFinishWorkDisabled()}
+              >
                 Finish Work
               </Button>
             </Grid>
           </Grid>
-        )}
-      </Section>
+        </Section>
+      )}
 
       <Section>
         {/* サマリーや操作ボタン */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
           <Typography>{formatDate(attendance.start_time)}</Typography>
           <Box>
-            <FormControlLabel control={<Switch checked={editMode} onChange={() => setEditMode(!editMode)} />} label="Modify" />
-            <Button variant="contained" disabled={!editMode} onClick={handleSave} sx={{ ml: 2 }}>
-              Save
+            <FormControlLabel 
+              control={
+                <Switch 
+                  checked={editMode} 
+                  onChange={() => setEditMode(!editMode)}
+                  disabled={loading} // ローディング中は無効化
+                />
+              } 
+              label="Modify" 
+            />
+            <Button 
+              variant="contained" 
+              disabled={!editMode || loading} // ローディング中は無効化
+              onClick={handleSave} 
+              sx={{ ml: 2 }}
+            >
+              SAVE
             </Button>
           </Box>
           <Button
@@ -350,13 +514,9 @@ const AttendanceRegistrationForDaily = () => {
             MONTHLY ATTENDANCE
           </Button>
         </Box>
-        {/* テーブル */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <TableContainer component={Paper}>
+
+        {/* テーブル - 常に表示 */}
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -378,6 +538,7 @@ const AttendanceRegistrationForDaily = () => {
                         type="date"
                         value={editedStartDate}
                         onChange={e => setEditedStartDate(e.target.value)}
+                        disabled={loading} // ローディング中は無効化
                         sx={{ minWidth: 100, flex: 1 }}
                       />
                       <TextField
@@ -385,6 +546,7 @@ const AttendanceRegistrationForDaily = () => {
                         type="time"
                         value={editedStartTime}
                         onChange={e => setEditedStartTime(e.target.value)}
+                        disabled={loading} // ローディング中は無効化
                         inputProps={{ step: 60 }}
                         sx={{ minWidth: 80, flex: 1 }}
                       />
@@ -402,6 +564,7 @@ const AttendanceRegistrationForDaily = () => {
                         type="date"
                         value={editedEndDate}
                         onChange={e => setEditedEndDate(e.target.value)}
+                        disabled={loading} // ローディング中は無効化
                         sx={{ minWidth: 100, flex: 1 }}
                       />
                       <TextField
@@ -409,6 +572,7 @@ const AttendanceRegistrationForDaily = () => {
                         type="time"
                         value={editedEndTime}
                         onChange={e => setEditedEndTime(e.target.value)}
+                        disabled={loading} // ローディング中は無効化
                         inputProps={{ step: 60 }}
                         sx={{ minWidth: 80, flex: 1 }}
                       />
@@ -437,6 +601,7 @@ const AttendanceRegistrationForDaily = () => {
                             updated[idx].start_date = e.target.value;
                             setEditedBreaks(updated);
                           }}
+                          disabled={loading} // ローディング中は無効化
                           sx={{ minWidth: 100, flex: 1 }}
                         />
                         <TextField
@@ -448,6 +613,7 @@ const AttendanceRegistrationForDaily = () => {
                             updated[idx].start_time = e.target.value;
                             setEditedBreaks(updated);
                           }}
+                          disabled={loading} // ローディング中は無効化
                           inputProps={{ step: 60 }}
                           sx={{ minWidth: 80, flex: 1 }}
                         />
@@ -469,6 +635,7 @@ const AttendanceRegistrationForDaily = () => {
                             updated[idx].end_date = e.target.value;
                             setEditedBreaks(updated);
                           }}
+                          disabled={loading} // ローディング中は無効化
                           sx={{ minWidth: 100, flex: 1 }}
                         />
                         <TextField
@@ -480,12 +647,14 @@ const AttendanceRegistrationForDaily = () => {
                             updated[idx].end_time = e.target.value;
                             setEditedBreaks(updated);
                           }}
+                          disabled={loading} // ローディング中は無効化
                           inputProps={{ step: 60 }}
                           sx={{ minWidth: 80, flex: 1 }}
                         />
                         <Button
                           color="error"
                           size="small"
+                          disabled={loading} // ローディング中は無効化
                           sx={{ ml: 1, minWidth: "auto", p: 0 }}
                           onClick={() => handleRemoveBreak(idx)}
                         >
@@ -518,6 +687,7 @@ const AttendanceRegistrationForDaily = () => {
                       variant="outlined"
                       color="primary"
                       onClick={handleAddBreak}
+                      disabled={loading} // ローディング中は無効化
                       sx={{ mt: 1 }}
                     >
                       ADD BREAK
@@ -543,6 +713,7 @@ const AttendanceRegistrationForDaily = () => {
               minRows={2}
               value={editedComment}
               onChange={e => setEditedComment(e.target.value)}
+              disabled={loading} // ローディング中は無効化
               variant="outlined"
               placeholder="Enter your comment"
             />
@@ -552,7 +723,7 @@ const AttendanceRegistrationForDaily = () => {
             </Box>
           )}
         </Box>
-      </Section >
+      </Section>
     </Box>
   );
 };

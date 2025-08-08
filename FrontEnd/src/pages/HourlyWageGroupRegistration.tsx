@@ -8,6 +8,10 @@ import {
   Alert,
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { hasRole } from "../utils/auth";
 import { validateHourlyWageGroupRegistration } from "../utils/hourlyWageGroupValidation";
@@ -16,16 +20,18 @@ const HourlyWageGroupRegistration = () => {
   const [searchParams] = useSearchParams();
   const hourlyWageGroupId = searchParams.get("hourly_wage_group_id");
   const pageTitle = hourlyWageGroupId ? "Hourly Wage Group Modification" : "Hourly Wage Group Registration";
+  const { notification, showNotification, clearNotification } = useNotification();
   const [name, setName] = useState("");
   const [hourlyWage, setHourlyWage] = useState<number | "">("");
   const [comment, setComment] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (hourlyWageGroupId) {
       // 編集時は既存データを取得
       const fetchGroup = async () => {
+        setLoading(true);
+        clearNotification();
         try {
           const res = await fetch(
             `${process.env.REACT_APP_BASE_URL}api/get_hourly_wage_group?hourly_wage_group_id=${hourlyWageGroupId}`,
@@ -37,20 +43,23 @@ const HourlyWageGroupRegistration = () => {
             setHourlyWage(data.hourly_wage?.toString() ?? "");
             setComment(data.comment ?? "");
           } else {
-            setError("Failed to fetch hourly wage group info. Please try again later.");
+            showNotification("Failed to fetch hourly wage group info. Please try again later.", 'error');
           }
         } catch {
-          setError("Failed to fetch hourly wage group info. Please try again later.");
+          showNotification("Failed to fetch hourly wage group info. Please try again later.", 'error');
+        } finally {
+          setLoading(false);
         }
       };
       fetchGroup();
     }
+    setLoading(false);
   }, [hourlyWageGroupId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setMessage(null);
+    setLoading(true);
+    clearNotification();
 
     const validationError = validateHourlyWageGroupRegistration({
       name,
@@ -58,7 +67,7 @@ const HourlyWageGroupRegistration = () => {
       comment,
     });
     if (validationError) {
-      setError(validationError);
+      showNotification(validationError, 'warning');
       return;
     }
 
@@ -90,7 +99,7 @@ const HourlyWageGroupRegistration = () => {
       });
 
       if (res.ok) {
-        setMessage(hourlyWageGroupId ? "Hourly Wage Group updated successfully!" : "Hourly Wage Group created successfully!");
+        showNotification(hourlyWageGroupId ? "Hourly Wage Group updated successfully!" : "Hourly Wage Group created successfully!", 'success');
         if (!hourlyWageGroupId) {
           setName("");
           setHourlyWage("");
@@ -101,11 +110,12 @@ const HourlyWageGroupRegistration = () => {
         const errorMessages = Object.values(data.errors)
           .flat()
           .join("\n");
-        setError(errorMessages || "An error occurred while processing your request.");
+        showNotification(errorMessages || "An error occurred while processing your request.", 'error');
       }
     } catch (err) {
-      console.error("Error during hourly wage group operation:", err);
-      setError("An error occurred while processing your request.");
+      showNotification("An error occurred while processing your request.", 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -115,11 +125,14 @@ const HourlyWageGroupRegistration = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>
-          {pageTitle}
-        </Typography>
-      </Section>
+      {/* タイトル */}
+      <PageTitle title={pageTitle} />
+
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       <Section>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
@@ -135,18 +148,16 @@ const HourlyWageGroupRegistration = () => {
       </Section>
 
       <Section>
-        <Paper sx={{ p: 4, maxWidth: 500, mx: "auto" }}>
+        <Paper
+          sx={{
+            p: 4,
+            maxWidth: 500,
+            mx: "auto",
+            opacity: loading ? 0.6 : 1,
+            pointerEvents: loading ? "none" : "auto",
+          }}
+        >
           <form onSubmit={handleSubmit} noValidate>
-            {message && (
-              <Alert severity="success" sx={{ mb: 2 }}>
-                {message}
-              </Alert>
-            )}
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
             <TextField
               label="Name"
               fullWidth

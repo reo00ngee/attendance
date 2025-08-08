@@ -17,6 +17,10 @@ import {
   Button
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 import { ROLES } from "../constants/roles";
 import { User } from "../types/User";
 import { hasRole } from "../utils/auth";
@@ -31,9 +35,10 @@ const UserManagement = () => {
     "Role",
     ""
   ];
+  const { notification, showNotification, clearNotification } = useNotification();
+  const [noUser, setNoUser] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // フィルター用state
   const [nameFilter, setNameFilter] = useState("");
@@ -43,7 +48,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      setError(null);
+      clearNotification();
       try {
         const res = await fetch(
           `${process.env.REACT_APP_BASE_URL}api/get_users_for_management`,
@@ -52,13 +57,15 @@ const UserManagement = () => {
         if (res.ok) {
           const data = await res.json();
           setUsers(data);
+          setNoUser(data.length === 0);
         } else {
-          setError("Failed to retrieve the user list.");
+          showNotification("Failed to retrieve the user list.", 'error');
         }
       } catch {
-        setError("Something went wrong while fetching the data. Please try again later.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchUsers();
   }, []);
@@ -88,9 +95,22 @@ const UserManagement = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+      <PageTitle title={pageTitle} />
+
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {noUser && (
+        <Section>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            There are no users to display.
+          </Alert>
+        </Section>
+      )}
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
+
 
       {/* フィルターUI */}
       <Section>
@@ -137,71 +157,63 @@ const UserManagement = () => {
         </Box>
       </Section>
 
+      {/* テーブル */}
       <Section>
-        <Paper sx={{ p: 2 }}>
-          {loading ? (
-            <CircularProgress />
-          ) : error ? (
-            <Alert severity="error">{error}</Alert>
-          ) : (
-            // テーブル
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    {tableHeaders.map((header, index) => (
-                      <TableCell
-                        key={index}
-                        align={header === "role" ? "left" : "right"}
-                      >
-                        {header}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.user_id}>
-                      <TableCell align="right">
-                        {user.last_name} {user.first_name}
-                      </TableCell>
-                      <TableCell align="right">{user.email}</TableCell>
-                      <TableCell align="left">
-                        {user.roles.map((roleId) => {
-                          const role = ROLES.find((r) => r.value === roleId);
-                          return (
-                            <Chip
-                              key={roleId}
-                              label={role ? role.label : roleId}
-                              size="small"
-                              sx={{ mr: 0.5 }}
-                            />
-                          );
-                        })}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Button
-                          variant="contained"
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {tableHeaders.map((header, index) => (
+                  <TableCell
+                    key={index}
+                    align={header === "role" ? "left" : "right"}
+                  >
+                    {header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user.user_id}>
+                  <TableCell align="right">
+                    {user.last_name} {user.first_name}
+                  </TableCell>
+                  <TableCell align="right">{user.email}</TableCell>
+                  <TableCell align="left">
+                    {user.roles.map((roleId) => {
+                      const role = ROLES.find((r) => r.value === roleId);
+                      return (
+                        <Chip
+                          key={roleId}
+                          label={role ? role.label : roleId}
                           size="small"
-                          sx={{
-                            minWidth: 120,
-                            height: 40,
-                            fontSize: "1rem",
-                            px: 2,
-                          }}
-                          component="a"
-                          href={`/user_registration?user_id=${user.user_id}`}
-                        >
-                          Modify
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Paper>
+                          sx={{ mr: 0.5 }}
+                        />
+                      );
+                    })}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        minWidth: 120,
+                        height: 40,
+                        fontSize: "1rem",
+                        px: 2,
+                      }}
+                      component="a"
+                      href={`/user_registration?user_id=${user.user_id}`}
+                    >
+                      Modify
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Section>
     </Box>
   );

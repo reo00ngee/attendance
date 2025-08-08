@@ -15,11 +15,15 @@ import {
   CircularProgress
 } from "@mui/material";
 import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
 import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 
 const AttendanceRegistrationForMonthly = () => {
   const pageTitle = "Attendance Registration For Monthly";
@@ -32,9 +36,11 @@ const AttendanceRegistrationForMonthly = () => {
     "Working Hours",
     ""
   ];
+  const { notification, showNotification, clearNotification } = useNotification();
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [noAttendance, setNoAttendance] = useState(false);
   const [breakMinutesArray, setBreakMinutesArray] = useState<number[]>([]);
   const [netWorkingMinutesArray, setNetWorkingMinutesArray] = useState<number[]>([]);
   const [totalWorkingMinutes, setTotalWorkingMinutes] = useState<number>(0);
@@ -42,7 +48,7 @@ const AttendanceRegistrationForMonthly = () => {
   const [unsubmittedExists, setUnsubmittedExists] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState<string | null>(null);
+
 
   const handleSubmit = async () => {
     if (unsubmittedExists === false) {
@@ -50,7 +56,7 @@ const AttendanceRegistrationForMonthly = () => {
       return;
     }
     setLoading(true);
-    setError(null);
+    clearNotification();
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_attendances?year=${year}&month=${month}`, {
         method: "POST",
@@ -64,6 +70,7 @@ const AttendanceRegistrationForMonthly = () => {
 
         const data: Attendance[] = await res.json();
         setAttendances(data);
+        setNoAttendance(data.length === 0);
         setUnsubmittedExists(data.some(att => att.submission_status === 0 || att.submission_status === 2));
 
 
@@ -81,16 +88,19 @@ const AttendanceRegistrationForMonthly = () => {
 
         setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
         setTotalWorkingDays(data.filter(att => att.start_time).length);
+      } else {
+        showNotification("Failed to fetch attendance data", 'error');
       }
     } catch (err) {
-      setError("Something went wrong while fetching the data. Please try again later.");
+      showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     setLoading(true);
-    setError(null);
+    clearNotification();
     const fetchAttendances = async () => {
       try {
         const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_attendances_for_user?year=${year}&month=${month}`, {
@@ -101,6 +111,7 @@ const AttendanceRegistrationForMonthly = () => {
         if (res.ok) {
           const data: Attendance[] = await res.json();
           setAttendances(data);
+          setNoAttendance(data.length === 0);
           setUnsubmittedExists(data.some(att => att.submission_status === 0 || att.submission_status === 2));
 
           const breaks: number[] = [];
@@ -117,11 +128,14 @@ const AttendanceRegistrationForMonthly = () => {
 
           setTotalWorkingMinutes(netWorks.reduce((sum, minutes) => sum + minutes, 0));
           setTotalWorkingDays(data.filter(att => att.start_time).length);
+        } else {
+          showNotification("Failed to fetch attendance data", 'error');
         }
       } catch (err) {
-        setError("Something went wrong while fetching the data. Please try again later.");
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchAttendances();
@@ -130,27 +144,10 @@ const AttendanceRegistrationForMonthly = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-      <Section>
-        <Typography variant="h4" align="left" sx={{ mb: 0.5 }}>{pageTitle}</Typography>
-      </Section>
+      <PageTitle title={pageTitle} />
 
-      {/* エラーがある場合は常に表示 */}
-      {error && (
-        <Section>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        </Section>
-      )}
-
-      {/* loading時はローディング表示 */}
-      {loading && (
-        <Section>
-          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-            <CircularProgress />
-          </Box>
-        </Section>
-      )}
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
 
       {/* 未提出アラート */}
       {unsubmittedExists && (
@@ -160,6 +157,17 @@ const AttendanceRegistrationForMonthly = () => {
           </Alert>
         </Section>
       )}
+
+      {noAttendance && (
+        <Section>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            There are no attendance to display.
+          </Alert>
+        </Section>
+      )}
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
 
       {/* サマリー・操作ボタン */}
       <Section>
@@ -183,6 +191,7 @@ const AttendanceRegistrationForMonthly = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
+            disabled={!unsubmittedExists || loading}
             sx={{ minWidth: 180 }}
           >
             SUBMIT
@@ -199,7 +208,7 @@ const AttendanceRegistrationForMonthly = () => {
           </span>
           <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
         </Box>
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>
               <TableRow>
