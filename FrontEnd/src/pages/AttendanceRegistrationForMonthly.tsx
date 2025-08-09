@@ -12,7 +12,6 @@ import {
   TableRow,
   Box,
   Alert,
-  CircularProgress
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -21,9 +20,9 @@ import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
-import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
+import MonthNavigator from "../components/MonthNavigator";
 
 const AttendanceRegistrationForMonthly = () => {
   const pageTitle = "Attendance Registration For Monthly";
@@ -201,13 +200,13 @@ const AttendanceRegistrationForMonthly = () => {
 
       {/* テーブル */}
       <Section>
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Button onClick={() => handlePrevMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
-          <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
-            {format(new Date(year, month - 1), "MMMM yyyy")}
-          </span>
-          <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
-        </Box>
+        <MonthNavigator
+          year={year}
+          month={month}
+          setYear={setYear}
+          setMonth={setMonth}
+          disabled={loading}
+        />
         <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>

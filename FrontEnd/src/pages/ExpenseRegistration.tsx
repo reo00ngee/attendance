@@ -12,7 +12,6 @@ import {
   TableRow,
   Box,
   Alert,
-  CircularProgress,
   TextField,
   MenuItem,
   Switch,
@@ -32,6 +31,7 @@ import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
 import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import { truncateLongLetter } from "../utils/format";
+import MonthNavigator from "../components/MonthNavigator";
 
 const ExpenseRegistration = () => {
   const pageTitle = "Expense Registration";
@@ -91,6 +91,26 @@ const ExpenseRegistration = () => {
 
     fetchExpenses();
   }, [year, month]);
+
+  const handleMonthChangeWithValidation = (newYear: number, newMonth: number) => {
+    // Edit Modeで何らかの変更がある場合のみ確認
+    if (isEditMode) {
+      const confirmed = window.confirm('Unsaved changes will be lost. Continue?');
+      if (!confirmed) return;
+    }
+
+    if (isEditMode) {
+      setIsEditMode(false);
+      setEditedExpenses([]);
+      setNewExpenses([]);
+      setDeletedExpenseIds([]);
+    }
+
+    setYear(newYear);
+    setMonth(newMonth);
+
+    clearNotification();
+  };
 
   // Edit Modeの切り替え
   const handleToggleEditMode = () => {
@@ -218,7 +238,7 @@ const ExpenseRegistration = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-<PageTitle title={pageTitle} />
+      <PageTitle title={pageTitle} />
 
 
       {/* 通知アラート */}
@@ -286,13 +306,14 @@ const ExpenseRegistration = () => {
 
       {/* テーブル */}
       <Section>
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Button onClick={() => handlePrevMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
-          <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
-            {format(new Date(year, month - 1), "MMMM yyyy")}
-          </span>
-          <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
-        </Box>
+        <MonthNavigator
+          year={year}
+          month={month}
+          setYear={setYear}
+          setMonth={setMonth}
+          onMonthChange={handleMonthChangeWithValidation} // カスタムハンドラーを使用
+          disabled={loading}
+        />
 
         <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>

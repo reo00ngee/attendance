@@ -12,7 +12,6 @@ import {
   TableRow,
   Box,
   Alert,
-  CircularProgress,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -24,21 +23,28 @@ import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
 import { useSearchParams, Navigate } from "react-router-dom";
-import { format, set } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { formatTimeHHMM, convertToHoursAndMinutes, formatDate, formatTimeForInput, truncateLongLetter } from "../utils/format";
+import { formatTimeHHMM, convertToHoursAndMinutes, formatDate, truncateLongLetter } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
-import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import { hasRole } from '../utils/auth';
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
+import MonthNavigator from "../components/MonthNavigator";
 
 
 const AttendanceApproval = () => {
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [searchParams] = useSearchParams();
   const userId = searchParams.get("user_id");
+  const queryYear = searchParams.get("year");
+  const queryMonth = searchParams.get("month");
+
+  const [year, setYear] = useState(() => {
+    return queryYear ? parseInt(queryYear, 10) : new Date().getFullYear();
+  });
+
+  const [month, setMonth] = useState(() => {
+    return queryMonth ? parseInt(queryMonth, 10) : new Date().getMonth() + 1;
+  });
   const pageTitle = "Attendance Approval";
   const tableHeaders = [
     "Date",
@@ -226,7 +232,7 @@ const AttendanceApproval = () => {
 
       {/* 統一されたアラート表示 */}
       <NotificationAlert notification={notification} />
-      
+
       {/* 状態に応じた追加メッセージ */}
       {allApproved && (
         <Section>
@@ -293,13 +299,13 @@ const AttendanceApproval = () => {
 
       {/* テーブル */}
       <Section>
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Button onClick={() => handlePrevMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
-          <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
-            {format(new Date(year, month - 1), "MMMM yyyy")}
-          </span>
-          <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
-        </Box>
+        <MonthNavigator
+          year={year}
+          month={month}
+          setYear={setYear}
+          setMonth={setMonth}
+          disabled={loading}
+        />
         <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>

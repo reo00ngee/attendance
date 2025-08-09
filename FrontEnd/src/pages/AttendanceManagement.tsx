@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   Box,
-  Typography,
   Button,
   Paper,
   Table,
@@ -12,21 +11,19 @@ import {
   TableHead,
   TableRow,
   Alert,
-  CircularProgress
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
 import { Navigate } from 'react-router-dom';
 import { format, set } from "date-fns";
-import { Attendance } from "../types/Attendance";
 import { User } from "../types/User";
-import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
+import { convertToHoursAndMinutes } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
-import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import { hasRole } from "../utils/auth";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
+import MonthNavigator from "../components/MonthNavigator";
 
 
 const AttendanceManagement = () => {
@@ -123,13 +120,13 @@ const AttendanceManagement = () => {
 
       {/* テーブル */}
       <Section>
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Button onClick={() => handlePrevMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&lt;</Button>
-          <span style={{ fontSize: "1.2rem", fontWeight: "bold", margin: "1rem 1rem" }}>
-            {format(new Date(year, month - 1), "MMMM yyyy")}
-          </span>
-          <Button onClick={() => handleNextMonth(year, month, setYear, setMonth)} variant="contained" sx={{ minWidth: 40, mx: 1 }}>&gt;</Button>
-        </Box>
+        <MonthNavigator
+          year={year}
+          month={month}
+          setYear={setYear}
+          setMonth={setMonth}
+          disabled={loading}
+        />
         <TableContainer component={Paper} sx={{ opacity: loading ? 0.6 : 1 }}>
           <Table>
             <TableHead>
