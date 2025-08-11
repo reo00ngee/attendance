@@ -140,6 +140,7 @@ const UserRegistration = () => {
 
     if (validationError) {
       showNotification(validationError, 'warning');
+      setLoading(false);
       return;
     }
 

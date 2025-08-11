@@ -113,6 +113,7 @@ const SettingManagement = () => {
 
     if (validationError) {
       showNotification(validationError, 'warning');
+      setLoading(false);
       return;
     }
 
