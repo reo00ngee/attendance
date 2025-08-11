@@ -48,6 +48,8 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/batch_update_expenses', [\App\Http\Controllers\ExpensesAndDeductionController::class, 'batchUpdateExpenses'])->middleware('role:0');
     Route::post('/submit_expenses', [\App\Http\Controllers\ExpensesAndDeductionController::class, 'submitExpenses'])->middleware('role:0');
     Route::get('/get_informations', [\App\Http\Controllers\InformationController::class, 'getInformations']);
+    Route::get('/get_setting', [\App\Http\Controllers\CompanyController::class, 'getSetting'])->middleware('role:4');
+    Route::post('/update_setting', [\App\Http\Controllers\CompanyController::class, 'updateSetting'])->middleware('role:4');
 });
 
 

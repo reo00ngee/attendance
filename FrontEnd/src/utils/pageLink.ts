@@ -28,6 +28,9 @@ export const makePageLinks = () => {
   }
   // Setting Management
   if (userRoles.includes(4)) {
+    links.push(
+      { label: "Setting Management", path: "/setting_management" }
+    );
   }
 
   return links;

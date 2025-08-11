@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\CompanyService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\UpdateSettingRequest;
 
 class CompanyController extends Controller
 {
@@ -14,6 +15,20 @@ class CompanyController extends Controller
     {
         $this->companyService = $companyService;
     }
+
+    public function getSetting(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        return $this->companyService->getSetting($company_id);
+    }
+
+    public function updateSetting(UpdateSettingRequest $request)
+    {
+        $validated = $request->validated();
+        $company_id = Auth::user()->company_id;
+        return $this->companyService->updateSetting($company_id, $validated);
+    }
+
     /**
      * Display a listing of the resource.
      */

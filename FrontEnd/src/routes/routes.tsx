@@ -18,6 +18,7 @@ import UserRegistration from '../pages/UserRegistration'
 import UserManagement from '../pages/UserManagement'
 import HourlyWageGroupManagement from '../pages/HourlyWageGroupManagement'
 import HourlyWageGroupRegistration from '../pages/HourlyWageGroupRegistration'
+import SettingManagement from '../pages/SettingManagement'
 
 /**
  * ログイン済みのみアクセス可能
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
             }, {
                 path: 'hourly_wage_group_registration',
                 element: <HourlyWageGroupRegistration />,
+                loader: guardLoader
+            }, {
+                path: 'setting_management',
+                element: <SettingManagement />,
                 loader: guardLoader
             }, {
                 path: '*',
