@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
-  Typography,
   TextField,
   Button,
-  Alert,
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from "../components/NavigationButton";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { Navigate, useSearchParams } from "react-router-dom";
@@ -53,7 +52,6 @@ const HourlyWageGroupRegistration = () => {
       };
       fetchGroup();
     }
-    setLoading(false);
   }, [hourlyWageGroupId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,14 +135,13 @@ const HourlyWageGroupRegistration = () => {
 
       <Section>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/hourly_wage_group_management"
+            to="/hourly_wage_group_management"
             sx={{ minWidth: 180 }}
           >
             HOURLY WAGE GROUP MANAGEMENT
-          </Button>
+          </NavigationButton>
         </Box>
       </Section>
 

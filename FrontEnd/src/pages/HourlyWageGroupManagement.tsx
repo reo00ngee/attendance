@@ -2,23 +2,19 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  CircularProgress,
   Alert,
   TextField,
-  MenuItem,
-  Button
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from "../components/NavigationButton";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { HourlyWageGroup } from "@/types/HourlyWageGroup";
@@ -120,14 +116,13 @@ const HourlyWageGroupManagement = () => {
           />
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/hourly_wage_group_registration"
+            to="/hourly_wage_group_registration"
             sx={{ minWidth: 180 }}
           >
             REGISTER
-          </Button>
+          </NavigationButton>
         </Box>
       </Section>
 
@@ -151,20 +146,19 @@ const HourlyWageGroupManagement = () => {
                   <TableCell align="right">{group.hourly_wage}</TableCell>
                   <TableCell align="right">{group.comment}</TableCell>
                   <TableCell align="right">
-                    <Button
+                    <NavigationButton
                       variant="contained"
                       size="small"
+                      to={`/hourly_wage_group_registration?hourly_wage_group_id=${group.hourly_wage_group_id}`}
                       sx={{
                         minWidth: 120,
                         height: 40,
                         fontSize: "1rem",
                         px: 2,
                       }}
-                      component="a"
-                      href={`/hourly_wage_group_registration?hourly_wage_group_id=${group.hourly_wage_group_id}`}
                     >
                       Modify
-                    </Button>
+                    </NavigationButton>
                   </TableCell>
                 </TableRow>
               ))}

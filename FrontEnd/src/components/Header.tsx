@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState, useMemo, useCallback } from "react";
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -27,82 +27,132 @@ import {
   getInformationTypeMessage,
 } from "../utils/informationUtils";
 
-const Header = () => {
+const Header = memo(() => {
+  // userをstateで管理
+  const [user, setUser] = useState(localStorage.getItem("user"));
+  
+  // 他のstate...
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [informationAnchorEl, setInformationAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [pageLinks, setPageLinks] = useState<{ label: string; path: string }[]>([]);
-
-  // Information関連のstate
   const [informations, setInformations] = useState<Information[]>([]);
+  const [informationLoading, setInformationLoading] = useState(false);
 
   const navigate = useNavigate();
   const logout = UseLogout();
 
+  // localStorage変更の監視
   useEffect(() => {
-    setPageLinks(makePageLinks());
-  }, [localStorage.getItem("user")]);
-
-  // Information取得のuseEffect
-  useEffect(() => {
-    const fetchInformations = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_informations`, {
-          method: "GET",
-          mode: "cors",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setInformations(data || []);
-          console.log(informations);
-        } else {
-          console.error("Failed to fetch information");
-        }
-      } catch (error) {
-        console.error("Error fetching information:", error);
-      }
-    };
-
-    fetchInformations();
-
-    // 5分おきにinformationを再取得
-    const interval = setInterval(fetchInformations, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
+    const handleStorage = () => setUser(localStorage.getItem("user"));
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  // ページリンクを直接メモ化（setPageLinksを削除）
+  const pageLinks = useMemo(() => makePageLinks(), [user]);
+
+  // Information取得関数をメモ化
+  const fetchInformations = useCallback(async () => {
+    if (informationLoading) return;
+    
+    setInformationLoading(true);
+    try {
+      const cacheKey = 'informations_cache';
+      const cacheTimeKey = 'informations_cache_time';
+      const cacheTime = sessionStorage.getItem(cacheTimeKey);
+      const now = Date.now();
+      
+      // 2分以内のキャッシュがあれば使用
+      if (cacheTime && (now - parseInt(cacheTime)) < 2 * 60 * 1000) {
+        const cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) {
+          setInformations(JSON.parse(cachedData));
+          return;
+        }
+      }
+
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_informations`, {
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInformations(data || []);
+        
+        // キャッシュに保存
+        sessionStorage.setItem(cacheKey, JSON.stringify(data || []));
+        sessionStorage.setItem(cacheTimeKey, now.toString());
+      } else {
+        console.error("Failed to fetch information");
+      }
+    } catch (error) {
+      console.error("Error fetching information:", error);
+    } finally {
+      setInformationLoading(false);
+    }
+  }, [informationLoading]);
+
+  // 初回とその後の定期取得
+  useEffect(() => {
+    fetchInformations();
+    const interval = setInterval(fetchInformations, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchInformations]);
+
+  // ハンドラー関数をメモ化
+  const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
-  const handleInformationOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleInformationOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
     setInformationAnchorEl(event.currentTarget);
-  };
+    if (!informationLoading) {
+      fetchInformations();
+    }
+  }, [fetchInformations, informationLoading]);
 
-  const handleInformationClose = () => {
+  const handleInformationClose = useCallback(() => {
     setInformationAnchorEl(null);
-  };
+  }, []);
 
-  const handleDrawerOpen = () => {
+  const handleDrawerOpen = useCallback(() => {
     setDrawerOpen(true);
-  };
+  }, []);
 
-  const handleDrawerClose = () => {
+  const handleDrawerClose = useCallback(() => {
     setDrawerOpen(false);
-  };
+  }, []);
+
+  // 汎用的なナビゲーションハンドラー
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
+
+  const handleMenuClick = useCallback((path: string) => {
+    navigate(path);
+    handleDrawerClose();
+  }, [navigate]);
+
+  const handleLogout = useCallback(() => {
+    handleMenuClose();
+    logout.mutate();
+  }, [logout]);
+
+  const informationCount = useMemo(() => informations.length, [informations.length]);
 
   return (
     <AppBar position="static">
       <Toolbar>
+        {/* MenuIcon */}
         <IconButton
           size="large"
           edge="start"
@@ -114,6 +164,7 @@ const Header = () => {
           <MenuIcon />
         </IconButton>
 
+        {/* Drawer */}
         <Drawer
           anchor="left"
           open={drawerOpen}
@@ -137,10 +188,7 @@ const Header = () => {
               {pageLinks.map((page) => (
                 <ListItem key={page.label} disablePadding>
                   <ListItemButton
-                    onClick={() => {
-                      navigate(page.path);
-                      handleDrawerClose();
-                    }}
+                    onClick={() => handleMenuClick(page.path)}
                   >
                     <ListItemText primary={page.label} />
                   </ListItemButton>
@@ -150,10 +198,10 @@ const Header = () => {
           </Box>
         </Drawer>
 
+        {/* Title */}
         <Typography
           variant="h6"
-          component="a"
-          href="/attendance_registration_for_monthly"
+          onClick={() => handleNavigate('/attendance_registration_for_monthly')}
           sx={{
             flexGrow: 1,
             textDecoration: 'none',
@@ -164,7 +212,7 @@ const Header = () => {
           Attendance Management Tool
         </Typography>
 
-        {/* Information アイコン */}
+        {/* Information Icon */}
         <IconButton
           size="large"
           color="inherit"
@@ -172,13 +220,14 @@ const Header = () => {
           sx={{ marginRight: 1 }}
         >
           <Badge
-            variant={informations.length > 0 ? "dot" : undefined}
+            variant={informationCount > 0 ? "dot" : undefined}
             color="error"
           >
             <NotificationsIcon />
           </Badge>
         </IconButton>
 
+        {/* Account Button */}
         <Button
           color="inherit"
           startIcon={<AccountCircle />}
@@ -202,12 +251,7 @@ const Header = () => {
           <MenuItem disabled>
             {getUserName()}
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              logout.mutate();
-            }}
-          >
+          <MenuItem onClick={handleLogout}>
             Logout
           </MenuItem>
         </Menu>
@@ -228,7 +272,13 @@ const Header = () => {
             }
           }}
         >
-          {informations.length === 0 ? (
+          {informationLoading ? (
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                Loading...
+              </Typography>
+            </MenuItem>
+          ) : informationCount === 0 ? (
             <MenuItem disabled>
               <Typography variant="body2" color="text.secondary">
                 No information
@@ -250,7 +300,7 @@ const Header = () => {
                   <Typography variant="body2" sx={{ mb: 0.5 }}>
                     {getInformationTypeMessage(info.information_type)}
                     {info.information_type === 1 && info.user_name && (
-                      <span>{info.user_name} .</span>
+                      <span>{info.user_name}.</span>
                     )}
                   </Typography>
                   {info.comment && (
@@ -262,7 +312,7 @@ const Header = () => {
                     {new Date(info.created_at).toLocaleString()}
                   </Typography>
                 </MenuItem>
-                {index < informations.length - 1 && <Divider />}
+                {index < informationCount - 1 && <Divider />}
               </Box>
             ))
           )}
@@ -270,6 +320,6 @@ const Header = () => {
       </Toolbar>
     </AppBar>
   );
-};
+});
 
 export default Header;

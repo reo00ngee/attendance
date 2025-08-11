@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   Box,
-  Button,
   Paper,
   Table,
   TableBody,
@@ -15,8 +14,8 @@ import {
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from '../components/NavigationButton';
 import { Navigate } from 'react-router-dom';
-import { format, set } from "date-fns";
 import { User } from "../types/User";
 import { convertToHoursAndMinutes } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
@@ -146,20 +145,19 @@ const AttendanceManagement = () => {
                   <TableCell align="right">{convertToHoursAndMinutes(totalWorkHoursArray[i]) || 0}</TableCell>
                   <TableCell align="right">{totalWorkingDaysArray[i] || 0}</TableCell>
                   <TableCell align="right">
-                    <Button
+                    <NavigationButton
                       variant="contained"
                       size="small"
+                      to={`/attendance_approval?user_id=${user.id}&year=${year}&month=${month}`}
                       sx={{
                         minWidth: 120,
                         height: 40,
                         fontSize: "1rem",
                         px: 2,
                       }}
-                      component="a"
-                      href={`/attendance_approval?user_id=${user.id}&year=${year}&month=${month}`}
                     >
                       APPROVAL
-                    </Button>
+                    </NavigationButton>
                   </TableCell>
                 </TableRow>
               ))}

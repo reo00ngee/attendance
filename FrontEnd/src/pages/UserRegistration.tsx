@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
-  Typography,
   TextField,
   Button,
-  Alert,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -14,6 +12,7 @@ import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
 import NotificationAlert from "../components/NotificationAlert";
+import NavigationButton from '../components/NavigationButton';
 import { useNotification } from "../hooks/useNotification";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -21,8 +20,6 @@ import { useSearchParams, Navigate } from "react-router-dom";
 import { genders } from "../constants/genders";
 import { ROLES } from "../constants/roles";
 import { HourlyWageGroup } from "../types/HourlyWageGroup";
-import { SelectChangeEvent } from "@mui/material";
-import { log } from "console";
 import { validateUserRegistration } from "../utils/userValidation";
 import { hasRole } from '../utils/auth';
 
@@ -115,7 +112,6 @@ const UserRegistration = () => {
       };
       fetchUser();
     }
-    setLoading(false);
   }, [userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,14 +232,13 @@ const UserRegistration = () => {
 
       <Section>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/user_management"
+            to="/user_management"
             sx={{ minWidth: 180 }}
           >
             USER MANAGEMENT
-          </Button>
+          </NavigationButton>
         </Box>
       </Section>
 

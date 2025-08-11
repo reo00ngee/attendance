@@ -16,7 +16,7 @@ import {
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
-import { format, set } from "date-fns";
+import NavigationButton from '../components/NavigationButton';
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate } from "../utils/format";
 import { calculateBreakMinutesAndNetWorkingMinutes } from "../utils/calculate";
@@ -179,14 +179,13 @@ const AttendanceRegistrationForMonthly = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/attendance_registration_for_daily"
+            to="/attendance_registration_for_daily"
             sx={{ minWidth: 180 }}
           >
             REGISTER
-          </Button>
+          </NavigationButton>
           <Button
             variant="contained"
             onClick={handleSubmit}
@@ -228,20 +227,19 @@ const AttendanceRegistrationForMonthly = () => {
                   <TableCell align="right">{convertToHoursAndMinutes(breakMinutesArray[i])} </TableCell>
                   <TableCell align="right">{convertToHoursAndMinutes(netWorkingMinutesArray[i])} </TableCell>
                   <TableCell align="right">
-                    <Button
+                    <NavigationButton
                       variant="contained"
                       size="small"
+                      to={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
                       sx={{
                         minWidth: 120,
                         height: 40,
                         fontSize: "1rem",
                         px: 2,
                       }}
-                      component="a"
-                      href={`/attendance_registration_for_daily?attendance_id=${attendance.attendance_id}`}
                     >
                       Modify
-                    </Button>
+                    </NavigationButton>
                   </TableCell>
                 </TableRow>
               ))}

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -10,15 +9,14 @@ import {
   TableHead,
   TableRow,
   Chip,
-  CircularProgress,
   Alert,
   TextField,
   MenuItem,
-  Button
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from "../components/NavigationButton";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { ROLES } from "../constants/roles";
@@ -146,14 +144,13 @@ const UserManagement = () => {
           </TextField>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/user_registration"
+            to="/user_registration"
             sx={{ minWidth: 180 }}
           >
             REGISTER
-          </Button>
+          </NavigationButton>
         </Box>
       </Section>
 
@@ -194,20 +191,19 @@ const UserManagement = () => {
                     })}
                   </TableCell>
                   <TableCell align="right">
-                    <Button
+                    <NavigationButton
                       variant="contained"
                       size="small"
+                      to={`/user_registration?user_id=${user.user_id}`}
                       sx={{
                         minWidth: 120,
                         height: 40,
                         fontSize: "1rem",
                         px: 2,
                       }}
-                      component="a"
-                      href={`/user_registration?user_id=${user.user_id}`}
                     >
                       Modify
-                    </Button>
+                    </NavigationButton>
                   </TableCell>
                 </TableRow>
               ))}

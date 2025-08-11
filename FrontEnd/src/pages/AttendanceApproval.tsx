@@ -22,6 +22,7 @@ import {
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from '../components/NavigationButton';
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Attendance } from "../types/Attendance";
 import { formatTimeHHMM, convertToHoursAndMinutes, formatDate, truncateLongLetter } from "../utils/format";
@@ -264,14 +265,13 @@ const AttendanceApproval = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/attendance_management"
+            to="/attendance_management"
             sx={{ minWidth: 180 }}
           >
             ATTENDANCE MANAGEMENT
-          </Button>
+          </NavigationButton>
           <Button
             variant="contained"
             onClick={handleApprove}

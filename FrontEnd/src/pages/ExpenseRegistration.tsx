@@ -13,7 +13,6 @@ import {
   Box,
   Alert,
   TextField,
-  MenuItem,
   Switch,
   FormControlLabel,
   IconButton,
@@ -29,7 +28,6 @@ import { format } from "date-fns";
 import { ExpenseOrDeduction } from "../types/Expense";
 import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
-import { handlePrevMonth, handleNextMonth } from "../utils/month";
 import { truncateLongLetter } from "../utils/format";
 import MonthNavigator from "../components/MonthNavigator";
 

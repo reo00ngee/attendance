@@ -16,12 +16,12 @@ import {
   TableRow,
   TextField,
   Alert,
-  CircularProgress,
 } from "@mui/material";
 import { useSearchParams } from 'react-router-dom';
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
+import NavigationButton from '../components/NavigationButton';
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { Attendance, EditedBreaks } from "../types/Attendance";
@@ -141,7 +141,7 @@ const AttendanceRegistrationForDaily = () => {
   const isStartBreakDisabled = () => {
     // start_timeがない場合は無効
     if (!attendance.start_time) return true;
-    
+
     if (attendance.end_time?.trim()) {
       const now = new Date();
       const end = new Date(attendance.end_time);
@@ -157,7 +157,7 @@ const AttendanceRegistrationForDaily = () => {
   const isFinishBreakDisabled = () => {
     // start_timeがない場合は無効
     if (!attendance.start_time) return true;
-    
+
     if (attendance.end_time?.trim()) {
       const now = new Date();
       const end = new Date(attendance.end_time);
@@ -213,7 +213,7 @@ const AttendanceRegistrationForDaily = () => {
         showNotification("Please start work first.", 'warning');
         return;
       }
-      
+
       if (attendance.end_time?.trim()) {
         const now = new Date();
         const end = new Date(attendance.end_time);
@@ -238,7 +238,7 @@ const AttendanceRegistrationForDaily = () => {
         showNotification("Please start work first.", 'warning');
         return;
       }
-      
+
       if (attendance.end_time?.trim()) {
         const now = new Date();
         const end = new Date(attendance.end_time);
@@ -418,7 +418,7 @@ const AttendanceRegistrationForDaily = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
-<PageTitle title={pageTitle} />
+      <PageTitle title={pageTitle} />
 
       {/* 通知アラート */}
       <NotificationAlert notification={notification} />
@@ -486,33 +486,32 @@ const AttendanceRegistrationForDaily = () => {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
           <Typography>{formatDate(attendance.start_time)}</Typography>
           <Box>
-            <FormControlLabel 
+            <FormControlLabel
               control={
-                <Switch 
-                  checked={editMode} 
+                <Switch
+                  checked={editMode}
                   onChange={() => setEditMode(!editMode)}
                   disabled={loading} // ローディング中は無効化
                 />
-              } 
-              label="Modify" 
+              }
+              label="Modify"
             />
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               disabled={!editMode || loading} // ローディング中は無効化
-              onClick={handleSave} 
+              onClick={handleSave}
               sx={{ ml: 2 }}
             >
               SAVE
             </Button>
           </Box>
-          <Button
+          <NavigationButton
             variant="contained"
-            component="a"
-            href="/attendance_registration_for_monthly"
+            to="/attendance_registration_for_monthly"
             sx={{ minWidth: 180 }}
           >
             MONTHLY ATTENDANCE
-          </Button>
+          </NavigationButton>
         </Box>
 
         {/* テーブル - 常に表示 */}

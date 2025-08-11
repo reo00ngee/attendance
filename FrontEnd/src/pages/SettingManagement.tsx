@@ -5,9 +5,6 @@ import {
   Typography,
   TextField,
   Button,
-  Alert,
-  IconButton,
-  InputAdornment,
   MenuItem,
 } from "@mui/material";
 import Section from "../components/Section";
@@ -15,15 +12,12 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import PageTitle from "../components/PageTitle";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useSearchParams, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { CLOSING_DATE } from "../constants/closingDate";
 import { PAYROLL_ROUNDING_INTERVAL } from "../constants/payrollRoundingInterval";
 import { PROMPT_SUBMISSION_REMINDER_DAYS } from "../constants/promptSubmissionReminderDays";
 import { CURRENCY } from "../constants/currency";
 import { Setting } from "../types/Setting";
-import { validateUserRegistration } from "../utils/userValidation";
 import { validateSettingModification } from "../utils/settingValidation";
 import { hasRole } from '../utils/auth';
 
