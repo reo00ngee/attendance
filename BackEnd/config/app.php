@@ -72,8 +72,8 @@ return [
     |
     */
 
-    // 'timezone' => 'Asia/Tokyo',
-    'timezone' => 'America/Sao_Paulo',
+    'timezone' => 'Asia/Tokyo',
+    // 'timezone' => 'America/Sao_Paulo',
 
     /*
     |--------------------------------------------------------------------------
