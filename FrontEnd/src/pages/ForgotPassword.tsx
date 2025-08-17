@@ -46,10 +46,6 @@ const ForgotPassword: React.FC = () => {
       });
 
       const data = await response.json();
-      
-      // Log response details for debugging
-      console.log('Response status:', response.status);
-      console.log('Response data:', data);
 
       if (response.ok) {
         showNotification('Password reset instructions have been queued and will be sent to your email shortly.', 'success');
@@ -57,7 +53,6 @@ const ForgotPassword: React.FC = () => {
         showNotification(data.message || 'Failed to send reset instructions.', 'error');
       }
     } catch (err) {
-      console.error('Network error:', err);
       showNotification('Network error. Please check your connection and try again.', 'error');
     } finally {
       setLoading(false);

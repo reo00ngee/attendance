@@ -5,7 +5,6 @@ import {
   Container, 
   TextField, 
   Typography,
-  Alert,
   Paper,
   CircularProgress,
   InputAdornment,
@@ -13,6 +12,8 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import NotificationAlert from "../components/NotificationAlert";
+import { useNotification } from "../hooks/useNotification";
 
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -20,17 +21,16 @@ const ResetPassword: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const token = searchParams.get('token');
   const email = searchParams.get('email');
+  const { notification, showNotification, clearNotification } = useNotification();
 
   useEffect(() => {
     if (!token || !email) {
-      setError('Invalid reset link. Please request a new password reset.');
+      showNotification('Invalid reset link. Please request a new password reset.', 'error');
     }
   }, [token, email]);
 
@@ -38,23 +38,22 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
     
     if (!password || !confirmPassword) {
-      setError('Both password fields are required.');
+      showNotification('Both password fields are required.', 'error');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      showNotification('Password must be at least 6 characters long.', 'error');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      showNotification('Passwords do not match.', 'error');
       return;
     }
 
     setLoading(true);
-    setError('');
-    setMessage('');
+    clearNotification();
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}api/reset_password`, {
@@ -73,15 +72,15 @@ const ResetPassword: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('Password has been reset successfully. Redirecting to login...');
+        showNotification('Password has been reset successfully. Redirecting to login...', 'success');
         setTimeout(() => {
           navigate('/login');
         }, 3000);
       } else {
-        setError(data.message || 'An error occurred. Please try again.');
+        showNotification(data.message || 'An error occurred. Please try again.', 'error');
       }
     } catch (err) {
-      setError('Network error. Please check your connection and try again.');
+      showNotification('Network error. Please check your connection and try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -121,17 +120,7 @@ const ResetPassword: React.FC = () => {
           </Typography>
         </Box>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {message && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
-        )}
+        <NotificationAlert notification={notification} />
 
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
