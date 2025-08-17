@@ -8,9 +8,39 @@ use App\Models\AttendanceBreak;
 use App\Enums\SubmissionStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class UserRepository
 {
+  public function findByEmail(string $email)
+  {
+    try {
+      return User::where('email', $email)->first();
+    } catch (\Exception $e) {
+      Log::error('Failed to find user by email: ' . $e->getMessage());
+      return null;
+    }
+  }
+
+  public function updatePassword(string $email, string $password): bool
+  {
+    try {
+      $user = User::where('email', $email)->first();
+      if (!$user) {
+        return false;
+      }
+
+      // モデルのmutatorを使用してパスワードをハッシュ化
+      $user->password = $password;
+      $user->save();
+      
+      return true;
+    } catch (\Exception $e) {
+      Log::error('Failed to update password: ' . $e->getMessage());
+      return false;
+    }
+  }
+
   public function storeUser(array $data, array $roles = [])
   {
     try {
@@ -55,6 +85,12 @@ class UserRepository
     try {
       return DB::transaction(function () use ($user_id, $data, $roles) {
         $user = User::findOrFail($user_id);
+        
+        // パスワードが空の場合は配列から削除
+        if (isset($data['password']) && empty($data['password'])) {
+          unset($data['password']);
+        }
+        
         $user->update($data);
 
         $current_roles = DB::table('user_role')

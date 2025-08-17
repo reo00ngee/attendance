@@ -4,10 +4,11 @@ import TextField from '@mui/material/TextField';
 import { Box, Button, Container, IconButton, InputAdornment } from '@mui/material'
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const login = UseLogin()
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,6 +21,10 @@ const Login: React.FC = () => {
       email: email,
       password: password,
     })
+  }
+
+  const handleForgotPassword = () => {
+    navigate('/forgot-password');
   }
 
   return (
@@ -77,7 +82,9 @@ const Login: React.FC = () => {
               }}
             >
               <Button type="submit" variant="contained">Login</Button>
-              <Button variant="outlined">Forgot password?</Button>
+              <Button variant="outlined" onClick={handleForgotPassword}>
+                Forgot password?
+              </Button>
             </Box>
           </Box>
         </Box>

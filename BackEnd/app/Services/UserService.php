@@ -9,6 +9,7 @@ use App\Traits\PeriodCalculatorTrait;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -51,7 +52,7 @@ class UserService
       'first_name' => $validated['first_name'],
       'last_name' => $validated['last_name'],
       'email' => $validated['email'],
-      'password' => bcrypt($validated['password']),
+      'password' => Hash::make($validated['password']),
       'phone_number' => $validated['phone_number'] ?? null,
       'gender' => $validated['gender'] ?? null,
       'birth_date' => $validated['birth_date'] ?? null,
@@ -75,7 +76,6 @@ class UserService
       'first_name' => $validated['first_name'],
       'last_name' => $validated['last_name'],
       'email' => $validated['email'],
-      'password' => bcrypt($validated['password']),
       'phone_number' => $validated['phone_number'] ?? null,
       'gender' => $validated['gender'] ?? null,
       'birth_date' => $validated['birth_date'] ?? null,
@@ -84,6 +84,12 @@ class UserService
       'retire_date' => $validated['retire_date'] ?? null,
       'hourly_wage_group_id' => $validated['hourly_wage_group_id'],
     ];
+    
+    // パスワードが提供されている場合のみハッシュ化して追加
+    if (!empty($validated['password'])) {
+      $data['password'] = Hash::make($validated['password']);
+    }
+    
     $user = $this->userRepository->updateUser($user_id, $data, $validated['roles']);
     if ($user) {
       return response()->json(['message' => 'User updated successfully'], 200);

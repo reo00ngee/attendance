@@ -19,6 +19,9 @@ import UserManagement from '../pages/UserManagement'
 import HourlyWageGroupManagement from '../pages/HourlyWageGroupManagement'
 import HourlyWageGroupRegistration from '../pages/HourlyWageGroupRegistration'
 import SettingManagement from '../pages/SettingManagement'
+import ForgotPassword from '../pages/ForgotPassword'
+import ResetPassword from '../pages/ResetPassword'
+
 
 /**
  * ログイン済みのみアクセス可能
@@ -42,7 +45,14 @@ export const router = createBrowserRouter([
         element: <Login />,
         loader: guestLoader
     }, {
-
+        path: '/forgot-password',
+        element: <ForgotPassword />,
+        loader: guestLoader
+    }, {
+        path: '/reset-password',
+        element: <ResetPassword />,
+        loader: guestLoader
+    }, {
         path: "/",
         element: <AuthLayout />,
         children: [

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\PasswordResetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +20,11 @@ Route::get('/', function () {
 });
 
 Route::prefix('api')->name('api.')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return request()->user();
-    });
+    // Route::get('/user', function (Request $request) {
+    //     return request()->user();
+    // });
+    Route::post('/send_reset_link', [PasswordResetController::class, 'sendResetLink']);
+    Route::post('/reset_password', [PasswordResetController::class, 'resetPassword']);
     Route::get('/get_user_for_login', [\App\Http\Controllers\UserController::class, 'getUserForLogin']);
     Route::post('/start_work', [AttendanceController::class, 'startWork'])->middleware('role:0');
     Route::post('/finish_work', [AttendanceController::class, 'finishWork'])->middleware('role:0');

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Class User
@@ -408,5 +409,15 @@ class User extends Authenticatable
 	public function getRoleIdsAttribute()
 	{
     return $this->user_roles->pluck('role');
+	}
+
+	/**
+	 * Hash password before saving
+	 */
+	public function setPasswordAttribute($value)
+	{
+		if ($value) {
+			$this->attributes['password'] = Hash::make($value);
+		}
 	}
 }

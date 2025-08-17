@@ -18,9 +18,15 @@ class InformationController extends Controller
 
     public function getInformations(Request $request)
     {
-        $company_id = Auth::user()->company_id;
-        $user_id = Auth::id();
+        $user = Auth::user();
 
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
+        $company_id = $user->company_id;
+        $user_id = $user->id;
+        
         return $this->informationService->getInformations($company_id, $user_id);
     }
 
