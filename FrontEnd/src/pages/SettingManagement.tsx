@@ -17,9 +17,9 @@ import { CLOSING_DATE } from "../constants/closingDate";
 import { PAYROLL_ROUNDING_INTERVAL } from "../constants/payrollRoundingInterval";
 import { PROMPT_SUBMISSION_REMINDER_DAYS } from "../constants/promptSubmissionReminderDays";
 import { CURRENCY } from "../constants/currency";
-import { Setting } from "../types/Setting";
 import { validateSettingModification } from "../utils/settingValidation";
 import { hasRole } from '../utils/auth';
+import { formatTimeForInput } from "../utils/format";
 
 
 const SettingManagement = () => {
@@ -40,7 +40,6 @@ const SettingManagement = () => {
   const [nightShiftPayMultiplier, setNightShiftPayMultiplier] = useState<number>(1);
   const [holidayPayMultiplier, setHolidayPayMultiplier] = useState<number>(1);
   const [loading, setLoading] = useState(true);
-  const [setting, setSetting] = useState<Setting | null>(null);
 
 
   // fetch setting data
@@ -67,8 +66,8 @@ const SettingManagement = () => {
           setPromptSubmissionReminderDays(data.prompt_submission_reminder_days || PROMPT_SUBMISSION_REMINDER_DAYS[3].value);
           setStandardWorkingHours(data.standard_working_hours || 8);
           setOvertimePayMultiplier(data.overtime_pay_multiplier || 1);
-          setNightShiftHoursFrom(data.night_shift_hours_from || "");
-          setNightShiftHoursTo(data.night_shift_hours_to || "");
+          setNightShiftHoursFrom(formatTimeForInput(data.night_shift_hours_from || ""));
+          setNightShiftHoursTo(formatTimeForInput(data.night_shift_hours_to || ""));
           setNightShiftPayMultiplier(data.night_shift_pay_multiplier || 1);
           setHolidayPayMultiplier(data.holiday_pay_multiplier || 1);
         } else {
@@ -111,9 +110,9 @@ const SettingManagement = () => {
       return;
     }
 
+    const toBackendTime = (value: string) => value ? value + ":00" : null;
+
     try {
-      let url = "";
-      let method = "";
       let body: any = {
         name,
         address,
@@ -125,8 +124,8 @@ const SettingManagement = () => {
         prompt_submission_reminder_days: promptSubmissionReminderDays,
         standard_working_hours: standardWorkingHours,
         overtime_pay_multiplier: overtimePayMultiplier,
-        night_shift_hours_from: nightShiftHoursFrom === "" ? null : nightShiftHoursFrom,
-        night_shift_hours_to: nightShiftHoursTo === "" ? null : nightShiftHoursTo,
+        night_shift_hours_from: toBackendTime(nightShiftHoursFrom),
+        night_shift_hours_to: toBackendTime(nightShiftHoursTo),
         night_shift_pay_multiplier: nightShiftPayMultiplier,
         holiday_pay_multiplier: holidayPayMultiplier,
       };
@@ -345,22 +344,22 @@ const SettingManagement = () => {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <TextField
                 label="Night Shift From (hour)"
-                type="number"
+                type="time"
                 fullWidth
                 value={nightShiftHoursFrom}
                 onChange={(e) => setNightShiftHoursFrom(e.target.value === "" ? "" : (e.target.value))}
-                inputProps={{ min: 0, max: 23, step: 1 }}
-                placeholder="e.g., 22"
+                inputProps={{ step: 60 }}
+                placeholder="e.g., 22:00"
               />
               
               <TextField
                 label="Night Shift To (hour)"
-                type="number"
+                type="time"
                 fullWidth
                 value={nightShiftHoursTo}
                 onChange={(e) => setNightShiftHoursTo(e.target.value === "" ? "" : (e.target.value))}
-                inputProps={{ min: 0, max: 23, step: 1 }}
-                placeholder="e.g., 6"
+                inputProps={{ step: 60 }}
+                placeholder="e.g., 06:00"
               />
             </Box>
             

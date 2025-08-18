@@ -37,7 +37,7 @@ export function validateSettingModification({
 
 
   const validateTimeFormat = (timeString: string): boolean => {
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+    const timeRegex = /^([0-1]?\d|2[0-3]):[0-5]\d$/;
     return timeRegex.test(timeString);
   };
 
@@ -124,11 +124,11 @@ export function validateSettingModification({
   }
 
   if (nightShiftHoursFrom && !validateTimeFormat(nightShiftHoursFrom)) {
-    return "Night shift start time must be in HH:MM:SS format (e.g., 22:00:00).";
+    return "Night shift start time must be in HH:MM format (e.g., 22:00).";
   }
 
   if (nightShiftHoursTo && !validateTimeFormat(nightShiftHoursTo)) {
-    return "Night shift end time must be in HH:MM:SS format (e.g., 06:00:00).";
+    return "Night shift end time must be in HH:MM format (e.g., 06:00).";
   }
 
   if ((nightShiftHoursFrom && !nightShiftHoursTo) || (!nightShiftHoursFrom && nightShiftHoursTo)) {

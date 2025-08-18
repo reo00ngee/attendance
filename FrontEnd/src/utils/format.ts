@@ -22,13 +22,29 @@ export function formatTimeHHMM(time: string): string {
 // Formats a time string for use in HTML input[type="time"] fields
 export function formatTimeForInput(time: string): string {
   if (!time) return "";
-  if (time.includes("T")) {
-    const timePart = time.split("T")[1];
-    const [hh, mm] = timePart.split(":");
-    return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}`;
+
+  try {
+    // ISO 形式 (例: 2025-08-18T09:30:45) の場合
+    const date = new Date(time);
+    if (!isNaN(date.getTime())) {
+      const hh = date.getHours().toString().padStart(2, "0");
+      const mm = date.getMinutes().toString().padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    // HH:MM または HH:MM:SS の場合
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(time)) {
+      const [h, m] = time.split(":");
+      return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+    }
+
+    return "";
+  } catch {
+    return "";
   }
-  return time;
 }
+
+
 
 // Formats a date string into "MM/DD ddd" format
 export const formatDate = (startTime: string): string => {
