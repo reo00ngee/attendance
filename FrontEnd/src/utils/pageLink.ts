@@ -1,4 +1,4 @@
-import { hasRole, getUserRoles } from "../utils/auth";
+import { getUserRoles } from "../utils/auth";
 
 export const makePageLinks = () => {
   const userRoles = getUserRoles();
@@ -16,6 +16,10 @@ export const makePageLinks = () => {
   }
   // Finance Management
   if (userRoles.includes(2)) {
+    links.push(
+      { label: "Expense and Deduction Management", path: "/expense_and_deduction_management" },
+      { label: "Expense Approval", path: "/expense_approval" },
+    );
   }
   // User Management
   if (userRoles.includes(3)) {

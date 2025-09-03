@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ExpensesAndDeductionService;
 use App\Http\Requests\BatchUpdateExpensesRequest;
+use App\Http\Requests\ApproveExpensesRequest;
+use App\Http\Requests\RejectExpensesRequest;
 
 class ExpensesAndDeductionController extends Controller
 {
@@ -31,7 +33,7 @@ class ExpensesAndDeductionController extends Controller
         $company_id = Auth::user()->company_id;
         $user_id = Auth::id();
         $validated = $request->validated();
-        
+
         return $this->expensesAndDeductionService->batchUpdateExpenses(
             $company_id,
             $user_id,
@@ -50,6 +52,56 @@ class ExpensesAndDeductionController extends Controller
         $year = $request->query('year');
         $month = $request->query('month');
         return $this->expensesAndDeductionService->submitExpenses($company_id, $user_id, $year, $month);
+    }
+
+    public function getSubmittedAndApprovedExpenses(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $user_id = $request->query('user_id') ?: Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+
+        return $this->expensesAndDeductionService->getSubmittedAndApprovedExpenses($company_id, $user_id, $year, $month);
+    }
+
+    public function approveExpenses(ApproveExpensesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+        return $this->expensesAndDeductionService->approveExpenses(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month']
+        );
+    }
+
+    public function rejectExpenses(RejectExpensesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+        return $this->expensesAndDeductionService->rejectExpenses(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month'],
+            $validated['rejection_reason']
+        );
+    }
+
+    public function getCreatedByManagerExpensesAndDeductions(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $user_id = $request->query('user_id') ?: Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+
+        return $this->expensesAndDeductionService->getCreatedByManagerExpensesAndDeductions(
+            $company_id,
+            $user_id,
+            $year,
+            $month
+        );
     }
 
     /**

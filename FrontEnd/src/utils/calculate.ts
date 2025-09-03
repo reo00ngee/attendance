@@ -1,5 +1,5 @@
 import { Attendance } from "../types/Attendance";
-import { ExpenseOrDeduction } from "../types/Expense";
+import { ExpenseAndDeduction } from "../types/Expense";
 type SetNumberFn = (value: number) => void;
 
 // Calculates the difference in time (in minutes) between two time strings 
@@ -27,6 +27,6 @@ export function calculateBreakMinutesAndNetWorkingMinutes(att: Attendance): [num
   return [breakSum, netWorking];
 }
 
-export function calculateTotalAmount(expenses: ExpenseOrDeduction[]): number {
+export function calculateTotalAmount(expenses: ExpenseAndDeduction[]): number {
   return expenses.reduce((total, expense) => total + (expense.amount || 0), 0);
 }

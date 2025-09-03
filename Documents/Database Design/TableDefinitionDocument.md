@@ -380,8 +380,8 @@
 | Submitted  | 1     | A status that submitted in the registration process. |
 | Rejected   | 2     | A status that rejected in the management process.    |
 | Approved   | 3     | A status that approved in the management process.    |
-| Calculated | 4     | A status that calculated in the payroll process.     |
-
+| Created By Manager | 4     | A status that created by manager in the registration process.     |
+| Calculated | 5     | A status that calculated in the payroll process.     |
 ## SubmissionType
 
 | Element    | Value | Description |

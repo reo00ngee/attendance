@@ -16,7 +16,8 @@ import {
   Switch,
   FormControlLabel,
   IconButton,
-  Tooltip // 追加
+  Tooltip,
+  MenuItem
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import Section from "../components/Section";
@@ -30,11 +31,14 @@ import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
 import { truncateLongLetter } from "../utils/format";
 import MonthNavigator from "../components/MonthNavigator";
+import { hasRole } from "../utils/auth";
+import { Navigate } from "react-router-dom";
 
-const ExpenseRegistration = () => {
-  const pageTitle = "Expense Registration";
+const ExpenseAndDeductionRegistration = () => {
+  const pageTitle = "Expense and Deduction Registration";
   const tableHeaders = [
-    "Expense Name",
+    "Expense or Deduction",
+    "Expense or Deduction Name",
     "Amount",
     "Date",
     "Comment",
@@ -62,7 +66,7 @@ const ExpenseRegistration = () => {
       setLoading(true);
       clearNotification();
       try {
-        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_all_expenses_for_user?year=${year}&month=${month}`,
+        const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/get_created_by_manager_expenses_and_deductions?year=${year}&month=${month}`,
           {
             method: "GET",
             mode: "cors",
@@ -234,6 +238,10 @@ const ExpenseRegistration = () => {
     setLoading(false);
   };
 
+  if (!hasRole(2)) {
+    return <Navigate to="/attendance_registration_for_monthly" />;
+  }
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* タイトル */}
@@ -340,6 +348,22 @@ const ExpenseRegistration = () => {
                       <TableCell align="right">
                         {isEditMode ? (
                           <TextField
+                            select
+                            value={expense.expense_or_deduction}
+                            onChange={(e) => updateExpense(originalIndex, 'expense_or_deduction', Number(e.target.value))}
+                            size="small"
+                            fullWidth
+                          >
+                            <MenuItem value={0}>Expense</MenuItem>
+                            <MenuItem value={1}>Deduction</MenuItem>
+                          </TextField>
+                        ) : (
+                          expense.expense_or_deduction === 0 ? 'Expense' : 'Deduction'
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {isEditMode ? (
+                          <TextField
                             value={expense.name}
                             onChange={(e) => updateExpense(originalIndex, 'name', e.target.value)}
                             size="small"
@@ -411,6 +435,18 @@ const ExpenseRegistration = () => {
                 <TableRow key={`new-${i}`}>
                   <TableCell align="right">
                     <TextField
+                      select
+                      value={expense.expense_or_deduction || 0}
+                      onChange={(e) => updateNewExpense(i, 'expense_or_deduction', Number(e.target.value))}
+                      size="small"
+                      fullWidth
+                    >
+                      <MenuItem value={0}>Expense</MenuItem>
+                      <MenuItem value={1}>Deduction</MenuItem>
+                    </TextField>
+                  </TableCell>
+                  <TableCell align="right">
+                    <TextField
                       value={expense.name || ""}
                       onChange={(e) => updateNewExpense(i, 'name', e.target.value)}
                       placeholder="Expense name"
@@ -445,6 +481,8 @@ const ExpenseRegistration = () => {
                       size="small"
                       fullWidth
                     />
+                  </TableCell>
+                  <TableCell align="right">
                     <IconButton
                       color="error"
                       onClick={() => removeNewExpense(i)}
@@ -478,4 +516,4 @@ const ExpenseRegistration = () => {
   );
 };
 
-export default ExpenseRegistration;
+export default ExpenseAndDeductionRegistration;

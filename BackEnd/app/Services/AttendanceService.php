@@ -137,14 +137,14 @@ class AttendanceService
                 foreach ($attendances as $attendance) {
                     $this->attendanceRepository->approveAttendance($attendance);
                 }
-            });
 
-            $this->informationRepository->deleteInformations($user_id);
-            $this->informationRepository->createInformation(
-                $user_id,
-                SubmissionType::ATTENDANCE->value,
-                InformationType::SUBMISSION_APPROVED->value,
-            );
+                $this->informationRepository->deleteInformations($user_id);
+                $this->informationRepository->createInformation(
+                    $user_id,
+                    SubmissionType::ATTENDANCE->value,
+                    InformationType::SUBMISSION_APPROVED->value,
+                );
+            });
 
             return $this->getSubmittedAndApprovedAttendances($company_id, $user_id, $year, $month);
         } catch (\Exception $e) {

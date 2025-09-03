@@ -1,4 +1,5 @@
 import { Attendance } from "../types/Attendance";
+import { ExpenseAndDeduction } from "./Expense";
 
 export interface User {
   user_id: number;
@@ -15,4 +16,5 @@ export interface User {
   hourly_wage_group_id: number | null;
   roles: number[];
   attendances: Attendance[];
+  expenses_and_deductions: ExpenseAndDeduction[];
 }

@@ -163,4 +163,14 @@ class UserRepository
       }])
       ->get();
   }
+
+  public function getUsersWithExpensesAndDeductions($company_id, $start, $end)
+  {
+    return User::where('company_id', $company_id)
+      ->with(['expenses_and_deductions' => function ($query) use ($start, $end) {
+        $query->whereBetween('date', [$start, $end])
+          ->orderBy('date', 'desc');
+      }])
+      ->get();
+  }
 }

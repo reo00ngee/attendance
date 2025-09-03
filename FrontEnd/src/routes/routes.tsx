@@ -1,9 +1,6 @@
 import {
     createBrowserRouter,
     redirect,
-    RouterProvider,
-    Route,
-    Link,
 } from 'react-router-dom'
 import Login from '../pages/Login'
 import NotFound from '../pages/NotFound'
@@ -14,6 +11,9 @@ import AttendanceRegistrationForMonthly from '../pages/AttendanceRegistrationFor
 import AttendanceManagement from '../pages/AttendanceManagement'
 import AttendanceApproval from '../pages/AttendanceApproval'
 import ExpenseRegistration from '../pages/ExpenseRegistration'
+import ExpenseAndDeductionManagement from '../pages/ExpenseAndDeductionManagement'
+import ExpenseAndDeductionRegistration from '../pages/ExpenseAndDeductionRegistration'
+import ExpenseApproval from '../pages/ExpenseApproval'
 import UserRegistration from '../pages/UserRegistration'
 import UserManagement from '../pages/UserManagement'
 import HourlyWageGroupManagement from '../pages/HourlyWageGroupManagement'
@@ -76,6 +76,18 @@ export const router = createBrowserRouter([
             }, {
                 path: 'expense_registration',
                 element: <ExpenseRegistration />,
+                loader: guardLoader
+            }, {
+                path: 'expense_and_deduction_management',
+                element: <ExpenseAndDeductionManagement />,
+                loader: guardLoader
+            }, {
+                path: 'expense_approval',
+                element: <ExpenseApproval />,
+                loader: guardLoader
+            }, {
+                path: 'expense_and_deduction_registration',
+                element: <ExpenseAndDeductionRegistration />,
                 loader: guardLoader
             }, {
                 path: 'user_registration',

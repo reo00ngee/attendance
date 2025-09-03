@@ -62,4 +62,13 @@ class UserController extends Controller
         $month = $request->query('month');
         return $this->userService->getUsersWithAttendances($company_id, $year, $month);
     }
+
+    public function getUsersWithExpensesAndDeductions(Request $request)
+    {
+        $user = Auth::user();
+        $company_id = $user->company_id;
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->userService->getUsersWithExpensesAndDeductions($company_id, $year, $month);
+    }
 }

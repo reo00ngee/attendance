@@ -1,4 +1,4 @@
-export interface ExpenseOrDeduction {
+export interface ExpenseAndDeduction {
   id: number;
   expense_id: number;
   user_id: number;

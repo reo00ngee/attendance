@@ -53,4 +53,36 @@ class ExpensesAndDeductionRepository
         $expense->updated_at = now();
         return $expense->save();
   }
+
+  public function getSubmittedAndApprovedExpenses($user_id, $start, $end)
+  {
+    return ExpensesAndDeduction::where('user_id', $user_id)
+      ->whereBetween('date', [$start, $end])
+      ->whereIn('submission_status', [
+        SubmissionStatus::SUBMITTED,
+        SubmissionStatus::APPROVED
+      ])
+      ->get();
+  }
+
+  public function approveExpense($expense)
+  {
+    $expense->submission_status = SubmissionStatus::APPROVED->value;
+    $expense->save();
+  }
+
+  public function rejectExpense($expense)
+  {
+    $expense->submission_status = SubmissionStatus::REJECTED->value;
+    $expense->save();
+  }
+
+  public function getCreatedByManagerExpensesAndDeductions($user_id, $start, $end)
+  {
+    return ExpensesAndDeduction::where('user_id', $user_id)
+      ->whereBetween('date', [$start, $end])
+      ->where('submission_status', SubmissionStatus::CREATED_BY_MANAGER->value)
+      ->get();
+  }
+
 }

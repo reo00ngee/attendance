@@ -155,4 +155,12 @@ class UserService
     $users = $this->userRepository->getUsersWithAttendances($company_id, $start, $end);
     return response()->json($users);
   }
+
+  public function getUsersWithExpensesAndDeductions($company_id, $year, $month)
+  {
+    $closing_date = $this->getCompanyClosingDate($company_id);
+    [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
+    $users = $this->userRepository->getUsersWithExpensesAndDeductions($company_id, $start, $end);
+    return response()->json($users);
+  }
 }
