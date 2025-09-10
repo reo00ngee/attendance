@@ -54,6 +54,10 @@ class ExpensesAndDeductionService
       return DB::transaction(function () use ($company_id, $user_id, $updated, $created, $deleted, $year, $month, $is_created_by_user ) {
 
         foreach ($updated as $expenseData) {
+          // ExpenseRegistrationからの更新の場合のみsubmission_statusを0（CREATED）に設定
+          if ($is_created_by_user) {
+            $expenseData['submission_status'] = SubmissionStatus::CREATED->value;
+          }
           $this->expensesAndDeductionRepository->updateExpense(
             $expenseData['id'],
             $user_id,
