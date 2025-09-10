@@ -17,7 +17,7 @@ import PageTitle from "../components/PageTitle";
 import NavigationButton from '../components/NavigationButton';
 import { Navigate } from 'react-router-dom';
 import { User } from "../types/User";
-import { ExpenseAndDeduction } from "../types/Expense";
+import { ExpenseAndDeduction } from "../types/ExpenseAndDeduction";
 import { hasRole } from "../utils/auth";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";

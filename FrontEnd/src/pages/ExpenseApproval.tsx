@@ -31,7 +31,7 @@ import { hasRole } from '../utils/auth';
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import MonthNavigator from "../components/MonthNavigator";
-import { ExpenseAndDeduction } from "../types/Expense";
+import { ExpenseAndDeduction } from "../types/ExpenseAndDeduction";
 
 
 const ExpenseApproval = () => {

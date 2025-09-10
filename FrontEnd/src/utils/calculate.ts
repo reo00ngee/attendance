@@ -1,5 +1,5 @@
 import { Attendance } from "../types/Attendance";
-import { ExpenseAndDeduction } from "../types/Expense";
+import { ExpenseAndDeduction } from "../types/ExpenseAndDeduction";
 type SetNumberFn = (value: number) => void;
 
 // Calculates the difference in time (in minutes) between two time strings 

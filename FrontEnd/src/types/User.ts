@@ -1,5 +1,5 @@
 import { Attendance } from "../types/Attendance";
-import { ExpenseAndDeduction } from "./Expense";
+import { ExpenseAndDeduction } from "./ExpenseAndDeduction";
 
 export interface User {
   user_id: number;

@@ -32,7 +32,8 @@ class ExpensesAndDeductionRepository
         'amount' => $data['amount'],
         'date' => $data['date'],
         'comment' => $data['comment'] ?? null,
-        'expense_or_deduction' => $data['expense_or_deduction'],
+        'submission_status' => $data['submission_status'] ?? SubmissionStatus::CREATED->value,
+        'expense_or_deduction' => $data['expense_or_deduction'] ?? ExpenseOrDeduction::EXPENSE->value,
         'updated_by' => $user_id,
         'updated_at' => now(),
       ]);

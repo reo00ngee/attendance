@@ -9,8 +9,11 @@ use App\Traits\FetchCompanyDataTrait;
 use App\Traits\PeriodCalculatorTrait;
 use App\Enums\SubmissionType;
 use App\Enums\InformationType;
+use App\Enums\SubmissionStatus;
+use App\Enums\ExpenseOrDeduction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ExpensesAndDeductionService
 {
@@ -45,12 +48,11 @@ class ExpensesAndDeductionService
     });
   }
 
-  public function batchUpdateExpenses(int $company_id, int $user_id, array $updated, array $created, array $deleted, int $year, int $month)
+  public function batchUpdateExpenses(int $company_id, int $user_id, array $updated, array $created, array $deleted, int $year, int $month, bool $is_created_by_user)
   {
     try {
-      return DB::transaction(function () use ($company_id, $user_id, $updated, $created, $deleted, $year, $month) {
+      return DB::transaction(function () use ($company_id, $user_id, $updated, $created, $deleted, $year, $month, $is_created_by_user ) {
 
-        // 既存データの更新
         foreach ($updated as $expenseData) {
           $this->expensesAndDeductionRepository->updateExpense(
             $expenseData['id'],
@@ -59,10 +61,17 @@ class ExpensesAndDeductionService
           );
         }
 
+
+
         // 新規データの作成
         foreach ($created as $expenseData) {
           $expenseData['user_id'] = $user_id;
-          $expenseData['submission_status'] = 0; // 未提出
+          $expenseData['name'] = $expenseData['name'];
+          $expenseData['amount'] = $expenseData['amount'];
+          $expenseData['date'] = Carbon::parse($expenseData['date'])->format('Y-m-d');
+          $expenseData['comment'] = $expenseData['comment'];
+          $expenseData['submission_status'] = $expenseData['submission_status'] ?? SubmissionStatus::CREATED->value  ;
+          $expenseData['expense_or_deduction'] = $expenseData['expense_or_deduction'] ?? ExpenseOrDeduction::EXPENSE->value  ;
           $expenseData['created_by'] = $user_id;
           $expenseData['updated_by'] = $user_id;
 
@@ -75,7 +84,11 @@ class ExpensesAndDeductionService
         }
 
         // 更新後のデータを取得
-        return $this->getAllExpensesForUser($company_id, $user_id, $year, $month);
+        if($is_created_by_user) {
+          return $this->getAllExpensesForUser($company_id, $user_id, $year, $month);
+        } else {
+          return $this->getCreatedByManagerExpensesAndDeductions($company_id, $user_id, $year, $month);
+        }
       });
     } catch (\Exception $e) {
       Log::error('Failed to batch update expenses', [

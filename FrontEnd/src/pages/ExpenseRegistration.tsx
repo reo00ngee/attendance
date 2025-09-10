@@ -25,11 +25,12 @@ import PageTitle from "../components/PageTitle";
 import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { format } from "date-fns";
-import { ExpenseAndDeduction } from "../types/Expense";
+import { ExpenseAndDeduction } from "@/types/ExpenseAndDeduction";
 import { formatDate } from "../utils/format";
 import { calculateTotalAmount } from "../utils/calculate";
 import { truncateLongLetter } from "../utils/format";
 import MonthNavigator from "../components/MonthNavigator";
+import { validateExpense, validateExpenses, getFieldError, hasFieldError } from "../utils/expenseValidation";
 
 const ExpenseRegistration = () => {
   const pageTitle = "Expense Registration";
@@ -56,6 +57,7 @@ const ExpenseRegistration = () => {
   const [editedExpenses, setEditedExpenses] = useState<ExpenseAndDeduction[]>([]);
   const [newExpenses, setNewExpenses] = useState<Partial<ExpenseAndDeduction>[]>([]);
   const [deletedExpenseIds, setDeletedExpenseIds] = useState<number[]>([]); // 削除対象のID配列
+  const [validationErrors, setValidationErrors] = useState<{[key: number]: string[]}>({}); // バリデーションエラー
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -160,17 +162,40 @@ const ExpenseRegistration = () => {
     const updated = [...newExpenses];
     updated[index] = { ...updated[index], [field]: value };
     setNewExpenses(updated);
+    
+    // リアルタイムバリデーション
+    const errors = validateExpense(updated[index]);
+    setValidationErrors(prev => ({
+      ...prev,
+      [index]: errors
+    }));
   };
 
   // 新しいexpenseの削除
   const removeNewExpense = (index: number) => {
     setNewExpenses(newExpenses.filter((_, i) => i !== index));
+    
+    // バリデーションエラーもクリア
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[index];
+      return newErrors;
+    });
   };
 
   // 一括保存
   const handleSave = async () => {
     setLoading(true);
     clearNotification();
+    
+    // バリデーション実行
+    const validation = validateExpenses(newExpenses);
+    if (!validation.isValid) {
+      showNotification(`Validation errors: ${validation.errors.join('; ')}`, 'error');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/batch_update_expenses`, {
         method: "POST",
@@ -182,7 +207,8 @@ const ExpenseRegistration = () => {
           created: newExpenses.filter(expense => expense.name && expense.amount),
           deleted: deletedExpenseIds,
           year,
-          month
+          month,
+          is_created_by_user: true
         }),
       });
 
@@ -193,6 +219,8 @@ const ExpenseRegistration = () => {
         setTotalAmount(calculateTotalAmount(data));
         setUnsubmittedExists(data.some(expense => expense.submission_status === 0 || expense.submission_status === 2));
 
+        // バリデーションエラーをクリア
+        setValidationErrors({});
         handleToggleEditMode();
       } else {
         showNotification("Failed to save changes", 'error');
@@ -416,6 +444,8 @@ const ExpenseRegistration = () => {
                       placeholder="Expense name"
                       size="small"
                       fullWidth
+                      error={hasFieldError(validationErrors[i] || [], 'Name')}
+                      helperText={getFieldError(validationErrors[i] || [], 'Name')}
                     />
                   </TableCell>
                   <TableCell align="right">
@@ -425,6 +455,8 @@ const ExpenseRegistration = () => {
                       onChange={(e) => updateNewExpense(i, 'amount', Number(e.target.value))}
                       size="small"
                       fullWidth
+                      error={hasFieldError(validationErrors[i] || [], 'Amount')}
+                      helperText={getFieldError(validationErrors[i] || [], 'Amount')}
                     />
                   </TableCell>
                   <TableCell align="right">
@@ -435,6 +467,8 @@ const ExpenseRegistration = () => {
                       size="small"
                       fullWidth
                       InputLabelProps={{ shrink: true }}
+                      error={hasFieldError(validationErrors[i] || [], 'Date')}
+                      helperText={getFieldError(validationErrors[i] || [], 'Date')}
                     />
                   </TableCell>
                   <TableCell align="right">
