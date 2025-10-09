@@ -36,4 +36,19 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->middleware('auth')
                 ->name('logout');
+
+// Admin authentication routes
+Route::post('/admin/login', [\App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'store'])
+                ->middleware('guest')
+                ->name('admin.login');
+
+Route::post('/admin/logout', [\App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
+                ->middleware('auth:admin')
+                ->name('admin.logout');
+
+// Admin protected routes
+Route::middleware('auth.admin')->group(function () {
+    Route::get('/admin/me', [\App\Http\Controllers\AdminController::class, 'me']);
+    Route::apiResource('admin/administrators', \App\Http\Controllers\AdminController::class);
+});
 });

@@ -21,6 +21,11 @@ import HourlyWageGroupRegistration from '../pages/HourlyWageGroupRegistration'
 import SettingManagement from '../pages/SettingManagement'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
+import AdminLogin from '../pages/AdminLogin'
+import AdminRegistration from '../pages/AdminRegistration'
+import AdminDashboard from '../pages/AdminDashboard'
+import AdminManagement from '../pages/AdminManagement'
+import AdminLayout from '../components/AdminLayout'
 
 
 /**
@@ -52,6 +57,26 @@ export const router = createBrowserRouter([
         path: '/reset-password',
         element: <ResetPassword />,
         loader: guestLoader
+    }, {
+        path: '/admin/login',
+        element: <AdminLogin />,
+    }, {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+            {
+                path: 'registration',
+                element: <AdminRegistration />,
+            },
+            {
+                path: 'dashboard',
+                element: <AdminDashboard />,
+            },
+            {
+                path: 'management',
+                element: <AdminManagement />,
+            },
+        ],
     }, {
         path: "/",
         element: <AuthLayout />,

@@ -21,3 +21,17 @@ Set time zone with this process
 'timezone' => 'Asia/Tokyo',
 
 ```
+
+## Setting of Confirm files for login function
+### .env
+
+```php
+# 修正前
+SANCTUM_STATEFUL_DOMAINS=localhost
+
+# 修正後
+SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost
+SESSION_DOMAIN=localhost  # 追加
+
+```
+
