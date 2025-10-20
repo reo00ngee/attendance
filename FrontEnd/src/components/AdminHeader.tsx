@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Box from "@mui/material/Box";
+import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -36,6 +37,10 @@ const AdminHeader = memo(() => {
     { label: "Dashboard", path: "/admin/dashboard" },
     { label: "Register Admin", path: "/admin/registration" },
     { label: "Manage Admins", path: "/admin/management" },
+    { label: "Register User", path: "/admin/user_registration" },
+    { label: "Manage Users", path: "/admin/user_management" },
+    { label: "Register Company", path: "/admin/company_registration" },
+    { label: "Manage Companies", path: "/admin/company_management" },
   ];
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -137,16 +142,14 @@ const AdminHeader = memo(() => {
         </Typography>
 
         {/* Account Icon */}
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="menu-appbar"
-          aria-haspopup="true"
-          onClick={handleMenuOpen}
+        <Button
           color="inherit"
+          startIcon={<AccountCircle />}
+          onClick={handleMenuOpen}
+          sx={{ textTransform: "none", minWidth: 120 }}
         >
-          <AccountCircle />
-        </IconButton>
+          Account
+        </Button>
 
         {/* Account Menu */}
         <Menu
@@ -166,7 +169,7 @@ const AdminHeader = memo(() => {
         >
           <MenuItem disabled>
             <Typography variant="body2" color="text.secondary">
-              {adminName || "Admin"}
+            UserName: {adminName || "Admin"}
             </Typography>
           </MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>

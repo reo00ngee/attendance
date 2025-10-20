@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\CompanyService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\UpdateSettingRequest;
+use App\Http\Requests\StoreCompanyRequest;
 
 class CompanyController extends Controller
 {
@@ -32,17 +34,43 @@ class CompanyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // 両方の認証ガード（web, admin）をチェック
+        $user = Auth::user();
+        $admin = Auth::guard('admin')->user();
+        
+        // デバッグ: 認証状態を確認
+        Log::info('CompanyController::index - Request details', [
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'web_user_id' => $user ? $user->id : 'not authenticated',
+            'web_user_email' => $user ? $user->email : 'no email',
+            'admin_user_id' => $admin ? $admin->id : 'not authenticated',
+            'admin_user_email' => $admin ? $admin->email : 'no email',
+            'session_id' => session()->getId(),
+            'csrf_token' => csrf_token()
+        ]);
+
+        // どちらかの認証が成功していればOK
+        if (!$user && !$admin) {
+            Log::warning('CompanyController::index - Neither web nor admin user authenticated', [
+                'session_id' => session()->getId(),
+                'auth_guards_checked' => ['web', 'admin']
+            ]);
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        
+        return $this->companyService->getAllCompanies();
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCompanyRequest $request)
     {
-        //
+        $validated = $request->validated();
+        return $this->companyService->createCompany($validated);
     }
 
     /**

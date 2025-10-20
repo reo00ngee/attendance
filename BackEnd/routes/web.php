@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +21,21 @@ Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
 
-Route::prefix('api')->name('api.')->group(function () {
+// 認証関連のルート
+Route::get('/login', function () {
+    return response()->json(['message' => 'Please login via frontend'], 401);
+})->name('login');
+
+// CSRFトークン取得エンドポイント（Sanctum用）
+Route::middleware('web')->get('/sanctum/csrf-cookie', function (\Illuminate\Http\Request $request) {
+    // Laravel SanctumのCsrfCookieControllerと同じ機能を実装
+    if ($request->expectsJson()) {
+        return response()->json(null, 204);
+    }
+    return response('', 204);
+});
+
+Route::prefix('api')->name('api.')->middleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class)->group(function () {
     // Route::get('/user', function (Request $request) {
     //     return request()->user();
     // });
@@ -56,8 +72,8 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/store_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'storeHourlyWageGroup'])->middleware('role:3');
     Route::post('/update_hourly_wage_group', [\App\Http\Controllers\HourlyWageGroupController::class, 'updateHourlyWageGroup'])->middleware('role:3');
     Route::get('/get_informations', [\App\Http\Controllers\InformationController::class, 'getInformations']);
-    Route::get('/get_setting', [\App\Http\Controllers\CompanyController::class, 'getSetting'])->middleware('role:4');
-    Route::post('/update_setting', [\App\Http\Controllers\CompanyController::class, 'updateSetting'])->middleware('role:4');
+    Route::get('/get_setting', [CompanyController::class, 'getSetting'])->middleware('role:4');
+    Route::post('/update_setting', [CompanyController::class, 'updateSetting'])->middleware('role:4');
 });
 
 

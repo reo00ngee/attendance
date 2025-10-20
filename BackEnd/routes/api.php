@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CompanyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,9 @@ use App\Http\Controllers\AttendanceController;
 //   Route::post('/start_work', [AttendanceController::class, 'startWork']);
 //   Route::post('/finish_work', [AttendanceController::class, 'finishWork']);
 // });
+
+// 会社登録ルート（認証なしでアクセス可能）
+Route::post('/register_company', [CompanyController::class, 'store']);
+
+// 会社一覧取得ルート（管理者のみ）
+Route::get('/get_companies_for_management', [CompanyController::class, 'index']);

@@ -1,72 +1,129 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+  Box,
   Paper,
   TextField,
   Button,
   IconButton,
   InputAdornment,
-  Container,
-  Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
+import Section from "../components/Section";
+import LoadingSpinner from "../components/LoadingSpinner";
+import PageTitle from "../components/PageTitle";
+import NotificationAlert from "../components/NotificationAlert";
+import NavigationButton from '../components/NavigationButton';
+import { useNotification } from "../hooks/useNotification";
 
 const AdminRegistration: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const adminId = searchParams.get("admin_id");
+  const pageTitle = adminId ? "Admin Modification" : "Admin Registration";
+  
+  const { notification, showNotification, clearNotification } = useNotification();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // 編集時は既存データを取得
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      setLoading(true);
+      clearNotification();
+      try {
+        if (adminId) {
+          const response = await axios.get(
+            `${process.env.REACT_APP_BASE_URL}api/admin/administrators/${adminId}`,
+            { withCredentials: true }
+          );
+          setName(response.data.name);
+          setEmail(response.data.email);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch admin:", error);
+        showNotification("Failed to fetch admin information.", 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdmin();
+  }, [adminId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     // Validation
-    if (password !== passwordConfirmation) {
-      alert("Passwords do not match.");
+    if (password !== confirm) {
+      showNotification("Passwords do not match.", 'error');
       setLoading(false);
       return;
     }
 
-    if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
+    if (!adminId && password.length < 8) {
+      showNotification("Password must be at least 8 characters long.", 'error');
       setLoading(false);
       return;
     }
 
     try {
-      await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/admin/administrators`,
-        {
-          name,
-          email,
-          password,
-          password_confirmation: passwordConfirmation,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
+      if (adminId) {
+        // 編集モード
+        const updateData: any = { name, email };
+        if (password) {
+          updateData.password = password;
+          updateData.password_confirmation = confirm;
         }
-      );
 
-      alert("Admin registered successfully!");
-      navigate("/admin/dashboard");
+        await axios.put(
+          `${process.env.REACT_APP_BASE_URL}api/admin/administrators/${adminId}`,
+          updateData,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        showNotification("Admin updated successfully!", 'success');
+      } else {
+        // 新規作成モード
+        await axios.post(
+          `${process.env.REACT_APP_BASE_URL}api/admin/administrators`,
+          {
+            name,
+            email,
+            password,
+            password_confirmation: confirm,
+          },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        showNotification("Admin registered successfully!", 'success');
+      }
+      navigate("/admin/management");
     } catch (error: any) {
-      console.error("Registration failed:", error);
+      console.error("Operation failed:", error);
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         const errorMessages = Object.values(errors).flat().join("\n");
-        alert(`Registration failed:\n${errorMessages}`);
+        showNotification(`Operation failed:\n${errorMessages}`, 'error');
       } else {
-        alert("Registration failed. Please try again.");
+        showNotification("Operation failed. Please try again.", 'error');
       }
     } finally {
       setLoading(false);
@@ -74,15 +131,34 @@ const AdminRegistration: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom align="center">
-        Admin Registration
-      </Typography>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      {/* タイトル */}
+      <PageTitle title={pageTitle} />
 
+      {/* 通知アラート */}
+      <NotificationAlert notification={notification} />
+
+      {/* loading時はローディング表示 */}
+      <LoadingSpinner loading={loading} />
+
+      <Section>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <NavigationButton
+            variant="contained"
+            to="/admin/management"
+            sx={{ minWidth: 180 }}
+          >
+            ADMIN MANAGEMENT
+          </NavigationButton>
+        </Box>
+      </Section>
+
+      <Section>
         <Paper
           sx={{
             p: 4,
-            mt: 3,
+            maxWidth: 500,
+            mx: "auto",
             opacity: loading ? 0.6 : 1,
             pointerEvents: loading ? "none" : "auto",
           }}
@@ -106,13 +182,13 @@ const AdminRegistration: React.FC = () => {
               required
             />
             <TextField
-              label="Password"
+              label={adminId ? "New Password (optional)" : "Password"}
               type={showPassword ? "text" : "password"}
               fullWidth
               sx={{ mb: 2 }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              required={!adminId}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -129,23 +205,23 @@ const AdminRegistration: React.FC = () => {
               }}
             />
             <TextField
-              label="Confirm Password"
-              type={showPasswordConfirmation ? "text" : "password"}
+              label={adminId ? "Confirm New Password" : "Confirm Password"}
+              type={showConfirm ? "text" : "password"}
               fullWidth
               sx={{ mb: 3 }}
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
-              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required={!adminId}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password confirmation visibility"
-                      onClick={() => setShowPasswordConfirmation((show) => !show)}
+                      onClick={() => setShowConfirm((show) => !show)}
                       edge="end"
                       size="small"
                     >
-                      {showPasswordConfirmation ? <VisibilityOff /> : <Visibility />}
+                      {showConfirm ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -159,11 +235,12 @@ const AdminRegistration: React.FC = () => {
               disabled={loading}
               sx={{ py: 1.5 }}
             >
-              {loading ? "Registering..." : "Register Admin"}
+              {loading ? (adminId ? "Updating..." : "Registering...") : (adminId ? "Update Admin" : "Register Admin")}
             </Button>
           </form>
         </Paper>
-    </Container>
+      </Section>
+    </Box>
   );
 };
 

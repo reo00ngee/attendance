@@ -37,4 +37,14 @@ class CompanyRepository
       throw new \Exception('Failed to update company settings');
     }
   }
+
+  public function createCompany(array $data)
+  {
+    try {
+      return Company::create($data);
+    } catch (\Exception $e) {
+      Log::error('Error creating company: ' . $e->getMessage());
+      throw new \Exception('Failed to create company');
+    }
+  }
 }

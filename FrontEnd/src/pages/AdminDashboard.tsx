@@ -66,6 +66,22 @@ const AdminDashboard: React.FC = () => {
     navigate("/admin/management");
   };
 
+  const handleUserRegistration = () => {
+    navigate("/admin/user_registration");
+  };
+
+  const handleUserManagement = () => {
+    navigate("/admin/user_management");
+  };
+
+  const handleCompanyRegistration = () => {
+    navigate("/admin/company_registration");
+  };
+
+  const handleCompanyManagement = () => {
+    navigate("/admin/company_management");
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -124,6 +140,102 @@ const AdminDashboard: React.FC = () => {
                   sx={{ py: 1.5 }}
                 >
                   Manage Admins
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <PersonAddIcon sx={{ mr: 1, fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="h5" component="h2">
+                    Register User
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Create a new user account
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleUserRegistration}
+                  fullWidth
+                  sx={{ py: 1.5 }}
+                >
+                  Register User
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <PeopleIcon sx={{ mr: 1, fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="h5" component="h2">
+                    Manage Users
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Manage existing user accounts
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleUserManagement}
+                  fullWidth
+                  sx={{ py: 1.5 }}
+                >
+                  Manage Users
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <PersonAddIcon sx={{ mr: 1, fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="h5" component="h2">
+                    Register Company
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Create a new company account
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleCompanyRegistration}
+                  fullWidth
+                  sx={{ py: 1.5 }}
+                >
+                  Register Company
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <PeopleIcon sx={{ mr: 1, fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="h5" component="h2">
+                    Manage Companies
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Manage existing company accounts
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleCompanyManagement}
+                  fullWidth
+                  sx={{ py: 1.5 }}
+                >
+                  Manage Companies
                 </Button>
               </CardContent>
             </Card>

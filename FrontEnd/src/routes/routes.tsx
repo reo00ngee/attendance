@@ -25,6 +25,10 @@ import AdminLogin from '../pages/AdminLogin'
 import AdminRegistration from '../pages/AdminRegistration'
 import AdminDashboard from '../pages/AdminDashboard'
 import AdminManagement from '../pages/AdminManagement'
+import AdminUserRegistration from '../pages/AdminUserRegistration'
+import AdminUserManagement from '../pages/AdminUserManagement'
+import AdminCompanyRegistration from '../pages/AdminCompanyRegistration'
+import AdminCompanyManagement from '../pages/AdminCompanyManagement'
 import AdminLayout from '../components/AdminLayout'
 
 
@@ -75,6 +79,22 @@ export const router = createBrowserRouter([
             {
                 path: 'management',
                 element: <AdminManagement />,
+            },
+            {
+                path: 'user_registration',
+                element: <AdminUserRegistration />,
+            },
+            {
+                path: 'user_management',
+                element: <AdminUserManagement />,
+            },
+            {
+                path: 'company_registration',
+                element: <AdminCompanyRegistration />,
+            },
+            {
+                path: 'company_management',
+                element: <AdminCompanyManagement />,
             },
         ],
     }, {
