@@ -119,6 +119,13 @@ const UserRegistration = () => {
     setLoading(true);
     clearNotification();
 
+    // パスワード一致チェック（パスワードが入力されている場合のみ）
+    if ((password || confirm) && password !== confirm) {
+      showNotification("Passwords do not match.", 'warning');
+      setLoading(false);
+      return;
+    }
+
     const validationError = validateUserRegistration({
       firstName,
       lastName,
@@ -132,6 +139,7 @@ const UserRegistration = () => {
       address,
       hireDate,
       retireDate,
+      userId,
     });
 
     if (validationError) {
@@ -163,10 +171,6 @@ const UserRegistration = () => {
         method = "POST";
         body.user_id = userId;
         if (password) {
-          if (password !== confirm) {
-            showNotification("Passwords do not match.", 'warning');
-            return;
-          }
           body.password = password;
         }
       } else {
@@ -378,13 +382,13 @@ const UserRegistration = () => {
               ))}
             </TextField>
             <TextField
-              label="Password"
+              label={userId ? "New Password (optional)" : "Password"}
               type={showPassword ? "text" : "password"}
               fullWidth
               sx={{ mb: 2 }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              required={!userId}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -404,13 +408,13 @@ const UserRegistration = () => {
               }
             />
             <TextField
-              label="Confirm Password"
+              label={userId ? "Confirm New Password" : "Confirm Password"}
               type={showConfirm ? "text" : "password"}
               fullWidth
               sx={{ mb: 2 }}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              required
+              required={!userId}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">

@@ -14,6 +14,7 @@ export function validateUserRegistration({
   address,
   hireDate,
   retireDate,
+  userId,
 }: {
   firstName: string;
   lastName: string;
@@ -27,17 +28,27 @@ export function validateUserRegistration({
   address: string;
   hireDate: string;
   retireDate: string;
+  userId?: string | null;
 }): string | null {
+  // 基本フィールドの必須チェック（パスワードは新規作成時のみ必須）
   if (
     !firstName ||
     !lastName ||
     !email ||
-    !password ||
-    !confirm ||
+    (!userId && (!password || !confirm)) ||
     !wageGroup ||
     selectedRoles.length === 0
   ) {
-    return "First name, last name, email, password, hourly wage group, and at least one role are required.";
+    const missingFields = [];
+    if (!firstName) missingFields.push("first name");
+    if (!lastName) missingFields.push("last name");
+    if (!email) missingFields.push("email");
+    if (!userId && !password) missingFields.push("password");
+    if (!userId && !confirm) missingFields.push("password confirmation");
+    if (!wageGroup) missingFields.push("hourly wage group");
+    if (selectedRoles.length === 0) missingFields.push("at least one role");
+    
+    return `The following fields are required: ${missingFields.join(", ")}.`;
   }
   if (firstName.length > 255) {
     return "First name must be 255 characters or less.";
@@ -45,10 +56,11 @@ export function validateUserRegistration({
   if (lastName.length > 255) {
     return "Last name must be 255 characters or less.";
   }
-  if (password.length < 6) {
+  // パスワードバリデーション（パスワードが入力されている場合のみ）
+  if (password && password.length < 6) {
     return "Password must be at least 6 characters.";
   }
-  if (password !== confirm) {
+  if ((password || confirm) && password !== confirm) {
     return "Passwords do not match.";
   }
   if (!/^[\w\-.]+@[\w\-.]+\.[a-zA-Z]{2,}$/.test(email)) {

@@ -115,7 +115,6 @@ const AdminRegistration: React.FC = () => {
 
         showNotification("Admin registered successfully!", 'success');
       }
-      navigate("/admin/management");
     } catch (error: any) {
       console.error("Operation failed:", error);
       if (error.response?.data?.errors) {
@@ -235,7 +234,7 @@ const AdminRegistration: React.FC = () => {
               disabled={loading}
               sx={{ py: 1.5 }}
             >
-              {loading ? (adminId ? "Updating..." : "Registering...") : (adminId ? "Update Admin" : "Register Admin")}
+              {loading ? (adminId ? "Updating..." : "Registering...") : (adminId ? "Update" : "Register")}
             </Button>
           </form>
         </Paper>

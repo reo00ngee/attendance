@@ -31,7 +31,7 @@ class UpdateUserRequest extends FormRequest
             'first_name' => 'required|string|max:255',
             'last_name'  => 'required|string|max:255',
             'email'      => 'required|email|unique:users,email,' . $this->user_id,
-            'password'   => 'required|string|min:6',
+            'password'   => 'nullable|string|min:6',
             'phone_number' => 'nullable|string|max:20',
             'gender'    => 'nullable|in:' . implode(',', array_column(Gender::cases(), 'value')),
             'birth_date' => 'nullable|date',
