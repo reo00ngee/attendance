@@ -176,4 +176,55 @@ class CompanyService
       return response()->json(['error' => 'Failed to fetch companies'], 500);
     }
   }
+
+  public function getCompanyById($id)
+  {
+    try {
+      $company = Company::find($id);
+      if (!$company) {
+        return response()->json(['error' => 'Company not found'], 404);
+      }
+
+      return response()->json([
+        'id' => $company->id,
+        'name' => $company->name,
+        'address' => $company->address,
+        'phone_number' => $company->phone_number,
+        'email' => $company->email,
+        'currency' => $company->currency,
+        'closing_date' => $company->closing_date,
+        'payroll_rounding_interval' => $company->payroll_rounding_interval,
+        'prompt_submission_reminder_days' => $company->prompt_submission_reminder_days,
+        'standard_working_hours' => $company->standard_working_hours,
+        'overtime_pay_multiplier' => $company->overtime_pay_multiplier,
+        'night_shift_hours_from' => $company->night_shift_hours_from,
+        'night_shift_hours_to' => $company->night_shift_hours_to,
+        'night_shift_pay_multiplier' => $company->night_shift_pay_multiplier,
+        'holiday_pay_multiplier' => $company->holiday_pay_multiplier,
+      ]);
+    } catch (\Exception $e) {
+      Log::error('Error fetching company: ' . $e->getMessage());
+      return response()->json(['error' => 'Failed to fetch company'], 500);
+    }
+  }
+
+  public function updateCompany($id, array $data)
+  {
+    try {
+      $company = Company::find($id);
+      if (!$company) {
+        return response()->json(['error' => 'Company not found'], 404);
+      }
+
+      $company->update($data);
+      
+      return response()->json([
+        'message' => 'Company updated successfully',
+        'company' => $company
+      ]);
+    } catch (\Exception $e) {
+      Log::error('Error updating company: ' . $e->getMessage());
+      return response()->json(['error' => 'Failed to update company'], 500);
+    }
+  }
 }

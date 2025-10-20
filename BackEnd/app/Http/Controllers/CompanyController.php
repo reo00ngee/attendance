@@ -76,9 +76,18 @@ class CompanyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        // 両方の認証ガード（web, admin）をチェック
+        $user = Auth::user();
+        $admin = Auth::guard('admin')->user();
+        
+        // どちらかの認証が成功していればOK
+        if (!$user && !$admin) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        
+        return $this->companyService->getCompanyById($id);
     }
 
     /**
@@ -86,7 +95,33 @@ class CompanyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // 両方の認証ガード（web, admin）をチェック
+        $user = Auth::user();
+        $admin = Auth::guard('admin')->user();
+        
+        // どちらかの認証が成功していればOK
+        if (!$user && !$admin) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone_number' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'currency' => 'required|integer',
+            'closing_date' => 'required|integer',
+            'payroll_rounding_interval' => 'required|integer',
+            'prompt_submission_reminder_days' => 'required|integer',
+            'standard_working_hours' => 'required|numeric|min:1',
+            'overtime_pay_multiplier' => 'nullable|numeric|min:0',
+            'night_shift_hours_from' => 'nullable|string',
+            'night_shift_hours_to' => 'nullable|string',
+            'night_shift_pay_multiplier' => 'nullable|numeric|min:0',
+            'holiday_pay_multiplier' => 'nullable|numeric|min:0',
+        ]);
+        
+        return $this->companyService->updateCompany($id, $validated);
     }
 
     /**

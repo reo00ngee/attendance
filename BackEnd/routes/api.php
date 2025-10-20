@@ -30,3 +30,9 @@ Route::post('/register_company', [CompanyController::class, 'store']);
 
 // 会社一覧取得ルート（管理者のみ）
 Route::get('/get_companies_for_management', [CompanyController::class, 'index']);
+
+// 会社詳細取得ルート（管理者のみ）
+Route::get('/get_company/{id}', [CompanyController::class, 'show']);
+
+// 会社更新ルート（管理者のみ）
+Route::put('/update_company/{id}', [CompanyController::class, 'update']);

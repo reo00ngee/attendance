@@ -18,7 +18,7 @@ import PageTitle from "../components/PageTitle";
 import NotificationAlert from "../components/NotificationAlert";
 import NavigationButton from '../components/NavigationButton';
 import { useNotification } from "../hooks/useNotification";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { genders } from "../constants/genders";
 import { CLOSING_DATE } from "../constants/closingDate";
 import { PAYROLL_ROUNDING_INTERVAL } from "../constants/payrollRoundingInterval";
@@ -27,6 +27,9 @@ import { validateCompanyRegistration } from "../utils/companyRegistrationValidat
 
 const AdminCompanyRegistration = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const companyId = searchParams.get("company_id");
+  const pageTitle = companyId ? "Company Modification" : "Company Registration";
   const { notification, showNotification, clearNotification } = useNotification();
   
   // Company information state
@@ -59,7 +62,62 @@ const AdminCompanyRegistration = () => {
   const [userHireDate, setUserHireDate] = useState(new Date().toISOString().split('T')[0]);
   const [userRetireDate, setUserRetireDate] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // 会社情報取得（modify時）
+  useEffect(() => {
+    if (companyId) {
+      const fetchCompany = async () => {
+        setLoading(true);
+        clearNotification();
+        try {
+          // CSRFトークンを取得
+          await fetch(`${process.env.REACT_APP_BASE_URL}sanctum/csrf-cookie`, {
+            credentials: "include",
+          });
+
+          const res = await fetch(
+            `${process.env.REACT_APP_BASE_URL}api/get_company/${companyId}`,
+            {
+              credentials: "include",
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              }
+            }
+          );
+          
+          if (res.ok) {
+            const data = await res.json();
+            setCompanyName(data.name);
+            setAddress(data.address);
+            setPhoneNumber(data.phone_number);
+            setEmail(data.email);
+            setCurrency(data.currency);
+            setClosingDate(data.closing_date);
+            setPayrollRoundingInterval(data.payroll_rounding_interval);
+            setPromptSubmissionReminderDays(data.prompt_submission_reminder_days);
+            setStandardWorkingHours(data.standard_working_hours);
+            setOvertimePayMultiplier(data.overtime_pay_multiplier);
+            setNightShiftHoursFrom(data.night_shift_hours_from || "22:00");
+            setNightShiftHoursTo(data.night_shift_hours_to || "06:00");
+            setNightShiftPayMultiplier(data.night_shift_pay_multiplier);
+            setHolidayPayMultiplier(data.holiday_pay_multiplier);
+          } else {
+            showNotification("Failed to retrieve the company information.", 'error');
+          }
+        } catch (err) {
+          showNotification("Something went wrong while fetching the company data. Please try again later.", 'error');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchCompany();
+    } else {
+      setLoading(false);
+    }
+  }, [companyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,53 +137,113 @@ const AdminCompanyRegistration = () => {
       userLastName,
     });
 
-    // Validation
-    const validation = validateCompanyRegistration({
-      companyName,
-      address,
-      phoneNumber,
-      email,
-      userEmail,
-      userPassword,
-      userPasswordConfirmation,
-      userFirstName,
-      userLastName,
-    });
+    // バリデーション
+    if (companyId) {
+      // 編集時のバリデーション（会社情報のみ）
+      if (!companyName || !address || !phoneNumber || !email) {
+        showNotification("Please fill in all required company fields.", 'error');
+        setLoading(false);
+        return;
+      }
+      
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showNotification("Please enter a valid company email address.", 'error');
+        setLoading(false);
+        return;
+      }
+    } else {
+      // 新規作成時のバリデーション
+      const validation = validateCompanyRegistration({
+        companyName,
+        address,
+        phoneNumber,
+        email,
+        userEmail,
+        userPassword,
+        userPasswordConfirmation,
+        userFirstName,
+        userLastName,
+      });
 
-    if (validation) {
-      showNotification(validation, 'error');
-      setLoading(false);
-      return;
+      if (validation) {
+        showNotification(validation, 'error');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
-      const companyData = {
-        name: companyName,
-        address,
-        phone_number: phoneNumber,
-        email,
-        currency,
-        closing_date: closingDate,
-        payroll_rounding_interval: payrollRoundingInterval,
-        prompt_submission_reminder_days: promptSubmissionReminderDays,
-        standard_working_hours: standardWorkingHours,
-        overtime_pay_multiplier: overtimePayMultiplier,
-        night_shift_hours_from: nightShiftHoursFrom,
-        night_shift_hours_to: nightShiftHoursTo,
-        night_shift_pay_multiplier: nightShiftPayMultiplier,
-        holiday_pay_multiplier: holidayPayMultiplier,
-        user_email: userEmail,
-        user_password: userPassword,
-        user_password_confirmation: userPasswordConfirmation,
-        user_first_name: userFirstName,
-        user_last_name: userLastName,
-        user_phone: userPhone,
-        user_gender: userGender,
-        user_birth_date: userBirthDate,
-        user_address: userAddress,
-        user_hire_date: userHireDate,
-        user_retire_date: userRetireDate,
-      };
+      if (companyId) {
+        // UPDATE MODE - 会社情報のみ更新
+        const companyData = {
+          name: companyName,
+          address,
+          phone_number: phoneNumber,
+          email,
+          currency,
+          closing_date: closingDate,
+          payroll_rounding_interval: payrollRoundingInterval,
+          prompt_submission_reminder_days: promptSubmissionReminderDays,
+          standard_working_hours: standardWorkingHours,
+          overtime_pay_multiplier: overtimePayMultiplier,
+          night_shift_hours_from: nightShiftHoursFrom,
+          night_shift_hours_to: nightShiftHoursTo,
+          night_shift_pay_multiplier: nightShiftPayMultiplier,
+          holiday_pay_multiplier: holidayPayMultiplier,
+        };
+
+        const res = await fetch(
+          `${process.env.REACT_APP_BASE_URL}api/update_company/${companyId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(companyData),
+          }
+        );
+
+        if (res.ok) {
+          showNotification("Company updated successfully!", 'success');
+        } else {
+          const data = await res.json();
+          const errorMessages = Object.values(data.errors || {})
+            .flat()
+            .join("\n");
+          showNotification(errorMessages || "An error occurred while updating the company.", 'error');
+        }
+      } else {
+        // CREATE MODE - 会社と初期ユーザーを作成
+        const companyData = {
+          name: companyName,
+          address,
+          phone_number: phoneNumber,
+          email,
+          currency,
+          closing_date: closingDate,
+          payroll_rounding_interval: payrollRoundingInterval,
+          prompt_submission_reminder_days: promptSubmissionReminderDays,
+          standard_working_hours: standardWorkingHours,
+          overtime_pay_multiplier: overtimePayMultiplier,
+          night_shift_hours_from: nightShiftHoursFrom,
+          night_shift_hours_to: nightShiftHoursTo,
+          night_shift_pay_multiplier: nightShiftPayMultiplier,
+          holiday_pay_multiplier: holidayPayMultiplier,
+          user_email: userEmail,
+          user_password: userPassword,
+          user_password_confirmation: userPasswordConfirmation,
+          user_first_name: userFirstName,
+          user_last_name: userLastName,
+          user_phone: userPhone,
+          user_gender: userGender,
+          user_birth_date: userBirthDate,
+          user_address: userAddress,
+          user_hire_date: userHireDate,
+          user_retire_date: userRetireDate,
+        };
 
         const res = await fetch(
           `${process.env.REACT_APP_BASE_URL}api/register_company`,
@@ -140,14 +258,14 @@ const AdminCompanyRegistration = () => {
         );
 
         if (res.ok) {
-        showNotification("Company and initial user registered successfully!", 'success');
-          navigate("/admin/company_management");
+          showNotification("Company and initial user registered successfully!", 'success');
         } else {
           const data = await res.json();
-        const errorMessages = Object.values(data.errors || {})
+          const errorMessages = Object.values(data.errors || {})
             .flat()
             .join("\n");
           showNotification(errorMessages || "An error occurred while processing your request.", 'error');
+        }
       }
     } catch (err) {
       showNotification("An error occurred while processing your request.", 'error');
@@ -159,7 +277,7 @@ const AdminCompanyRegistration = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Title */}
-      <PageTitle title="Company Registration" />
+      <PageTitle title={pageTitle} />
 
       {/* Notification Alert */}
       <NotificationAlert notification={notification} />
@@ -377,10 +495,12 @@ const AdminCompanyRegistration = () => {
               </Grid>
 
 
-              {/* Initial User Information */}
-              <Grid item xs={12}>
-                <h3>Initial User Information</h3>
-              </Grid>
+              {/* Initial User Information - 新規作成時のみ表示 */}
+              {!companyId && (
+                <>
+                  <Grid item xs={12}>
+                    <h3>Initial User Information</h3>
+                  </Grid>
               
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -503,6 +623,8 @@ const AdminCompanyRegistration = () => {
                   required
                 />
               </Grid>
+                </>
+              )}
 
               <Grid item xs={12}>
             <Button
@@ -513,7 +635,10 @@ const AdminCompanyRegistration = () => {
               disabled={loading}
                   sx={{ py: 1.5, mt: 2 }}
             >
-                  {loading ? "Registering..." : "Register Company"}
+                  {loading 
+                    ? (companyId ? "Updating..." : "Registering...") 
+                    : (companyId ? "Update" : "Register")
+                  }
             </Button>
               </Grid>
             </Grid>
