@@ -24,6 +24,7 @@ use App\Enums\NightShiftHoursTo;
 use App\Enums\NightShiftPayMultiplier;
 use App\Enums\HolidayPayMultiplier;
 use App\Enums\Gender;
+use App\Enums\Role;
 
 
 
@@ -34,6 +35,24 @@ class CompanyService
   public function __construct(CompanyRepository $companyRepository)
   {
     $this->companyRepository = $companyRepository;
+  }
+
+  /**
+   * Get the appropriate updated_by ID based on current authentication context
+   * Since companies.updated_by references administrators table, we need to handle
+   * the case where a regular user is updating company settings
+   */
+  private function getUpdatedByForCompany()
+  {
+    // First try to get admin user ID (preferred for company updates)
+    $adminUser = Auth::guard('admin')->user();
+    if ($adminUser) {
+      return $adminUser->id;
+    }
+    
+    // If no admin user, check if regular user has permission and return null
+    // This is acceptable since the field is nullable and has ON DELETE SET NULL
+    return null;
   }
 
   public function getSetting(int $company_id)
@@ -72,6 +91,9 @@ class CompanyService
   public function updateSetting(int $company_id, array $data)
   {
     try {
+      // Add updated_by field to track who made the change
+      $data['updated_by'] = $this->getUpdatedByForCompany();
+      
       // 更新処理
       $this->companyRepository->updateSetting($company_id, $data);
       return $this->getSetting($company_id);
@@ -85,6 +107,10 @@ class CompanyService
   {
     try {
       DB::beginTransaction();
+
+      // Get the authenticated administrator ID (companies.created_by references administrators table)
+      $adminUserId = Auth::guard('admin')->id();
+      $createdBy = $adminUserId ?: null;
 
       // 会社データの準備
       $companyData = [
@@ -102,7 +128,7 @@ class CompanyService
         'night_shift_hours_to' => $data['night_shift_hours_to'] ?? null,
         'night_shift_pay_multiplier' => $data['night_shift_pay_multiplier'] ?? null,
         'holiday_pay_multiplier' => $data['holiday_pay_multiplier'] ?? null,
-        'created_by' => Auth::id() ?? null,
+        'created_by' => $createdBy,
       ];
 
       // 会社を作成
@@ -122,7 +148,7 @@ class CompanyService
         'company_id' => $company->id,
         'first_name' => $data['user_first_name'] ?? '',
         'last_name' => $data['user_last_name'] ?? '',
-        'phone_number' => $data['user_phone'] ?? '',
+        'phone_number' => !empty($data['user_phone']) ? $data['user_phone'] : null, // 空文字列ではなくnullを設定
         'gender' => $data['user_gender'] ?? Gender::MALE->value,
         'birth_date' => $data['user_birth_date'] ?? null,
         'address' => $data['user_address'] ?? '',
@@ -132,12 +158,12 @@ class CompanyService
       ]);
 
       // ユーザーにattendance and expense registration以外の全ロールを付与
-      $rolesToAssign = [1, 2, 3, 4, 5]; // 全ロールを付与（attendance and expense registration以外）
+      $rolesToAssign = [Role::ATTENDANCE_MANAGEMENT->value, Role::FINANCE_MANAGEMENT->value, Role::USER_MANAGEMENT->value, Role::SETTING_MANAGEMENT->value]; // 全ロールを付与（attendance and expense registration以外）
       foreach ($rolesToAssign as $roleId) {
         UserRole::create([
           'user_id' => $user->id,
           'role' => $roleId,
-          'created_by' => Auth::id(),
+          'created_by' => $user->id, // Use the newly created user's ID since user_role.created_by references users table
         ]);
       }
 
@@ -216,6 +242,9 @@ class CompanyService
         return response()->json(['error' => 'Company not found'], 404);
       }
 
+      // Add updated_by field to track who made the change
+      $data['updated_by'] = $this->getUpdatedByForCompany();
+      
       $company->update($data);
       
       return response()->json([

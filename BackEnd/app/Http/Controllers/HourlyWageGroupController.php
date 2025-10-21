@@ -41,4 +41,21 @@ class HourlyWageGroupController extends Controller
         $validated = $request->validated();
         return $this->hourlyWageGroupService->updateHourlyWageGroup($validated);
     }
+
+    // Admin用のメソッド
+    public function adminGetHourlyWageGroupsByCompanyId(Request $request)
+    {
+        // 管理者認証チェック
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+
+        $company_id = $request->query('company_id');
+        if (!$company_id) {
+            return response()->json(['error' => 'Company ID is required'], 400);
+        }
+
+        return $this->hourlyWageGroupService->adminGetHourlyWageGroupsByCompanyId($company_id);
+    }
 }

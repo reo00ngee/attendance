@@ -20,12 +20,14 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { genders } from "../constants/genders";
 import { ROLES } from "../constants/roles";
 import { HourlyWageGroup } from "../types/HourlyWageGroup";
+import { Company } from "../types/Company";
 import { validateUserRegistration } from "../utils/userValidation";
 
 const AdminUserRegistration = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const userId = searchParams.get("user_id");
+  const companyIdParam = searchParams.get("company_id");
   const pageTitle = userId ? "User Modification" : "User Registration";
   const { notification, showNotification, clearNotification } = useNotification();
   const [firstName, setFirstName] = useState("");
@@ -45,15 +47,78 @@ const AdminUserRegistration = () => {
   const [loading, setLoading] = useState(true);
   const [wageGroups, setWageGroups] = useState<HourlyWageGroup[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | "">("");
 
-  // 労働時間帯取得
+  // 初期データ取得（会社一覧と編集時はユーザー情報）
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // 1. 会社一覧取得
+        const companiesRes = await fetch(
+          `${process.env.REACT_APP_BASE_URL}api/get_companies_for_management`,
+          { credentials: "include" }
+        );
+        
+        if (companiesRes.ok) {
+          const companiesData = await companiesRes.json();
+          setCompanies(companiesData);
+          
+          // URL パラメータでcompany_idが指定されている場合は設定
+          if (companyIdParam && !userId) {
+            setSelectedCompanyId(Number(companyIdParam));
+          }
+        } else {
+          showNotification("Failed to retrieve the company list.", 'error');
+        }
+
+        // 2. 編集時はユーザー情報も取得
+        if (userId) {
+          clearNotification();
+          const userRes = await fetch(
+            `${process.env.REACT_APP_BASE_URL}api/admin/get_user?user_id=${userId}`,
+            { credentials: "include" }
+          );
+          
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            setFirstName(userData.first_name);
+            setLastName(userData.last_name);
+            setEmail(userData.email);
+            setPhone(userData.phone_number);
+            setGender(userData.gender);
+            setBirthDate(userData.birth_date);
+            setAddress(userData.address);
+            setHireDate(userData.hire_date);
+            setRetireDate(userData.retire_date);
+            setWageGroup(userData.hourly_wage_group_id);
+            setSelectedRoles(userData.roles);
+            setSelectedCompanyId(userData.company_id);
+          } else {
+            showNotification("Failed to retrieve the user information.", 'error');
+          }
+        }
+      } catch (error) {
+        showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchInitialData();
+  }, [companyIdParam, userId]);
+
+  // 選択された会社の時給グループ取得
   useEffect(() => {
     const fetchWageGroups = async () => {
-      setLoading(true);
-      clearNotification();
+      if (!selectedCompanyId) {
+        setWageGroups([]);
+        return;
+      }
+
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/hourly_wage_groups`,
+          `${process.env.REACT_APP_BASE_URL}api/admin/get_hourly_wage_groups_by_company_id?company_id=${selectedCompanyId}`,
           { credentials: "include" }
         );
         if (res.ok) {
@@ -64,99 +129,60 @@ const AdminUserRegistration = () => {
         }
       } catch {
         showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
-      } finally {
-        setLoading(false);
       }
     };
     fetchWageGroups();
-  }, []);
-
-  // 編集時は既存データを取得
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (userId) {
-        setLoading(true);
-        clearNotification();
-        try {
-          const res = await fetch(
-            `${process.env.REACT_APP_BASE_URL}api/get_user_for_management/${userId}`,
-            { credentials: "include" }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            setFirstName(data.first_name);
-            setLastName(data.last_name);
-            setEmail(data.email);
-            setPhone(data.phone);
-            setGender(data.gender);
-            setBirthDate(data.birth_date);
-            setAddress(data.address);
-            setHireDate(data.hire_date);
-            setRetireDate(data.retire_date);
-            setWageGroup(data.wage_group_id);
-            setSelectedRoles(data.roles);
-          } else {
-            showNotification("Failed to retrieve the user information.", 'error');
-          }
-        } catch {
-          showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchUser();
-  }, [userId]);
+  }, [selectedCompanyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
-    const validation = validateUserRegistration({
-      firstName,
-      lastName,
-      email,
-      phone,
-      gender,
-      address,
-      hireDate,
-      retireDate,
-      wageGroup,
-      password,
-      confirm,
-      selectedRoles,
-    });
+    // 会社選択チェック
+    if (!selectedCompanyId) {
+      showNotification("Please select a company.", 'error');
+      setLoading(false);
+      return;
+    }
 
-    if (validation) {
-      showNotification(validation, 'error');
+    // Password validation for new users
+    if (!userId && (password !== confirm)) {
+      showNotification("Passwords do not match.", 'error');
+      setLoading(false);
+      return;
+    }
+
+    if (!userId && password.length < 6) {
+      showNotification("Password must be at least 6 characters long.", 'error');
       setLoading(false);
       return;
     }
 
     try {
-      const userData = {
+      const userData: any = {
+        company_id: selectedCompanyId,
         first_name: firstName,
         last_name: lastName,
         email,
-        phone,
+        phone_number: phone,
         gender,
         birth_date: birthDate,
         address,
         hire_date: hireDate,
         retire_date: retireDate,
-        wage_group_id: wageGroup,
-        password,
-        password_confirmation: confirm,
+        hourly_wage_group_id: wageGroup,
+        password: password || undefined,
+        password_confirmation: confirm || undefined,
         roles: selectedRoles,
       };
 
       if (userId) {
         // 編集
+        userData.user_id = parseInt(userId);
         const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/update_user/${userId}`,
+          `${process.env.REACT_APP_BASE_URL}api/admin/update_user`,
           {
-            method: "PUT",
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
@@ -167,7 +193,6 @@ const AdminUserRegistration = () => {
 
         if (res.ok) {
           showNotification("User updated successfully!", 'success');
-          navigate("/admin/user_management");
         } else {
           const data = await res.json();
           const errorMessages = Object.values(data.errors)
@@ -178,7 +203,7 @@ const AdminUserRegistration = () => {
       } else {
         // 新規作成
         const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/register_user`,
+          `${process.env.REACT_APP_BASE_URL}api/admin/register_user`,
           {
             method: "POST",
             headers: {
@@ -191,7 +216,6 @@ const AdminUserRegistration = () => {
 
         if (res.ok) {
           showNotification("User registered successfully!", 'success');
-          navigate("/admin/user_management");
         } else {
           const data = await res.json();
           const errorMessages = Object.values(data.errors)
@@ -241,6 +265,22 @@ const AdminUserRegistration = () => {
           }}
         >
           <form onSubmit={handleSubmit} noValidate>
+            <TextField
+              label="Company"
+              select
+              fullWidth
+              sx={{ mb: 2 }}
+              value={selectedCompanyId}
+              onChange={(e) => setSelectedCompanyId(Number(e.target.value))}
+              required
+              disabled={!!userId} // 編集時は会社を変更できないようにする
+            >
+              {companies.map((company) => (
+                <MenuItem key={company.id} value={company.id}>
+                  {company.name}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               label="First Name"
               fullWidth
@@ -335,6 +375,7 @@ const AdminUserRegistration = () => {
               sx={{ mb: 2 }}
               value={wageGroup}
               onChange={(e) => setWageGroup(Number(e.target.value))}
+              required
             >
               {wageGroups.map((group) => (
                 <MenuItem key={group.hourly_wage_group_id} value={group.hourly_wage_group_id}>
@@ -352,6 +393,7 @@ const AdminUserRegistration = () => {
               SelectProps={{
                 multiple: true,
               }}
+              required
             >
               {ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
@@ -413,7 +455,7 @@ const AdminUserRegistration = () => {
               disabled={loading}
               sx={{ py: 1.5 }}
             >
-              {loading ? (userId ? "Updating..." : "Registering...") : (userId ? "Update User" : "Register User")}
+              {loading ? (userId ? "Updating..." : "Registering...") : (userId ? "Update" : "Register")}
             </Button>
           </form>
         </Paper>

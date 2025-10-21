@@ -71,4 +71,57 @@ class UserController extends Controller
         $month = $request->query('month');
         return $this->userService->getUsersWithExpensesAndDeductions($company_id, $year, $month);
     }
+
+    // Admin用のメソッド
+    public function adminStoreUser(StoreUserRequest $request)
+    {
+        // 管理者認証チェック
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+
+        $validated = $request->validated();
+        return $this->userService->adminStoreUser($validated);
+    }
+
+    public function adminUpdateUser(UpdateUserRequest $request)
+    {
+        // 管理者認証チェック
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+
+        $validated = $request->validated();
+        return $this->userService->adminUpdateUser($validated);
+    }
+
+    public function adminGetUsersForManagement(Request $request)
+    {
+        // 管理者認証チェック
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+
+        $company_id = $request->query('company_id');
+        if (!$company_id) {
+            return response()->json(['error' => 'Company ID is required'], 400);
+        }
+
+        return $this->userService->adminGetUsersForManagement($company_id);
+    }
+
+    public function adminGetUser(Request $request)
+    {
+        // 管理者認証チェック
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+
+        $user_id = $request->query('user_id');
+        return $this->userService->adminGetUser($user_id);
+    }
 }

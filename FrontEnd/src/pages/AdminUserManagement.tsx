@@ -21,6 +21,7 @@ import NotificationAlert from "../components/NotificationAlert";
 import { useNotification } from "../hooks/useNotification";
 import { ROLES } from "../constants/roles";
 import { User } from "../types/User";
+import { Company } from "../types/Company";
 
 const AdminUserManagement = () => {
   const pageTitle = "User Management";
@@ -33,20 +34,51 @@ const AdminUserManagement = () => {
   const { notification, showNotification, clearNotification } = useNotification();
   const [noUser, setNoUser] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // フィルター用state
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<number | "">("");
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | "">("");
 
+  // 会社一覧取得
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_BASE_URL}api/get_companies_for_management`,
+          { credentials: "include" }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setCompanies(data);
+        } else {
+          showNotification("Failed to retrieve the company list.", 'error');
+        }
+      } catch {
+        showNotification("Something went wrong while fetching the company list.", 'error');
+      }
+    };
+    fetchCompanies();
+  }, []);
+
+  // 選択された会社のユーザー取得
   useEffect(() => {
     const fetchUsers = async () => {
+      if (!selectedCompanyId) {
+        setUsers([]);
+        setNoUser(false);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       clearNotification();
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_BASE_URL}api/get_users_for_management`,
+          `${process.env.REACT_APP_BASE_URL}api/admin/get_users_for_management?company_id=${selectedCompanyId}`,
           { credentials: "include" }
         );
         if (res.ok) {
@@ -63,7 +95,7 @@ const AdminUserManagement = () => {
       }
     };
     fetchUsers();
-  }, []);
+  }, [selectedCompanyId]);
 
 
   // フィルター処理
@@ -100,13 +132,29 @@ const AdminUserManagement = () => {
 
       {/* フィルターUI */}
       <Section>
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
+          <TextField
+            label="Select Company"
+            select
+            value={selectedCompanyId}
+            onChange={(e) => setSelectedCompanyId(Number(e.target.value))}
+            size="small"
+            sx={{ width: 250 }}
+          >
+            <MenuItem value="">Choose a company...</MenuItem>
+            {companies.map((company) => (
+              <MenuItem key={company.id} value={company.id}>
+                {company.name}
+              </MenuItem>
+            ))}
+          </TextField>
           <TextField
             label="Search by Name"
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             size="small"
             sx={{ width: 200 }}
+            disabled={!selectedCompanyId}
           />
           <TextField
             label="Search by Email"
@@ -114,6 +162,7 @@ const AdminUserManagement = () => {
             onChange={(e) => setEmailFilter(e.target.value)}
             size="small"
             sx={{ width: 200 }}
+            disabled={!selectedCompanyId}
           />
           <TextField
             label="Filter by Role"
@@ -122,6 +171,7 @@ const AdminUserManagement = () => {
             onChange={(e) => setRoleFilter(e.target.value === "" ? "" : Number(e.target.value))}
             size="small"
             sx={{ width: 200 }}
+            disabled={!selectedCompanyId}
           >
             <MenuItem value="">All Roles</MenuItem>
             {ROLES.map((role) => (
@@ -134,8 +184,9 @@ const AdminUserManagement = () => {
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
           <NavigationButton
             variant="contained"
-            to="/admin/user_registration"
+            to={selectedCompanyId ? `/admin/user_registration?company_id=${selectedCompanyId}` : "/admin/user_registration"}
             sx={{ minWidth: 180 }}
+            disabled={!selectedCompanyId}
           >
             REGISTER
           </NavigationButton>
@@ -182,7 +233,7 @@ const AdminUserManagement = () => {
                     <NavigationButton
                       variant="contained"
                       size="small"
-                      to={`/admin/user_registration?user_id=${user.user_id}`}
+                      to={`/admin/user_registration?user_id=${user.user_id}&company_id=${user.company_id}`}
                       sx={{
                         minWidth: 120,
                         height: 40,

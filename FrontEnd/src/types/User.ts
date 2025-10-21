@@ -13,6 +13,7 @@ export interface User {
   address?: string | null;
   hire_date?: string | null;
   retire_date?: string | null;
+  company_id?: number;
   hourly_wage_group_id: number | null;
   roles: number[];
   attendances: Attendance[];

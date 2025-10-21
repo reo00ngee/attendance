@@ -37,18 +37,18 @@ const UserRegistration = () => {
   const [address, setAddress] = useState("");
   const [hireDate, setHireDate] = useState("");
   const [retireDate, setRetireDate] = useState("");
-  const [wageGroup, setWageGroup] = useState<number | "">("");
+  const [hourlyWageGroup, setHourlyWageGroup] = useState<number | "">("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [wageGroups, setWageGroups] = useState<HourlyWageGroup[]>([]);
+  const [hourlyWageGroups, setHourlyWageGroups] = useState<HourlyWageGroup[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
 
-  // 労働時間帯取得
+  // 時給グループ取得
   useEffect(() => {
-    const fetchWageGroups = async () => {
+    const fetchHourlyWageGroups = async () => {
       setLoading(true);
       clearNotification();
       try {
@@ -60,7 +60,7 @@ const UserRegistration = () => {
         );
         if (res.ok) {
           const data = await res.json();
-          setWageGroups(data);
+          setHourlyWageGroups(data);
         } else {
           showNotification("Failed to retrieve the hourly wage group list.", 'error');
         }
@@ -70,7 +70,7 @@ const UserRegistration = () => {
         setLoading(false);
       }
     };
-    fetchWageGroups();
+    fetchHourlyWageGroups();
   }, []);
 
   // ユーザー情報取得（modify時）
@@ -99,7 +99,7 @@ const UserRegistration = () => {
             setAddress(data.address || "");
             setHireDate(data.hire_date ? data.hire_date.split("T")[0] : "");
             setRetireDate(data.retire_date ? data.retire_date.split("T")[0] : "");
-            setWageGroup(data.hourly_wage_group_id || "");
+            setHourlyWageGroup(data.hourly_wage_group_id || "");
             setSelectedRoles(data.roles || []);
           } else {
             showNotification("Failed to fetch user info. Please try again later.", 'error');
@@ -132,7 +132,7 @@ const UserRegistration = () => {
       email,
       password,
       confirm,
-      wageGroup,
+      wageGroup: hourlyWageGroup,
       selectedRoles,
       gender,
       phone,
@@ -161,7 +161,7 @@ const UserRegistration = () => {
         address,
         hire_date: hireDate,
         retire_date: retireDate,
-        hourly_wage_group_id: wageGroup,
+        hourly_wage_group_id: hourlyWageGroup,
         roles: selectedRoles,
       };
 
@@ -200,7 +200,7 @@ const UserRegistration = () => {
           setBirthDate("");
           setAddress("");
           setHireDate("");
-          setWageGroup("");
+          setHourlyWageGroup("");
           setPassword("");
           setConfirm("");
           setSelectedRoles([]);
@@ -343,15 +343,15 @@ const UserRegistration = () => {
               select
               fullWidth
               sx={{ mb: 2 }}
-              value={wageGroup}
+              value={hourlyWageGroup}
               onChange={(e) => {
                 const value = e.target.value;
-                console.log("Selected wage group:", value);
-                setWageGroup(value === "" ? "" : Number(value));
+                console.log("Selected hourly wage group:", value);
+                setHourlyWageGroup(value === "" ? "" : Number(value));
               }}
               required
             >
-              {wageGroups.map((option) => (
+              {hourlyWageGroups.map((option) => (
                 <MenuItem
                   key={option.hourly_wage_group_id}
                   value={option.hourly_wage_group_id}

@@ -78,4 +78,18 @@ class HourlyWageGroupService
       return response()->json(['error' => 'Failed to update hourly wage group'], 500);
     }
   }
+
+  // Admin用のメソッド
+  public function adminGetHourlyWageGroupsByCompanyId($company_id)
+  {
+    $hourly_wage_groups = $this->hourlyWageGroupRepository->getHourlyWageGroupsByCompanyId($company_id);
+    return response()->json($hourly_wage_groups->map(function ($hourly_wage_group) {
+      return [
+        'hourly_wage_group_id' => $hourly_wage_group->id,
+        'name' => $hourly_wage_group->name,
+        'hourly_wage' => $hourly_wage_group->hourly_wage,
+        'comment' => $hourly_wage_group->comment,
+      ];
+    }));
+  }
 }

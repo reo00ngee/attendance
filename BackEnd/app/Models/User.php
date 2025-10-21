@@ -420,4 +420,12 @@ class User extends Authenticatable
 			$this->attributes['password'] = Hash::make($value);
 		}
 	}
+
+	/**
+	 * Convert empty phone number to null before saving
+	 */
+	public function setPhoneNumberAttribute($value)
+	{
+		$this->attributes['phone_number'] = !empty($value) ? $value : null;
+	}
 }
