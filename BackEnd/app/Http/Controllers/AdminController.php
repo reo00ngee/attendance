@@ -115,7 +115,25 @@ class AdminController extends Controller
         $admin = auth('admin')->user();
         return response()->json($admin);
     }
+
+    /**
+     * Get admin info for authentication check
+     */
+    public function getAdminInfo()
+    {
+        $admin = auth('admin')->user();
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not authenticated'], 401);
+        }
+        
+        return response()->json([
+            'id' => $admin->id,
+            'name' => $admin->name,
+            'email' => $admin->email,
+        ]);
+    }
 }
+
 
 
 

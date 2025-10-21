@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HourlyWageGroupController;
@@ -41,6 +42,9 @@ Route::put('/update_company/{id}', [CompanyController::class, 'update']);
 
 // 管理者用のユーザー管理APIルート
 Route::middleware('auth:admin')->group(function () {
+    // 管理者情報取得
+    Route::get('/admin/me', [AdminController::class, 'getAdminInfo']);
+    
     // ユーザー管理
     Route::post('/admin/register_user', [UserController::class, 'adminStoreUser']);
     Route::post('/admin/update_user', [UserController::class, 'adminUpdateUser']);

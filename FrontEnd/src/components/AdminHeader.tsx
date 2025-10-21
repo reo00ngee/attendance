@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from "react";
+import React, { memo, useState, useEffect, useMemo } from "react";
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -15,7 +15,8 @@ import Drawer from '@mui/material/Drawer';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { UseAdminLogout } from '../hooks/useAdminLogin';
+import { makeAdminPageLinks } from '../utils/adminPageLink';
 
 const AdminHeader = memo(() => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -23,6 +24,7 @@ const AdminHeader = memo(() => {
   const [adminName, setAdminName] = useState<string>("");
 
   const navigate = useNavigate();
+  const adminLogout = UseAdminLogout();
 
   // Get admin name from localStorage
   useEffect(() => {
@@ -33,15 +35,8 @@ const AdminHeader = memo(() => {
     }
   }, []);
 
-  const adminPageLinks = [
-    { label: "Dashboard", path: "/admin/dashboard" },
-    { label: "Register Admin", path: "/admin/registration" },
-    { label: "Manage Admins", path: "/admin/management" },
-    { label: "Register User", path: "/admin/user_registration" },
-    { label: "Manage Users", path: "/admin/user_management" },
-    { label: "Register Company", path: "/admin/company_registration" },
-    { label: "Manage Companies", path: "/admin/company_management" },
-  ];
+  // ページリンクをメモ化
+  const adminPageLinks = useMemo(() => makeAdminPageLinks(), []);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -64,19 +59,9 @@ const AdminHeader = memo(() => {
     handleDrawerClose();
   };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/admin/logout`,
-        {},
-        { withCredentials: true }
-      );
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      localStorage.removeItem('admin');
-      navigate("/admin/login");
-    }
+  const handleLogout = () => {
+    console.log('Starting admin logout...');
+    adminLogout.mutate();
     handleMenuClose();
   };
 
@@ -130,7 +115,7 @@ const AdminHeader = memo(() => {
         {/* Title */}
         <Typography
           variant="h6"
-          onClick={() => handleNavigate('/admin/dashboard')}
+          onClick={() => handleNavigate('/admin/company_management')}
           sx={{
             flexGrow: 1,
             textDecoration: 'none',

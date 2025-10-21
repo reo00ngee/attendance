@@ -23,7 +23,6 @@ import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import AdminLogin from '../pages/AdminLogin'
 import AdminRegistration from '../pages/AdminRegistration'
-import AdminDashboard from '../pages/AdminDashboard'
 import AdminManagement from '../pages/AdminManagement'
 import AdminUserRegistration from '../pages/AdminUserRegistration'
 import AdminUserManagement from '../pages/AdminUserManagement'
@@ -69,12 +68,12 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
             {
-                path: 'registration',
-                element: <AdminRegistration />,
+                index: true,
+                loader: () => redirect('/admin/company_management')
             },
             {
-                path: 'dashboard',
-                element: <AdminDashboard />,
+                path: 'registration',
+                element: <AdminRegistration />,
             },
             {
                 path: 'management',

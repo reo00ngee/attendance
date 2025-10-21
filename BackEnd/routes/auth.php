@@ -47,7 +47,7 @@ Route::post('/admin/logout', [\App\Http\Controllers\Auth\AdminAuthenticatedSessi
                 ->name('admin.logout');
 
 // Admin protected routes
-Route::middleware('auth.admin')->group(function () {
+Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/me', [\App\Http\Controllers\AdminController::class, 'me']);
     Route::apiResource('admin/administrators', \App\Http\Controllers\AdminController::class);
 });

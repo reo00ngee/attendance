@@ -44,12 +44,25 @@ class AdminAuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): Response
     {
-        Auth::guard('admin')->logout();
+        try {
+            // 現在の認証状態をログに記録
+            $admin = Auth::guard('admin')->user();
+            if ($admin) {
+                Log::info('Admin logout: ' . $admin->email);
+            }
 
-        $request->session()->invalidate();
+            Auth::guard('admin')->logout();
 
-        $request->session()->regenerateToken();
+            $request->session()->invalidate();
 
-        return response()->noContent();
+            $request->session()->regenerateToken();
+
+            Log::info('Admin session destroyed successfully');
+            
+            return response()->noContent();
+        } catch (\Exception $e) {
+            Log::error('Admin logout failed: ' . $e->getMessage());
+            return response()->json(['error' => 'Logout failed'], 500);
+        }
     }
 }
