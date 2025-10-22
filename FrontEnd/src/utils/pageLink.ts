@@ -18,7 +18,6 @@ export const makePageLinks = () => {
   if (userRoles.includes(2)) {
     links.push(
       { label: "Expense and Deduction Management", path: "/expense_and_deduction_management" },
-      { label: "Expense Approval", path: "/expense_approval" },
     );
   }
   // User Management

@@ -10,6 +10,10 @@ import {
   TableHead,
   TableRow,
   Alert,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Button,
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -100,6 +104,28 @@ const ExpenseAndDeductionManagement = () => {
     fetchAttendanceData();
   }, [year, month]);
 
+  const handleExpenseClosure = async () => {
+    setLoading(true);
+    clearNotification();
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/close_expenses?year=${year}&month=${month}`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (res.ok) {
+        showNotification("Expense closure successful", 'success');
+      } else {
+        showNotification("Failed to close expenses", 'error');
+      }
+    } catch {
+      showNotification("Something went wrong while closing expenses. Please try again later.", 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!hasRole(2)) {
     return <Navigate to="/attendance_registration_for_monthly" />;
   }
@@ -122,6 +148,18 @@ const ExpenseAndDeductionManagement = () => {
 
       {/* loading時はローディング表示 */}
       <LoadingSpinner loading={loading} />
+
+      <Section>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            onClick={handleExpenseClosure}
+            sx={{ minWidth: 180 }}
+          >
+            Expense Closure
+          </Button>
+        </Box>
+      </Section>
 
 
       {/* テーブル */}

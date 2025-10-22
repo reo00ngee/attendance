@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   Alert,
+  Button,
 } from "@mui/material";
 import Section from "../components/Section";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -93,6 +94,28 @@ const AttendanceManagement = () => {
     fetchAttendanceData();
   }, [year, month]);
 
+  const handleAttendanceClosure = async () => {
+    setLoading(true);
+    clearNotification();
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/close_attendances?year=${year}&month=${month}`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (res.ok) {
+        showNotification("Attendance closure successful", 'success');
+      } else {
+        showNotification("Failed to close attendance", 'error');
+      }
+    } catch {
+      showNotification("Something went wrong while closing attendance. Please try again later.", 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!hasRole(1)) {
     return <Navigate to="/attendance_registration_for_monthly" />;
   }
@@ -115,6 +138,18 @@ const AttendanceManagement = () => {
 
       {/* loading時はローディング表示 */}
       <LoadingSpinner loading={loading} />
+
+      <Section>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            onClick={handleAttendanceClosure}
+            sx={{ minWidth: 180 }}
+          >
+            Attendance Closure
+          </Button>
+        </Box>
+      </Section>
 
 
       {/* テーブル */}
