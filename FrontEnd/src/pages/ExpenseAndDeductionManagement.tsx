@@ -108,14 +108,28 @@ const ExpenseAndDeductionManagement = () => {
     setLoading(true);
     clearNotification();
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/close_expenses?year=${year}&month=${month}`, {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/perform_expense_closure`, {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
       if (res.ok) {
-        showNotification("Expense closure successful", 'success');
+        const data = await res.json();
+        if (data?.success) {
+          // APIの返り値に基づきstateを更新
+          setUsers((prev) => prev.map((u) => ({
+            ...u,
+            company: {
+              id: (u as any).company?.id ?? u.company_id ?? 0,
+              attendance_ready: Boolean((u as any).company?.attendance_ready),
+              expense_ready: Boolean(data.expense_ready ?? (u as any).company?.expense_ready ?? true),
+            },
+          })));
+          showNotification("Expense closure successful", 'success');
+        } else {
+          showNotification("Failed to close expenses", 'error');
+        }
       } else {
         showNotification("Failed to close expenses", 'error');
       }
@@ -154,6 +168,7 @@ const ExpenseAndDeductionManagement = () => {
           <Button
             variant="contained"
             onClick={handleExpenseClosure}
+            disabled={loading || users.length === 0 || Boolean((users as any)[0]?.company?.expense_ready)}
             sx={{ minWidth: 180 }}
           >
             Expense Closure

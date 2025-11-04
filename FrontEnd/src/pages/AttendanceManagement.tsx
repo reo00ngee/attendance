@@ -98,14 +98,27 @@ const AttendanceManagement = () => {
     setLoading(true);
     clearNotification();
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/close_attendances?year=${year}&month=${month}`, {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/perform_attendance_closure`, {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
       if (res.ok) {
-        showNotification("Attendance closure successful", 'success');
+        const data = await res.json();
+        if (data?.success) {
+          setUsers((prev) => prev.map((u) => ({
+            ...u,
+            company: {
+              id: (u as any).company?.id ?? u.company_id ?? 0,
+              attendance_ready: Boolean(data.attendance_ready ?? (u as any).company?.attendance_ready ?? true),
+              expense_ready: Boolean((u as any).company?.expense_ready),
+            },
+          })));
+          showNotification("Attendance closure successful", 'success');
+        } else {
+          showNotification("Failed to close attendance", 'error');
+        }
       } else {
         showNotification("Failed to close attendance", 'error');
       }
@@ -144,6 +157,7 @@ const AttendanceManagement = () => {
           <Button
             variant="contained"
             onClick={handleAttendanceClosure}
+            disabled={loading || users.length === 0 || Boolean((users as any)[0]?.company?.attendance_ready)}
             sx={{ minWidth: 180 }}
           >
             Attendance Closure

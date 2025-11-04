@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ClosureController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
@@ -74,6 +75,12 @@ Route::prefix('api')->name('api.')->middleware(\Laravel\Sanctum\Http\Middleware\
     Route::get('/get_informations', [\App\Http\Controllers\InformationController::class, 'getInformations']);
     Route::get('/get_setting', [CompanyController::class, 'getSetting'])->middleware('role:4');
     Route::post('/update_setting', [CompanyController::class, 'updateSetting'])->middleware('role:4');
+
+    // Closure operations
+    Route::post('/perform_attendance_closure', [ClosureController::class, 'performAttendanceClosure'])->middleware('role:1');
+    Route::post('/perform_expense_closure', [ClosureController::class, 'performExpenseClosure'])->middleware('role:2');
+    Route::post('/check_attendance_closure', [ClosureController::class, 'checkAttendanceClosure'])->middleware('role:1');
+    Route::post('/check_expense_closure', [ClosureController::class, 'checkExpenseClosure'])->middleware('role:2');
 });
 
 

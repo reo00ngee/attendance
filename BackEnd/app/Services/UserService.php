@@ -153,7 +153,21 @@ class UserService
     $closing_date = $this->getCompanyClosingDate($company_id);
     [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
     $users = $this->userRepository->getUsersWithAttendances($company_id, $start, $end);
-    return response()->json($users);
+
+    $company = $this->getCompany($company_id);
+    $companyInfo = $company ? [
+      'id' => $company->id,
+      'attendance_ready' => (bool) $company->attendance_ready,
+      'expense_ready' => (bool) $company->expense_ready,
+    ] : null;
+
+    $payload = $users->map(function ($user) use ($companyInfo) {
+      $arr = $user->toArray();
+      $arr['company'] = $companyInfo;
+      return $arr;
+    });
+
+    return response()->json($payload);
   }
 
   public function getUsersWithExpensesAndDeductions($company_id, $year, $month)
@@ -161,7 +175,21 @@ class UserService
     $closing_date = $this->getCompanyClosingDate($company_id);
     [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
     $users = $this->userRepository->getUsersWithExpensesAndDeductions($company_id, $start, $end);
-    return response()->json($users);
+
+    $company = $this->getCompany($company_id);
+    $companyInfo = $company ? [
+      'id' => $company->id,
+      'attendance_ready' => (bool) $company->attendance_ready,
+      'expense_ready' => (bool) $company->expense_ready,
+    ] : null;
+
+    $payload = $users->map(function ($user) use ($companyInfo) {
+      $arr = $user->toArray();
+      $arr['company'] = $companyInfo;
+      return $arr;
+    });
+
+    return response()->json($payload);
   }
 
   // Admin用のメソッド

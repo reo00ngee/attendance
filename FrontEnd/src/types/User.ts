@@ -18,4 +18,9 @@ export interface User {
   roles: number[];
   attendances: Attendance[];
   expenses_and_deductions: ExpenseAndDeduction[];
+  company?: {
+    id: number;
+    attendance_ready: boolean;
+    expense_ready: boolean;
+  };
 }
