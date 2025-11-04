@@ -22,4 +22,20 @@ trait PeriodCalculatorTrait
 
         return [$start, $end];
     }
+
+    /**
+     * Calculate the next closing date period based on last_closing_date and closing_date
+     * Returns [start_date, end_date] for the closure period
+     */
+    public function getClosurePeriodRange(Carbon $last_closing_date, int $closing_date): array
+    {
+        $start = $last_closing_date->copy()->addDay()->startOfDay();
+        
+        // Calculate the next closing date
+        $nextClosingMonth = $last_closing_date->copy()->addMonth();
+        $targetDay = min($closing_date, $nextClosingMonth->daysInMonth);
+        $end = $nextClosingMonth->copy()->day($targetDay)->endOfDay();
+
+        return [$start, $end];
+    }
 }
