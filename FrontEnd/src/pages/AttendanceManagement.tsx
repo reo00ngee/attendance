@@ -94,10 +94,50 @@ const AttendanceManagement = () => {
     fetchAttendanceData();
   }, [year, month]);
 
+  const getStatusLabel = (status: number) => {
+    switch (status) {
+      case 0: return 'CREATED';
+      case 1: return 'SUBMITTED';
+      case 2: return 'REJECTED';
+      case 3: return 'APPROVED';
+      case 4: return 'CREATED_BY_MANAGER';
+      case 5: return 'CALCULATED';
+      default: return String(status);
+    }
+  };
+
   const handleAttendanceClosure = async () => {
     setLoading(true);
     clearNotification();
     try {
+      // Pre-check for clearer validation message
+      const check = await fetch(`${process.env.REACT_APP_BASE_URL}api/check_attendance_closure`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const checkBody = await check.json().catch(() => ({}));
+      if (!check.ok || checkBody?.success === false) {
+        const data = Array.isArray(checkBody?.data) ? checkBody.data : [];
+        const names = Array.from(new Set(data.map((d: any) => d.user_name))).filter(Boolean);
+        const namePreview = names.slice(0, 5).join(', ');
+        const moreCount = Math.max(0, names.length - 5);
+        const counts: Record<string, number> = {};
+        data.forEach((d: any) => {
+          const label = getStatusLabel(d?.submission_status);
+          if (label === 'CREATED' || label === 'SUBMITTED' || label === 'REJECTED') {
+            counts[label] = (counts[label] || 0) + 1;
+          }
+        });
+        const breakdown = Object.entries(counts).map(([k, v]) => `${k}: ${v}`).join(', ');
+        const msg = names.length > 0
+          ? `Cannot close attendance. Found non-eligible records (${breakdown}). Affected users: ${namePreview}${moreCount ? ` and ${moreCount} more` : ''}.`
+          : (checkBody?.error || 'Cannot close attendance due to validation errors.');
+        showNotification(msg, 'error');
+        return;
+      }
+
       const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/perform_attendance_closure`, {
         method: "POST",
         mode: "cors",

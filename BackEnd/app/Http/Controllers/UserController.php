@@ -33,13 +33,13 @@ class UserController extends Controller
     {
         $user = Auth::user();
         $validated = $request->validated();
-        $this->userService->storeUser($user, $validated);
+        return $this->userService->storeUser($user, $validated);
     }
 
     public function updateUser(UpdateUserRequest $request)
     {
         $validated = $request->validated();
-        $this->userService->updateUser($validated);
+        return $this->userService->updateUser($validated);
     }
 
     public function getUsersForManagement(Request $request)

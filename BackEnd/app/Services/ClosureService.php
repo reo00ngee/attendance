@@ -33,26 +33,13 @@ class ClosureService
 
         [$start, $end] = $this->getClosurePeriodRange($company->last_closing_date, $company->closing_date);
 
-        // Check for unsubmitted attendances
-        $unsubmitted = $this->closureRepository->getUnsubmittedAttendances($company_id, $start, $end);
-        
-        if ($unsubmitted->isNotEmpty()) {
+        // Strict: allow closure only when ALL attendances in period are APPROVED
+        $nonApproved = $this->closureRepository->getUnsubmittedAttendances($company_id, $start, $end);
+        if ($nonApproved->isNotEmpty()) {
             return [
                 'success' => false,
-                'error' => 'There are unsubmitted attendances in the closure period',
-                'data' => $unsubmitted
-            ];
-        }
-
-        // Check for rejected or created attendances (require confirmation)
-        $rejected_or_created = $this->closureRepository->getRejectedOrCreatedAttendances($company_id, $start, $end);
-        
-        if ($rejected_or_created->isNotEmpty()) {
-            return [
-                'success' => false,
-                'requires_confirmation' => true,
-                'message' => 'There are rejected or created attendances in the closure period',
-                'users' => $rejected_or_created
+                'error' => 'There are attendances not approved in the closure period',
+                'data' => $nonApproved
             ];
         }
 
@@ -82,15 +69,10 @@ class ClosureService
                 return ['success' => false, 'error' => 'Attendance closure already prepared'];
             }
 
-            // Re-validate using the same logic as check endpoint
+            // Re-validate strictly; do not allow force to bypass
             $check = $this->checkAttendanceClosure($company_id);
             if (!$check['success']) {
-                // allow proceed only if it requires confirmation and force=true
-                if (!empty($check['requires_confirmation']) && $check['requires_confirmation'] === true && $force === true) {
-                    // continue
-                } else {
-                    return $check;
-                }
+                return $check;
             }
 
             DB::transaction(function () use ($company_id, $end) {
@@ -124,26 +106,13 @@ class ClosureService
 
         [$start, $end] = $this->getClosurePeriodRange($company->last_closing_date, $company->closing_date);
 
-        // Check for unsubmitted expenses
-        $unsubmitted = $this->closureRepository->getUnsubmittedExpenses($company_id, $start, $end);
-        
-        if ($unsubmitted->isNotEmpty()) {
+        // Strict: allow closure only when ALL expenses in period are APPROVED
+        $nonApproved = $this->closureRepository->getUnsubmittedExpenses($company_id, $start, $end);
+        if ($nonApproved->isNotEmpty()) {
             return [
                 'success' => false,
-                'error' => 'There are unsubmitted expenses in the closure period',
-                'data' => $unsubmitted
-            ];
-        }
-
-        // Check for rejected or created expenses (require confirmation)
-        $rejected_or_created = $this->closureRepository->getRejectedOrCreatedExpenses($company_id, $start, $end);
-        
-        if ($rejected_or_created->isNotEmpty()) {
-            return [
-                'success' => false,
-                'requires_confirmation' => true,
-                'message' => 'There are rejected or created expenses in the closure period',
-                'users' => $rejected_or_created
+                'error' => 'There are expenses not approved in the closure period',
+                'data' => $nonApproved
             ];
         }
 
@@ -173,15 +142,10 @@ class ClosureService
                 return ['success' => false, 'error' => 'Expense closure already prepared'];
             }
 
-            // Re-validate using the same logic as check endpoint
+            // Re-validate strictly; do not allow force to bypass
             $check = $this->checkExpenseClosure($company_id);
             if (!$check['success']) {
-                // allow proceed only if it requires confirmation and force=true
-                if (!empty($check['requires_confirmation']) && $check['requires_confirmation'] === true && $force === true) {
-                    // continue
-                } else {
-                    return $check;
-                }
+                return $check;
             }
 
             DB::transaction(function () use ($company_id, $end) {

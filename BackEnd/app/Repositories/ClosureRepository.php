@@ -28,8 +28,13 @@ class ClosureRepository
         return Attendance::join('users', 'attendance.user_id', '=', 'users.id')
             ->where('users.company_id', $company_id)
             ->whereBetween('attendance.start_time', [$start, $end])
-            ->whereNotIn('attendance.submission_status', [SubmissionStatus::SUBMITTED, SubmissionStatus::APPROVED])
-            ->select('attendance.*', 'users.name as user_name')
+            // Disallow CREATED, SUBMITTED, REJECTED
+            ->whereIn('attendance.submission_status', [
+                SubmissionStatus::CREATED->value,
+                SubmissionStatus::SUBMITTED->value,
+                SubmissionStatus::REJECTED->value,
+            ])
+            ->select('attendance.*', \Illuminate\Support\Facades\DB::raw("CONCAT(users.first_name, ' ', users.last_name) as user_name"))
             ->get();
     }
 
@@ -42,7 +47,7 @@ class ClosureRepository
             ->where('users.company_id', $company_id)
             ->whereBetween('attendance.start_time', [$start, $end])
             ->whereIn('attendance.submission_status', [SubmissionStatus::REJECTED, SubmissionStatus::CREATED])
-            ->select('attendance.*', 'users.name as user_name', 'users.id as user_id')
+            ->select('attendance.*', \Illuminate\Support\Facades\DB::raw("CONCAT(users.first_name, ' ', users.last_name) as user_name"), 'users.id as user_id')
             ->get()
             ->groupBy('user_id')
             ->map(function ($group) {
@@ -65,8 +70,13 @@ class ClosureRepository
         return ExpensesAndDeduction::join('users', 'expenses_and_deductions.user_id', '=', 'users.id')
             ->where('users.company_id', $company_id)
             ->whereBetween('expenses_and_deductions.date', [$start, $end])
-            ->whereNotIn('expenses_and_deductions.submission_status', [SubmissionStatus::SUBMITTED, SubmissionStatus::APPROVED])
-            ->select('expenses_and_deductions.*', 'users.name as user_name')
+            // Disallow CREATED, SUBMITTED, REJECTED
+            ->whereIn('expenses_and_deductions.submission_status', [
+                SubmissionStatus::CREATED->value,
+                SubmissionStatus::SUBMITTED->value,
+                SubmissionStatus::REJECTED->value,
+            ])
+            ->select('expenses_and_deductions.*', \Illuminate\Support\Facades\DB::raw("CONCAT(users.first_name, ' ', users.last_name) as user_name"))
             ->get();
     }
 
@@ -79,7 +89,7 @@ class ClosureRepository
             ->where('users.company_id', $company_id)
             ->whereBetween('expenses_and_deductions.date', [$start, $end])
             ->whereIn('expenses_and_deductions.submission_status', [SubmissionStatus::REJECTED, SubmissionStatus::CREATED])
-            ->select('expenses_and_deductions.*', 'users.name as user_name', 'users.id as user_id')
+            ->select('expenses_and_deductions.*', \Illuminate\Support\Facades\DB::raw("CONCAT(users.first_name, ' ', users.last_name) as user_name"), 'users.id as user_id')
             ->get()
             ->groupBy('user_id')
             ->map(function ($group) {

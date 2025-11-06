@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class AttendanceBreak extends Model
 {
 	use SoftDeletes;
-	protected $table = 'breaks';
+	protected $table = 'attendance_breaks';
 
 	protected $casts = [
 		'user_id' => 'int',
