@@ -157,7 +157,7 @@ class UserRepository
     return User::where('company_id', $company_id)
       ->with(['attendances' => function ($query) use ($start, $end) {
         $query->whereBetween('start_time', [$start, $end])
-          ->where('submission_status', SubmissionStatus::SUBMITTED)
+          ->where('submission_status', SubmissionStatus::SUBMITTED->value)
           ->orderBy('start_time', 'desc')
           ->with('attendanceBreaks');
       }])

@@ -60,8 +60,8 @@ class ExpensesAndDeductionRepository
     return ExpensesAndDeduction::where('user_id', $user_id)
       ->whereBetween('date', [$start, $end])
       ->whereIn('submission_status', [
-        SubmissionStatus::SUBMITTED,
-        SubmissionStatus::APPROVED
+        SubmissionStatus::SUBMITTED->value,
+        SubmissionStatus::APPROVED->value,
       ])
       ->get();
   }
@@ -84,6 +84,7 @@ class ExpensesAndDeductionRepository
       ->whereBetween('date', [$start, $end])
       ->where('submission_status', SubmissionStatus::CREATED_BY_MANAGER->value)
       ->get();
+      
   }
 
 }

@@ -129,8 +129,8 @@ class AttendanceRepository
             ->where('user_id', $user_id)
             ->whereBetween('start_time', [$start, $end])
             ->whereIn('submission_status', [
-                SubmissionStatus::SUBMITTED,
-                SubmissionStatus::APPROVED
+                SubmissionStatus::SUBMITTED->value,
+                SubmissionStatus::APPROVED->value,
             ])
             ->orderBy('start_time', 'desc')
             ->get();

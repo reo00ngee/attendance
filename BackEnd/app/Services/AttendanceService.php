@@ -69,7 +69,7 @@ class AttendanceService
                 'start_time'        => $attendance->start_time ? $attendance->start_time->format('Y-m-d\TH:i:s') : '',
                 'end_time'          => $attendance->end_time ? $attendance->end_time->format('Y-m-d\TH:i:s') : '',
                 'comment'           => $attendance->comment,
-                'submission_status' => $attendance->submission_status,
+                'submission_status' => $attendance->submission_status?->value,
                 'attendance_breaks' => $attendance->attendanceBreaks->map(function ($break) {
                     return [
                         'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',
@@ -116,7 +116,7 @@ class AttendanceService
                 'start_time'        => $attendance->start_time ? $attendance->start_time->format('Y-m-d\TH:i:s') : '',
                 'end_time'          => $attendance->end_time ? $attendance->end_time->format('Y-m-d\TH:i:s') : '',
                 'comment'           => $attendance->comment,
-                'submission_status' => $attendance->submission_status,
+                'submission_status' => $attendance->submission_status?->value,
                 'attendance_breaks' => $attendance->attendanceBreaks->map(function ($break) {
                     return [
                         'start_time' => $break->start_time ? $break->start_time->format('Y-m-d\TH:i:s') : '',
