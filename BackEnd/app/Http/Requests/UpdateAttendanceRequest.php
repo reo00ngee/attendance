@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Facades\Log;
 
 class UpdateAttendanceRequest extends FormRequest
 {
@@ -22,9 +24,9 @@ class UpdateAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'attendance_id' => 'required|integer|exists:attendance,id',
+            'attendance_id' => 'nullable|integer|exists:attendance,id',
             'start_time' => 'required|date',
-            'end_time' => 'required|date|after_or_equal:start_time',
+            'end_time' => 'nullable|date|after_or_equal:start_time',
             'comment' => 'nullable|string|max:2000',
             'attendance_breaks' => 'nullable|array',
             'attendance_breaks.*.start_time' => 'required|date',
@@ -72,5 +74,15 @@ class UpdateAttendanceRequest extends FormRequest
                 }
             }
         });
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        Log::error('UpdateAttendanceRequest validation failed', [
+            'errors' => $validator->errors()->toArray(),
+            'input' => $this->all(),
+        ]);
+
+        parent::failedValidation($validator);
     }
 }

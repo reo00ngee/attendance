@@ -157,7 +157,11 @@ class UserRepository
     return User::where('company_id', $company_id)
       ->with(['attendances' => function ($query) use ($start, $end) {
         $query->whereBetween('start_time', [$start, $end])
-          ->where('submission_status', SubmissionStatus::SUBMITTED->value)
+          ->whereIn('submission_status', [
+            SubmissionStatus::SUBMITTED->value,
+            SubmissionStatus::APPROVED->value,
+            SubmissionStatus::CALCULATED->value,
+          ])
           ->orderBy('start_time', 'desc')
           ->with('attendanceBreaks');
       }])
@@ -169,6 +173,12 @@ class UserRepository
     return User::where('company_id', $company_id)
       ->with(['expenses_and_deductions' => function ($query) use ($start, $end) {
         $query->whereBetween('date', [$start, $end])
+          ->whereIn('submission_status', [
+            SubmissionStatus::SUBMITTED->value,
+            SubmissionStatus::APPROVED->value,
+            SubmissionStatus::CREATED_BY_MANAGER->value,
+            SubmissionStatus::CALCULATED->value,
+          ])
           ->orderBy('date', 'desc');
       }])
       ->get();

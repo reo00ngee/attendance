@@ -14,6 +14,7 @@ use DateTime;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class AttendanceService
 {
@@ -33,8 +34,17 @@ class AttendanceService
         $this->informationRepository = $informationRepository;
     }
 
-    public function startWork($user_id)
+    public function startWork(int $company_id, int $user_id)
     {
+        $company = $this->getCompany($company_id);
+        if (!$company) {
+            throw ValidationException::withMessages([
+                'company' => 'Company not found for attendance registration.',
+            ]);
+        }
+
+        $this->assertAttendanceDateAllowed($company, Carbon::now());
+
         return $this->attendanceRepository->saveStartAttendance($user_id);
     }
 
@@ -53,9 +63,47 @@ class AttendanceService
         return $this->attendanceRepository->saveFinishBreak($attendance_id);
     }
 
-    public function updateAttendance($user_id, $validated)
+    public function updateAttendance(int $company_id, int $user_id, array $validated)
     {
-        return $this->attendanceRepository->updateAttendance($user_id, $validated);
+        $company = $this->getCompany($company_id);
+        if (!$company) {
+            throw ValidationException::withMessages([
+                'company' => 'Company not found for attendance registration.',
+            ]);
+        }
+
+        if (!empty($validated['start_time'])) {
+            $this->assertAttendanceDateAllowed($company, Carbon::parse($validated['start_time']));
+        }
+
+        if (!empty($validated['end_time'])) {
+            $this->assertAttendanceDateAllowed($company, Carbon::parse($validated['end_time']));
+        }
+
+        if (!empty($validated['attendance_breaks'])) {
+            foreach ($validated['attendance_breaks'] as $break) {
+                if (!empty($break['start_time'])) {
+                    $this->assertAttendanceDateAllowed($company, Carbon::parse($break['start_time']));
+                }
+                if (!empty($break['end_time'])) {
+                    $this->assertAttendanceDateAllowed($company, Carbon::parse($break['end_time']));
+                }
+            }
+        }
+
+        Log::debug('Attendance update request', [
+            'user_id' => $user_id,
+            'company_id' => $company->id,
+            'attendance_id' => $validated['attendance_id'] ?? null,
+            'start_time' => $validated['start_time'] ?? null,
+            'end_time' => $validated['end_time'] ?? null,
+        ]);
+
+        if (!empty($validated['attendance_id'])) {
+            return $this->attendanceRepository->updateAttendance($user_id, $validated);
+        }
+
+        return $this->attendanceRepository->createAttendance($user_id, $validated);
     }
 
     public function getAllAttendancesForUser($company_id, $user_id, $year, $month)
@@ -83,10 +131,31 @@ class AttendanceService
     public function submitAttendances($company_id, $user_id, $year, $month)
     {
         try {
-            DB::transaction(function () use ($company_id, $user_id, $year, $month) {
-                $closing_date = $this->getCompanyClosingDate($company_id);
-                [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
-                $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $start, $end);
+            $company = $this->getCompany($company_id);
+            if (!$company) {
+                throw ValidationException::withMessages([
+                    'company' => 'Company not found for attendance submission.',
+                ]);
+            }
+
+            $closingDate = $company->closing_date;
+            [$periodStart, $periodEnd] = $this->getPeriodRange($closingDate, $year, $month);
+
+            if ($company->attendance_ready) {
+                $lockedThrough = $company->last_closing_date->copy()->addMonth()->startOfDay();
+
+                if ($periodEnd->copy()->startOfDay()->lte($lockedThrough)) {
+                    throw ValidationException::withMessages([
+                        'period' => sprintf(
+                            'attendance_readyが有効のため、%s以前の勤怠は申請できません。',
+                            $lockedThrough->toDateString()
+                        ),
+                    ]);
+                }
+            }
+
+            DB::transaction(function () use ($user_id, $company_id, $periodStart, $periodEnd) {
+                $attendances = $this->attendanceRepository->getAllAttendancesForUser($user_id, $periodStart, $periodEnd);
                 foreach ($attendances as $attendance) {
                     $this->attendanceRepository->submitAttendance($attendance);
                 }
@@ -100,6 +169,8 @@ class AttendanceService
             );
 
             return $this->getAllAttendancesForUser($company_id, $user_id, $year, $month);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to submit attendances: ' . $e->getMessage()], 500);
         }
@@ -175,6 +246,31 @@ class AttendanceService
             return $this->getSubmittedAndApprovedAttendances($company_id, $user_id, $year, $month);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to reject attendances: ' . $e->getMessage()], 500);
+        }
+    }
+
+    private function assertAttendanceDateAllowed($company, Carbon $date): void
+    {
+        if (!$company->attendance_ready) {
+            return;
+        }
+
+        $lockedThrough = $company->last_closing_date->copy()->addMonth()->startOfDay();
+        Log::debug('Attendance date validation', [
+            'user_id' => auth()->id(),
+            'company_id' => $company->id,
+            'target_date' => $date->copy()->startOfDay()->toDateString(),
+            'locked_through' => $lockedThrough->toDateString(),
+            'attendance_ready' => $company->attendance_ready,
+        ]);
+
+        if ($date->copy()->startOfDay()->lte($lockedThrough)) {
+            throw ValidationException::withMessages([
+                'date' => sprintf(
+                    'attendance_readyが有効のため、%s以前の日付では勤怠を登録できません。',
+                    $lockedThrough->toDateString()
+                ),
+            ]);
         }
     }
 }

@@ -325,22 +325,25 @@ const AttendanceRegistrationForDaily = () => {
         return;
       }
 
-      const getCurrentDateTimeString = () => {
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const hh = String(now.getHours()).padStart(2, "0");
-        const min = String(now.getMinutes()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}T${hh}:${min}:00`;
-      };
-
       const replaceDateTime = (date: string, time: string) => `${date}T${time}:00`;
 
       const updatedStartTime = replaceDateTime(editedStartDate, editedStartTime);
-      const updatedEndTime = editedEndTime && editedEndDate
-        ? replaceDateTime(editedEndDate, editedEndTime)
-        : getCurrentDateTimeString();
+      let endDateToUse = editedEndDate;
+
+      if (!editedEndDate) {
+        endDateToUse = editedStartDate;
+      }
+
+      let updatedEndTime = editedEndTime && endDateToUse
+        ? replaceDateTime(endDateToUse, editedEndTime)
+        : replaceDateTime(editedStartDate, editedStartTime);
+
+      const startDateObj = new Date(updatedStartTime);
+      const endDateObj = new Date(updatedEndTime);
+
+      if (endDateObj < startDateObj) {
+        updatedEndTime = replaceDateTime(editedStartDate, editedEndTime || editedStartTime);
+      }
 
       const updatedBreaks = editedBreaks.map((breakItem) => ({
         start_time: replaceDateTime(breakItem.start_date, breakItem.start_time),
@@ -350,7 +353,7 @@ const AttendanceRegistrationForDaily = () => {
       }));
 
       const body = {
-        attendance_id: attendance.attendance_id,
+        attendance_id: attendance.attendance_id ? attendance.attendance_id : undefined,
         start_time: updatedStartTime,
         end_time: updatedEndTime,
         attendance_breaks: updatedBreaks,

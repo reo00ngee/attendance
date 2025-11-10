@@ -65,14 +65,14 @@ class AttendanceRepository
             }
 
             $attendance->start_time = $validated['start_time'];
-            $attendance->end_time = $validated['end_time'];
-            $attendance->comment = $validated['comment'];
+            $attendance->end_time = $validated['end_time'] ?? null;
+            $attendance->comment = $validated['comment'] ?? null;
             $attendance->submission_status = SubmissionStatus::CREATED;
             $attendance->save();
 
             $attendance->attendanceBreaks()->delete();
 
-            foreach ($validated['attendance_breaks'] as $break) {
+            foreach ($validated['attendance_breaks'] ?? [] as $break) {
                 $attendance->attendanceBreaks()->create([
                     'user_id' => $user_id,
                     'start_time' => $break['start_time'],
@@ -81,11 +81,41 @@ class AttendanceRepository
             }
 
             DB::commit();
+
+            return $attendance->fresh('attendanceBreaks');
         } catch (\Exception $e) {
             DB::rollBack();
 
             Log::error("Failed to update attendance: " . $e->getMessage());
 
+            throw $e;
+        }
+    }
+
+    public function createAttendance($user_id, $validated)
+    {
+        try {
+            return DB::transaction(function () use ($user_id, $validated) {
+                $attendance = new Attendance();
+                $attendance->user_id = $user_id;
+                $attendance->start_time = $validated['start_time'];
+                $attendance->end_time = $validated['end_time'] ?? null;
+                $attendance->comment = $validated['comment'] ?? null;
+                $attendance->submission_status = SubmissionStatus::CREATED;
+                $attendance->save();
+
+                foreach ($validated['attendance_breaks'] ?? [] as $break) {
+                    $attendance->attendanceBreaks()->create([
+                        'user_id' => $user_id,
+                        'start_time' => $break['start_time'],
+                        'end_time' => $break['end_time'],
+                    ]);
+                }
+
+                return $attendance->fresh('attendanceBreaks');
+            });
+        } catch (\Exception $e) {
+            Log::error("Failed to create attendance: " . $e->getMessage());
             throw $e;
         }
     }

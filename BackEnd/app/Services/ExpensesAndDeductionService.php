@@ -14,6 +14,7 @@ use App\Enums\ExpenseOrDeduction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class ExpensesAndDeductionService
 {
@@ -53,7 +54,19 @@ class ExpensesAndDeductionService
     try {
       return DB::transaction(function () use ($company_id, $user_id, $updated, $created, $deleted, $year, $month, $is_created_by_user ) {
 
+        $company = $this->getCompany($company_id);
+        if (!$company) {
+          throw ValidationException::withMessages([
+            'company' => 'Company not found for expense registration.',
+          ]);
+        }
+
         foreach ($updated as $expenseData) {
+          if (!empty($expenseData['date'])) {
+            $date = Carbon::parse($expenseData['date']);
+            $this->assertExpenseDateAllowed($company, $date);
+            $expenseData['date'] = $date->format('Y-m-d');
+          }
           // ExpenseRegistrationからの更新の場合のみsubmission_statusを0（CREATED）に設定
           if ($is_created_by_user) {
             $expenseData['submission_status'] = SubmissionStatus::CREATED->value;
@@ -69,10 +82,15 @@ class ExpensesAndDeductionService
 
         // 新規データの作成
         foreach ($created as $expenseData) {
+          if (!empty($expenseData['date'])) {
+            $date = Carbon::parse($expenseData['date']);
+            $this->assertExpenseDateAllowed($company, $date);
+            $expenseData['date'] = $date->format('Y-m-d');
+          }
+
           $expenseData['user_id'] = $user_id;
           $expenseData['name'] = $expenseData['name'];
           $expenseData['amount'] = $expenseData['amount'];
-          $expenseData['date'] = Carbon::parse($expenseData['date'])->format('Y-m-d');
           $expenseData['comment'] = $expenseData['comment'];
           $expenseData['submission_status'] = $expenseData['submission_status'] ?? SubmissionStatus::CREATED->value  ;
           $expenseData['expense_or_deduction'] = $expenseData['expense_or_deduction'] ?? ExpenseOrDeduction::EXPENSE->value  ;
@@ -94,6 +112,8 @@ class ExpensesAndDeductionService
           return $this->getCreatedByManagerExpensesAndDeductions($company_id, $user_id, $year, $month);
         }
       });
+    } catch (ValidationException $e) {
+      throw $e;
     } catch (\Exception $e) {
       Log::error('Failed to batch update expenses', [
         'user_id' => $user_id,
@@ -109,16 +129,39 @@ class ExpensesAndDeductionService
   public function submitExpenses($company_id, $user_id, $year, $month)
   {
     try {
-      DB::transaction(function () use ($company_id, $user_id, $year, $month) {
-        $closing_date = $this->getCompanyClosingDate($company_id);
-        [$start, $end] = $this->getPeriodRange($closing_date, $year, $month);
-        $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $start, $end);
+      $company = $this->getCompany($company_id);
+      if (!$company) {
+        throw ValidationException::withMessages([
+          'company' => 'Company not found for expense submission.',
+        ]);
+      }
+
+      $closingDate = $company->closing_date;
+      [$periodStart, $periodEnd] = $this->getPeriodRange($closingDate, $year, $month);
+
+      if ($company->expense_ready) {
+        $lockedThrough = $company->last_closing_date->copy()->addMonth()->startOfDay();
+
+        if ($periodEnd->copy()->startOfDay()->lte($lockedThrough)) {
+          throw ValidationException::withMessages([
+            'period' => sprintf(
+              'expense_readyが有効のため、%s以前の経費は申請できません。',
+              $lockedThrough->toDateString()
+            ),
+          ]);
+        }
+      }
+
+      DB::transaction(function () use ($user_id, $periodStart, $periodEnd) {
+        $expenses = $this->expensesAndDeductionRepository->getAllExpensesForUser($user_id, $periodStart, $periodEnd);
         foreach ($expenses as $expense) {
           $this->expensesAndDeductionRepository->submitExpense($expense);
         }
       });
 
       return $this->getAllExpensesForUser($company_id, $user_id, $year, $month);
+    } catch (ValidationException $e) {
+      throw $e;
     } catch (\Exception $e) {
       return response()->json(['error' => 'Failed to submit expenses: ' . $e->getMessage()], 500);
     }
@@ -213,5 +256,23 @@ class ExpensesAndDeductionService
         'comment' => $expense->comment,
       ];
     });
+  }
+
+  private function assertExpenseDateAllowed($company, Carbon $date): void
+  {
+    if (!$company->expense_ready) {
+      return;
+    }
+
+    $lockedThrough = $company->last_closing_date->copy()->addMonth()->startOfDay();
+
+    if ($date->copy()->startOfDay()->lte($lockedThrough)) {
+      throw ValidationException::withMessages([
+        'date' => sprintf(
+          'expense_readyが有効のため、%s以前の日付では経費を登録できません。',
+          $lockedThrough->toDateString()
+        ),
+      ]);
+    }
   }
 }

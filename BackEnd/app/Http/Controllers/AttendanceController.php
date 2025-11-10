@@ -24,9 +24,9 @@ class AttendanceController extends Controller
 
     public function startWork(Request $request)
     {
-        $user_id = Auth::id();
-        $this->attendanceService->startWork($user_id);
-        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+        $user = Auth::user();
+        $this->attendanceService->startWork($user->company_id, $user->id);
+        return $this->attendanceService->getLatestAttendancesForUser($user->id);
     }
 
     public function finishWork(Request $request)
@@ -52,11 +52,16 @@ class AttendanceController extends Controller
 
     public function updateAttendance(UpdateAttendanceRequest $request)
     {
-        $user_id = Auth::id();
+        Log::info('AttendanceController::updateAttendance called', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all(),
+        ]);
+
+        $user = Auth::user();
         $validated = $request->validated();
 
-        $this->attendanceService->updateAttendance($user_id, $validated);
-        return $this->attendanceService->getAttendanceForUser($validated['attendance_id']);
+        $attendance = $this->attendanceService->updateAttendance($user->company_id, $user->id, $validated);
+        return $this->attendanceService->getAttendanceForUser($attendance->id);
     }
 
 
