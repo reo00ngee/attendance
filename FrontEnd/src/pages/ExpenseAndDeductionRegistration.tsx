@@ -52,7 +52,6 @@ const ExpenseAndDeductionRegistration = () => {
   const [noExpense, setNoExpense] = useState(false);
 
   const [totalAmount, setTotalAmount] = useState<number>(0);
-  const [unsubmittedExists, setUnsubmittedExists] = useState(false);
   const [loading, setLoading] = useState(true);
   const { notification, showNotification, clearNotification } = useNotification();
 
@@ -80,7 +79,6 @@ const ExpenseAndDeductionRegistration = () => {
           setExpenses(data);
           setNoExpense(data.length === 0);
           setTotalAmount(calculateTotalAmount(data));
-          setUnsubmittedExists(data.some(expense => expense.submission_status === 0 || expense.submission_status === 2));
         } else {
           showNotification("Failed to fetch expense data", 'error');
         }
@@ -221,7 +219,6 @@ const ExpenseAndDeductionRegistration = () => {
         setExpenses(data);
         setNoExpense(data.length === 0);
         setTotalAmount(calculateTotalAmount(data));
-        setUnsubmittedExists(data.some(expense => expense.submission_status === 0 || expense.submission_status === 2));
 
         // バリデーションエラーをクリア
         setValidationErrors({});
@@ -236,35 +233,6 @@ const ExpenseAndDeductionRegistration = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (unsubmittedExists === false) {
-      showNotification("All expenses have already been submitted.", 'warning');
-      return;
-    }
-    setLoading(true);
-    clearNotification();
-    try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}api/submit_expenses?year=${year}&month=${month}`, {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data: ExpenseAndDeduction[] = await res.json();
-        setExpenses(data);
-        setNoExpense(data.length === 0);
-        setTotalAmount(calculateTotalAmount(data));
-        setUnsubmittedExists(data.some(expense => expense.submission_status === 0 || expense.submission_status === 2));
-      } else {
-        showNotification("Failed to submit expenses", 'error');
-      }
-    } catch {
-      showNotification("Something went wrong while fetching the data. Please try again later.", 'error');
-
-    }
-    setLoading(false);
-  };
 
   if (!hasRole(2)) {
     return <Navigate to="/attendance_registration_for_monthly" />;
@@ -278,15 +246,6 @@ const ExpenseAndDeductionRegistration = () => {
 
       {/* 通知アラート */}
       <NotificationAlert notification={notification} />
-
-      {/* 未提出アラート */}
-      {unsubmittedExists && expenses.length > 0 && (
-        <Section>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            There are expenses that have not been submitted.
-          </Alert>
-        </Section>
-      )}
 
       {noExpense && (
         <Section>
@@ -324,16 +283,6 @@ const ExpenseAndDeductionRegistration = () => {
               sx={{ minWidth: 180 }}
             >
               SAVE
-            </Button>
-          )}
-          {!isEditMode && (
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={!unsubmittedExists || loading || noExpense}
-              sx={{ minWidth: 180 }}
-            >
-              SUBMIT
             </Button>
           )}
         </Box>

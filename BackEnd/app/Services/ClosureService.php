@@ -75,8 +75,7 @@ class ClosureService
                 return $check;
             }
 
-            DB::transaction(function () use ($company_id, $end) {
-                $this->closureRepository->updateLastClosingDate($company_id, $end);
+            DB::transaction(function () use ($company_id) {
                 $this->closureRepository->updateAttendanceReady($company_id, true);
             });
 
@@ -84,7 +83,6 @@ class ClosureService
                 'success' => true,
                 'message' => 'Attendance closure completed successfully',
                 'attendance_ready' => true,
-                'last_closing_date' => $end->toDateString(),
             ];
         } catch (\Exception $e) {
             Log::error('Attendance closure failed: ' . $e->getMessage());
@@ -148,8 +146,7 @@ class ClosureService
                 return $check;
             }
 
-            DB::transaction(function () use ($company_id, $end) {
-                $this->closureRepository->updateLastClosingDate($company_id, $end);
+            DB::transaction(function () use ($company_id) {
                 $this->closureRepository->updateExpenseReady($company_id, true);
             });
 
@@ -157,7 +154,6 @@ class ClosureService
                 'success' => true,
                 'message' => 'Expense closure completed successfully',
                 'expense_ready' => true,
-                'last_closing_date' => $end->toDateString(),
             ];
         } catch (\Exception $e) {
             Log::error('Expense closure failed: ' . $e->getMessage());
