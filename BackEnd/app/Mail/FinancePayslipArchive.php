@@ -44,13 +44,30 @@ class FinancePayslipArchive extends Mailable
                 'periodEnd' => $this->periodEnd,
             ])
             ->attach($this->archivePath, [
-                'as' => sprintf(
-                    '%s_payslips_%s.zip',
-                    $this->company->id,
-                    $this->periodStart->format('Ym')
-                ),
+                'as' => $this->generateArchiveFileName(),
                 'mime' => 'application/zip',
             ]);
+    }
+
+    private function generateArchiveFileName(): string
+    {
+        // Sanitize company name for filename
+        $sanitize = function ($str) {
+            return preg_replace('/[^a-zA-Z0-9_-]/', '_', $str);
+        };
+
+        $companyName = $sanitize($this->company->name);
+        $periodStr = sprintf(
+            '%s_%s',
+            $this->periodStart->format('Y-m-d'),
+            $this->periodEnd->format('Y-m-d')
+        );
+
+        return sprintf(
+            '%s_%s_Payslips.zip',
+            $periodStr,
+            $companyName
+        );
     }
 }
 

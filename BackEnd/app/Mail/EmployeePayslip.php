@@ -49,13 +49,37 @@ class EmployeePayslip extends Mailable
                 'periodEnd' => $this->periodEnd,
             ])
             ->attach($this->payslipPath, [
-                'as' => sprintf(
-                    '%s_%s.pdf',
-                    $this->user->id,
-                    $this->periodStart->format('Ym')
-                ),
+                'as' => $this->generatePayslipFileName(),
                 'mime' => 'application/pdf',
             ]);
+    }
+
+    private function generatePayslipFileName(): string
+    {
+        // Sanitize names for filename (remove special characters, replace spaces with underscores)
+        $sanitize = function ($str) {
+            return preg_replace('/[^a-zA-Z0-9_-]/', '_', $str);
+        };
+
+        // Get user name from first_name and last_name, fallback to email username if empty
+        $userName = trim(($this->user->first_name ?? '') . ($this->user->last_name ?? ''));
+        if (empty($userName)) {
+            // Extract username from email (part before @)
+            $userName = explode('@', $this->user->email)[0] ?? 'User';
+        }
+        $userName = $sanitize($userName);
+
+        $periodStr = sprintf(
+            '%s_%s',
+            $this->periodStart->format('Y-m-d'),
+            $this->periodEnd->format('Y-m-d')
+        );
+
+        return sprintf(
+            '%s_%s_Payslip.pdf',
+            $periodStr,
+            $userName
+        );
     }
 }
 

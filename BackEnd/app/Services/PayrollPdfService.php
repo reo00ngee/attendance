@@ -20,11 +20,29 @@ class PayrollPdfService
         array $summary,
         string $directory
     ): string {
+        // Sanitize names for filename (remove special characters, replace spaces with underscores)
+        $sanitize = function ($str) {
+            return preg_replace('/[^a-zA-Z0-9_-]/', '_', $str);
+        };
+
+        // Get user name from first_name and last_name, fallback to email username if empty
+        $userName = trim(($user->first_name ?? '') . ($user->last_name ?? ''));
+        if (empty($userName)) {
+            // Extract username from email (part before @)
+            $userName = explode('@', $user->email)[0] ?? 'User';
+        }
+        $userName = $sanitize($userName);
+
+        $periodStr = sprintf(
+            '%s_%s',
+            $periodStart->format('Y-m-d'),
+            $periodEnd->format('Y-m-d')
+        );
+
         $fileName = sprintf(
-            '%s_%s_%s.pdf',
-            $user->id,
-            $periodStart->format('Ym'),
-            uniqid()
+            '%s_%s_Payslip.pdf',
+            $periodStr,
+            $userName
         );
 
         $filePath = $directory . DIRECTORY_SEPARATOR . $fileName;

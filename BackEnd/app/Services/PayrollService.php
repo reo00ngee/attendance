@@ -744,7 +744,25 @@ class PayrollService
         string $tempDirectory,
         array $files
     ): string {
-        $zipPath = $tempDirectory . DIRECTORY_SEPARATOR . "payslips_{$company->id}.zip";
+        // Sanitize company name for filename
+        $sanitize = function ($str) {
+            return preg_replace('/[^a-zA-Z0-9_-]/', '_', $str);
+        };
+
+        $companyName = $sanitize($company->name);
+        $periodStr = sprintf(
+            '%s_%s',
+            $periodStart->format('Y-m-d'),
+            $periodEnd->format('Y-m-d')
+        );
+
+        $zipFileName = sprintf(
+            '%s_%s_Payslips.zip',
+            $periodStr,
+            $companyName
+        );
+
+        $zipPath = $tempDirectory . DIRECTORY_SEPARATOR . $zipFileName;
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
