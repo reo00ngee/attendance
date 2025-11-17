@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 use App\Models\Company;
+use App\Models\Attendance;
+use App\Models\ExpensesAndDeduction;
 
 class PayrollProcessingJob extends Command
 {
@@ -41,18 +43,19 @@ class PayrollProcessingJob extends Command
                 $startDate = Carbon::now()->day($company->closing_date)->addDay()->format('Y-m-d');
                 $endDate = Carbon::now()->day($company->closing_date)->format('Y-m-d');
             }
-        }
+
             // 勤怠データを取得
-    $attendances = Attendance::whereBetween('date', [$startDate, $endDate])->get();
+            $attendances = Attendance::whereBetween('start_time', [$startDate, $endDate])->get();
 
-    // 経費データを取得
-    $expenses = Expense::whereBetween('date', [$startDate, $endDate])->get();
+            // 経費データを取得
+            $expenses = ExpensesAndDeduction::whereBetween('date', [$startDate, $endDate])->get();
 
-    // 給与計算ロジック
-    // ...
+            // 給与計算ロジック
+            // ...
 
-    // 結果を返すまたは保存する
-    // ...
+            // 結果を返すまたは保存する
+            // ...
+        }
     }
 
 
