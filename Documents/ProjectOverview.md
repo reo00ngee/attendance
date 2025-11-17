@@ -72,7 +72,7 @@ Employees and managers can register expenses and deductions through the web appl
 
 **1. Employee Registration**
 
-Employees can register their expenses and deductions for reimbursement and payroll calculation.
+Employees can register their expenses for reimbursement and payroll calculation.
 
 **2. Manager Registration**
 
