@@ -49,7 +49,7 @@ Each employee receives an email with their personal payslip PDF attached.
 
 **Sample Email (Employee):**
 
-![Employee Payslip Email](Documents/Payslip/Payslip_mail_for_users.png)
+![Employee Payslip Email](Payslip/Payslip_mail_for_users.png)
 
 **2. Finance Management Archive Email**
 
@@ -62,7 +62,7 @@ Users with the Finance Management role (role = 2) receive a consolidated email w
 
 **Sample Email (Finance Management):**
 
-![Finance Payslip Archive Email](Documents/Payslip/Payslips_mail_for_finacial_role.png)
+![Finance Payslip Archive Email](Payslip/Payslips_mail_for_finacial_role.png)
 
 #### Payslip PDF Content
 
@@ -93,7 +93,7 @@ The payslip PDF includes comprehensive payroll information:
 
 **Sample Payslip PDF:**
 
-[View Sample Payslip PDF](Documents/Payslip/2025-09-26_2025-10-25_LeoUeno_Payslip.pdf)
+[View Sample Payslip PDF](Payslip/2025-09-26_2025-10-25_LeoUeno_Payslip.pdf)
 
 #### Email Delivery Process
 
