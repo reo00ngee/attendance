@@ -239,3 +239,30 @@ This is useful when:
 
 Make sure both environments share the same `App\Console\Kernel` configuration so that scheduling behavior is consistent.
 
+---
+
+### Email Configuration for Payslip Delivery
+
+Make sure your email configuration is properly set in `.env`:
+
+```php
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-email@example.com
+MAIL_PASSWORD=your-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+For development with Laravel Sail, you can use Mailpit for testing:
+
+```php
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+```
+
+Mailpit interface is available at: `http://localhost:8025`
+
