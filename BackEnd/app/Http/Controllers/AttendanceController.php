@@ -1,0 +1,174 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Services\AttendanceService;
+use Illuminate\Database\Eloquent\Casts\Json;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\UpdateAttendanceRequest;
+use App\Http\Requests\ApproveAttendancesRequest;
+use App\Http\Requests\RejectAttendancesRequest;
+
+class AttendanceController extends Controller
+{
+    private AttendanceService $attendanceService;
+
+    public function __construct(AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+        $this->middleware('auth');
+    }
+
+    public function startWork(Request $request)
+    {
+        $user = Auth::user();
+        $this->attendanceService->startWork($user->company_id, $user->id);
+        return $this->attendanceService->getLatestAttendancesForUser($user->id);
+    }
+
+    public function finishWork(Request $request)
+    {
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->finishWork($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
+    }
+
+    public function startBreak(Request $request)
+    {
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->startBreak($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
+    }
+
+    public function finishBreak(Request $request)
+    {
+        $attendance_id = $request->query('attendance_id');
+        $this->attendanceService->finishBreak($attendance_id);
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
+    }
+
+    public function updateAttendance(UpdateAttendanceRequest $request)
+    {
+        Log::info('AttendanceController::updateAttendance called', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all(),
+        ]);
+
+        $user = Auth::user();
+        $validated = $request->validated();
+
+        $attendance = $this->attendanceService->updateAttendance($user->company_id, $user->id, $validated);
+        return $this->attendanceService->getAttendanceForUser($attendance->id);
+    }
+
+
+    public function getLatestAttendancesForUser(Request $request)
+    {
+        $user_id = Auth::id();
+        return $this->attendanceService->getLatestAttendancesForUser($user_id);
+    }
+
+    public function getAttendanceForUser(Request $request)
+    {
+        $attendance_id = $request->query('attendance_id');
+        return $this->attendanceService->getAttendanceForUser($attendance_id);
+    }
+
+    public function getAllAttendancesForUser(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $user_id = Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->attendanceService->getAllAttendancesForUser($company_id, $user_id, $year, $month);
+    }
+
+    public function submitAttendances(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $user_id = Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+        return $this->attendanceService->submitAttendances($company_id, $user_id, $year, $month);
+    }
+
+    public function getSubmittedAndApprovedAttendances(Request $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $user_id = $request->query('user_id') ?: Auth::id();
+        $year = $request->query('year');
+        $month = $request->query('month');
+
+        return $this->attendanceService->getSubmittedAndApprovedAttendances($company_id, $user_id, $year, $month);
+    }
+
+    public function approveAttendances(ApproveAttendancesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+
+        return $this->attendanceService->approveAttendances(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month']
+        );
+    }
+
+    public function rejectAttendances(RejectAttendancesRequest $request)
+    {
+        $company_id = Auth::user()->company_id;
+        $validated = $request->validated();
+
+        return $this->attendanceService->rejectAttendances(
+            $company_id,
+            $validated['user_id'],
+            $validated['year'],
+            $validated['month'],
+            $validated['rejection_reason']
+        );
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+}
