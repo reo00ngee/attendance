@@ -31,6 +31,78 @@ Based on these assumptions, we have established the following scope.
 
 ## Key Features
 
+### Attendance Registration
+
+Employees can register their attendance data in real-time or later through the web application. The system supports flexible registration methods to accommodate various work patterns.
+
+#### Registration Methods
+
+**1. Real-Time Registration**
+
+Employees can record their work start time, end time, and breaks as they occur during the day.
+
+**2. Daily Modification**
+
+Employees can register or modify attendance records for past dates, allowing for corrections and late entries.
+
+**Key Features:**
+- Start time and end time registration
+- Break time management (multiple breaks per day)
+- Comment field for additional notes
+- Date-based validation to prevent registration of closed periods
+- Support for both new record creation and existing record modification
+
+**Attendance Registration Screen:**
+
+![Attendance Registration Screen](Screen/Attendance_Modification_For_Daily.png)
+
+#### Registration Restrictions
+
+To maintain data integrity for payroll processing, attendance registration is restricted for periods that have been closed:
+
+- If `attendance_ready` is `true`, employees cannot register attendance for dates before or equal to one month after the `last_closing_date`
+- Example: If `last_closing_date` is 2025/10/25, attendance cannot be registered for dates up to 2025/11/25
+- Dates after the restriction period (e.g., 2025/11/26) can be registered normally
+
+### Expense and Deduction Registration
+
+Employees and managers can register expenses and deductions through the web application. The system supports various expense types and deduction categories.
+
+#### Registration Methods
+
+**1. Employee Registration**
+
+Employees can register their expenses for reimbursement and payroll calculation.
+
+**2. Manager Registration**
+
+Managers can create expense and deduction records on behalf of employees with `CREATED_BY_MANAGER` status, which does not require employee submission.
+
+**Key Features:**
+- Date-based expense/deduction entry
+- Amount and description fields
+- Category classification (expense or deduction)
+- Batch registration support (multiple entries at once)
+- Date-based validation to prevent registration of closed periods
+- Manager-created records are automatically set to `CREATED_BY_MANAGER` status
+
+**Expense Registration Screen:**
+
+![Expense Registration Screen](Screen/Expense_registration.png)
+
+#### Registration Restrictions
+
+Similar to attendance registration, expense registration is restricted for closed periods:
+
+- If `expense_ready` is `true`, expenses cannot be registered for dates before or equal to one month after the `last_closing_date`
+- Example: If `last_closing_date` is 2025/10/25, expenses cannot be registered for dates up to 2025/11/25
+- Dates after the restriction period (e.g., 2025/11/26) can be registered normally
+
+#### Submission Process
+
+- **Employee-submitted records**: Employees can submit their registered expenses for manager approval
+- **Manager-created records**: Records created by managers with `CREATED_BY_MANAGER` status do not require submission and are automatically included in payroll calculations
+
 ### Automated Payslip Email Delivery
 
 When the monthly payroll batch process completes successfully, payslips are automatically sent via email to employees and finance management personnel.
