@@ -1,42 +1,5 @@
 # Introduction
 
-This document provides an overview of the Attendance Manager project and essential setup instructions.
-
-## Project Overview
-
-### Project Name
-Attendance Manager
-
-### Business Case
-Manage employee attendance data
-
-### Purposes and Goals
-
-#### Purpose
-To have employees work in accordance with the law and pay their salaries correctly.
-
-#### Goal
-- Employees can register attendance and expenses in real time or later.
-- Managers can handle the data and generate payslips that include calculations based on hourly wages, premium wages, and expenses
-
-### Scope
-
-Employees are expected to work remotely and their work primarily uses computers, registration via the web can be done stress-free. Based on these assumptions, we have established the following scope.
-
-| Element                         | In Scope                                                                   | Out Of Scope                                     |
-| :------------------------------ | :------------------------------------------------------------------------- | :----------------------------------------------- |
-| Registration method             | Web app                                                                    | Other registration methods                       |
-| Registration location           | Range that can access the web server                                       | Specific excluded locations or scenarios         |
-| Expected users                  | Registered companies and corresponding users                               | Other user groups or scenarios                   |
-| Data linkage                    | No                                                                         | Future data linkage or integrations              |
-| Closing date                    | 15th / 20th / 25th / end of month                                          | Other date                                       |
-| Payroll rounding interval       | 1 min / 5 mins / 15 mins                                                   | Other rounding interval                          |
-| prompt submission reminder days | 3 days / 5 days / 1 week                                                   | Other days                                       |
-| Breakdown of salary             | Calculation of hourly wages, premium wages, and expenses                   | Different types of payroll calculation and taxes |
-| Shift Management                | The company can register the days of the week when the business is closed. | Individual Employee Shift Management             |
-
----
-
 ## Essential Configuration
 
 ### Setting of Timezone
@@ -60,6 +23,80 @@ SANCTUM_STATEFUL_DOMAINS=localhost
 # 修正後
 SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost
 SESSION_DOMAIN=localhost  # 追加
+```
+
+### Queue Configuration
+
+The password reset functionality uses Laravel queues for email sending to improve system responsiveness.
+
+#### Queue Connection Setting
+
+In `.env`:
+
+```php
+QUEUE_CONNECTION=database
+```
+
+Make sure the queue tables are migrated:
+
+```bash
+cd BackEnd
+./vendor/bin/sail artisan migrate
+```
+
+#### Starting Queue Workers
+
+**Development Environment (Laravel Sail):**
+
+```bash
+cd BackEnd
+./vendor/bin/sail artisan queue:work
+```
+
+For background processing:
+
+```bash
+./vendor/bin/sail artisan queue:work --daemon
+```
+
+**Production Environment:**
+
+Use Supervisor to manage queue workers persistently. Create `/etc/supervisor/conf.d/laravel-worker.conf`:
+
+```ini
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/attendance/BackEnd/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=8
+redirect_stderr=true
+stdout_logfile=/path/to/attendance/BackEnd/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Then reload Supervisor:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-worker:*
+```
+
+#### Queue Monitoring
+
+```bash
+# Check queue status
+./vendor/bin/sail artisan queue:monitor
+
+# Check failed jobs
+./vendor/bin/sail artisan queue:failed
+
+# Retry all failed jobs
+./vendor/bin/sail artisan queue:retry all
 ```
 
 ---
