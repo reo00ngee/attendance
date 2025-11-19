@@ -1,0 +1,62 @@
+# 本番環境用Dockerfile
+FROM php:8.2-fpm-alpine AS base
+
+# 必要なパッケージをインストール
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    oniguruma-dev \
+    mysql-client \
+    nginx \
+    supervisor
+
+# PHP拡張機能をインストール
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Redis拡張機能をインストール
+RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del pcre-dev $PHPIZE_DEPS
+
+# Composerをインストール
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# アプリケーションディレクトリを設定
+WORKDIR /var/www/html
+
+# アプリケーションコードをコピー
+COPY . /var/www/html
+
+# Composer依存関係をインストール（本番用）
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# 権限を設定
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Nginx設定をコピー
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/default.conf /etc/nginx/http.d/default.conf
+
+# Supervisor設定をコピー
+COPY docker/supervisord.production.conf /etc/supervisor/conf.d/supervisord.conf
+
+# ポート80を公開
+EXPOSE 80
+
+# SupervisorでNginxとPHP-FPMを起動
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+

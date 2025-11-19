@@ -1,0 +1,93 @@
+{
+  "family": "attendance-backend-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "laravel-api",
+      "image": "YOUR_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/attendance-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "APP_ENV",
+          "value": "production"
+        },
+        {
+          "name": "APP_DEBUG",
+          "value": "false"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "APP_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/app-key"
+        },
+        {
+          "name": "DB_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/db-host"
+        },
+        {
+          "name": "DB_DATABASE",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/db-database"
+        },
+        {
+          "name": "DB_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/db-username"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/db-password"
+        },
+        {
+          "name": "REDIS_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/redis-host"
+        },
+        {
+          "name": "MAIL_MAILER",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/mail-mailer"
+        },
+        {
+          "name": "MAIL_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/mail-host"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/mail-username"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:YOUR_ACCOUNT_ID:secret:attendance/mail-password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/attendance-backend",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost/api/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
+
