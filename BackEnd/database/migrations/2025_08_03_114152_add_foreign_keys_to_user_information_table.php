@@ -12,9 +12,20 @@ class AddForeignKeysToUserInformationTable extends Migration
     public function up(): void
     {
         Schema::table('user_information', function (Blueprint $table) {
-            // 既存の外部キー制約があれば削除
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['information_id']);
+            // SQLiteの場合は外部キー削除をスキップ
+            if (config('database.default') !== 'sqlite') {
+                // 既存の外部キー制約があれば削除
+                try {
+                    $table->dropForeign(['user_id']);
+                } catch (\Exception $e) {
+                    // 外部キーが存在しない場合はスキップ
+                }
+                try {
+                    $table->dropForeign(['information_id']);
+                } catch (\Exception $e) {
+                    // 外部キーが存在しない場合はスキップ
+                }
+            }
             
             // カスケード削除付きの外部キー制約を追加
             $table->foreign('user_id')
@@ -35,12 +46,25 @@ class AddForeignKeysToUserInformationTable extends Migration
     public function down(): void
     {
         Schema::table('user_information', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['information_id']);
+            // SQLiteの場合は外部キー削除をスキップ
+            if (config('database.default') !== 'sqlite') {
+                try {
+                    $table->dropForeign(['user_id']);
+                } catch (\Exception $e) {
+                    // 外部キーが存在しない場合はスキップ
+                }
+                try {
+                    $table->dropForeign(['information_id']);
+                } catch (\Exception $e) {
+                    // 外部キーが存在しない場合はスキップ
+                }
+            }
             
             // 元の制約に戻す（制約なしまたは元の設定）
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('information_id')->references('id')->on('information');
+            if (config('database.default') !== 'sqlite') {
+                $table->foreign('user_id')->references('id')->on('users');
+                $table->foreign('information_id')->references('id')->on('information');
+            }
         });
     }
 };
